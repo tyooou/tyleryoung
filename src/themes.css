@@ -1,0 +1,108 @@
+body,
+.app-container {
+  transition: background-color 1s ease, color 1s ease;
+}
+
+html.theme-light {
+  --bg: #ffffff;
+  --bg-secondary: #f3f4f6;
+  --bg-tertiary: #e5e7eb;
+  --bg-quaternary: #d1d5db;
+  --text: #111827;
+  --text-secondary: #4b5563;
+  --accent: #3b82f6;
+  --accent-secondary: #60a5fa;
+  --border: #d1d5db;
+  --border-secondary: #9ca3af;
+}
+
+html.theme-dark {
+  --bg: #1e1e1e;
+  --bg-secondary: #2d2d2d;
+  --bg-tertiary: #3c3c3c;
+  --bg-quaternary: #4b4b4b;
+  --text: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --accent: #3b82f6;
+  --accent-secondary: #60a5fa;
+  --border: #4b4b4b;
+  --border-secondary: #5a5a5a;
+}
+
+html.theme-forest {
+  --bg: #f0fdf4;
+  --bg-secondary: #dcfce7;
+  --bg-tertiary: #bbf7d0;
+  --bg-quaternary: #86efac;
+  --text: #052e16;
+  --text-secondary: #166534;
+  --accent: #15803d;
+  --accent-secondary: #22c55e;
+  --border: #86efac;
+  --border-secondary: #4ade80;
+}
+
+html.theme-yellow {
+  --bg: #fefce8;
+  --bg-secondary: #fef3c7;
+  --bg-tertiary: #fde68a;
+  --bg-quaternary: #fcd34d;
+  --text: #78350f;
+  --text-secondary: #92400e;
+  --accent: #d97706;
+  --accent-secondary: #f59e0b;
+  --border: #fcd34d;
+  --border-secondary: #fbbf24;
+}
+
+html.theme-rose {
+  --bg: #fff1f2;
+  --bg-secondary: #ffe4e6;
+  --bg-tertiary: #fecdd3;
+  --bg-quaternary: #fda4af;
+  --text: #831843;
+  --text-secondary: #9d174d;
+  --accent: #e11d48;
+  --accent-secondary: #f43f5e;
+  --border: #fecdd3;
+  --border-secondary: #fda4af;
+}
+
+html.theme-lavender {
+  --bg: #f5f3ff;
+  --bg-secondary: #ede9fe;
+  --bg-tertiary: #ddd6fe;
+  --bg-quaternary: #c4b5fd;
+  --text: #2e1065;
+  --text-secondary: #5b21b6;
+  --accent: #7c3aed;
+  --accent-secondary: #8b5cf6;
+  --border: #ddd6fe;
+  --border-secondary: #c4b5fd;
+}
+
+html.theme-sunset {
+  --bg: #fff7ed;
+  --bg-secondary: #ffedd5;
+  --bg-tertiary: #fed7aa;
+  --bg-quaternary: #fdba74;
+  --text: #7c2d12;
+  --text-secondary: #9a3412;
+  --accent: #ea580c;
+  --accent-secondary: #f97316;
+  --border: #fdba74;
+  --border-secondary: #fb923c;
+}
+
+html.theme-ice {
+  --bg: #f0f9ff;
+  --bg-secondary: #e0f2fe;
+  --bg-tertiary: #bae6fd;
+  --bg-quaternary: #7dd3fc;
+  --text: #0c4a6e;
+  --text-secondary: #0369a1;
+  --accent: #0284c7;
+  --accent-secondary: #0ea5e9;
+  --border: #7dd3fc;
+  --border-secondary: #38bdf8;
+}
