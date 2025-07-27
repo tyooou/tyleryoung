@@ -9,7 +9,9 @@ function ChangelogCard({ toggleSidebar }) {
     async function loadAllReleaseNotes() {
       try {
         // Load the versions list
-        const versionsResponse = await fetch("releaseNotes/versions.json");
+        const versionsResponse = await fetch(
+          import.meta.env.BASE_URL + "/releaseNotes/versions.json"
+        );
         if (!versionsResponse.ok) {
           console.error("Failed to load versions list");
           return;
@@ -20,7 +22,9 @@ function ChangelogCard({ toggleSidebar }) {
 
         for (const version of versions) {
           try {
-            const response = await fetch(`releaseNotes/${version}.md`);
+            const response = await fetch(
+              import.meta.env.BASE_URL + `/releaseNotes/${version}.md`
+            );
             if (!response.ok) continue;
 
             const raw = await response.text();
@@ -54,7 +58,7 @@ function ChangelogCard({ toggleSidebar }) {
             console.error(`Failed to load ${version}:`, error);
           }
         }
-        console.log(allReleases);
+
         // Sort by version (newest first)
         allReleases.sort((a, b) => {
           const versionA = a.version.replace("v", "").split(".").map(Number);

@@ -1,5 +1,6 @@
 ---
 name: portfolio
+title: Portfolio
 subtitle: A digital archive. Of sorts.
 techStack:
   - react

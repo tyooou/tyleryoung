@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import fm from "front-matter";
-import ProjectCard from "./components/ProjectCard";
+import ProjectCard from "./components/project/ProjectCard";
 import Sidebar from "./components/sidebar/Sidebar";
 import BibliographyCard from "./components/BibliographyCard";
 import Navigation from "./components/Navigation";
@@ -19,7 +19,9 @@ function Portfolio() {
 
   useEffect(() => {
     async function findProjects() {
-      const res = await fetch("projects/projects.json");
+      const res = await fetch(
+        import.meta.env.BASE_URL + "projects/projects.json"
+      );
       if (!res.ok) return;
       const data = await res.json();
       setProjectList(data.activeProjects);
@@ -32,7 +34,9 @@ function Portfolio() {
     async function loadProjects() {
       const loadedProjects = await Promise.all(
         projectList.map(async (project) => {
-          const res = await fetch(`projects/${project}/README.md`);
+          const res = await fetch(
+            import.meta.env.BASE_URL + `projects/${project}/README.md`
+          );
           if (!res.ok) return null;
           const raw = await res.text();
           const isFallbackHTML =

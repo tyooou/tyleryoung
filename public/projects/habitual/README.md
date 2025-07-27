@@ -1,5 +1,6 @@
 ---
 name: habitual
+title: Habitual
 subtitle: Make habituals a daily ritual.
 techStack:
   - nodejs

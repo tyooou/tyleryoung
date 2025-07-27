@@ -1,5 +1,6 @@
 ---
 name: pixai
+title: PixAI
 subtitle: pixelise anything, beautifully.
 techStack:
   - nodejs

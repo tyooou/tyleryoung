@@ -31,7 +31,7 @@ function Sidebar({ updatePage, state, projects }) {
             <FileUser className="w-4" />
           </SidebarIcon>
         </div>
-        <div className="flex flex-col font-mono">
+        <div className="flex flex-col">
           <h2 className="font-bold text-xs text-[var(--text-secondary)] px-3 py-1 pt-4">
             PROJECTS
           </h2>
@@ -45,7 +45,7 @@ function Sidebar({ updatePage, state, projects }) {
             );
           })}
         </div>
-        <div className="flex flex-col font-mono">
+        <div className="flex flex-col">
           <h2 className="font-bold text-xs text-[var(--text-secondary)] px-3 py-1 pt-4">
             CONTENTS
           </h2>

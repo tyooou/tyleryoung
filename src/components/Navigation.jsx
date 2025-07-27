@@ -20,7 +20,7 @@ function Navigation({ updatePage, updateSidebar, deleteTab, openTabs, page }) {
               className="font-mono text-xs truncate overflow-hidden whitespace-nowrap max-w-[150px]"
               onClick={() => updatePage(`${tab}`)}
             >
-              {`${tab}.txt`}
+              {`${tab.replace(/ /g, "-")}.txt`}
             </button>
             {tab != "bibliography" && (
               <span
