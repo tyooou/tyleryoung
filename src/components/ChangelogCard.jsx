@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import matter from "gray-matter";
+import fm from "front-matter";
 
 function ChangelogCard({ toggleSidebar }) {
   const [releaseNotes, setReleaseNotes] = useState([]);
@@ -24,7 +24,7 @@ function ChangelogCard({ toggleSidebar }) {
             if (!response.ok) continue;
 
             const raw = await response.text();
-            const { data, content } = matter(raw);
+            const { attributes: data, body: content } = fm(raw);
 
             // Parse the markdown content
             const sections = content.split("## ").filter(Boolean);

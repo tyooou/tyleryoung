@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import matter from "gray-matter";
+import fm from "front-matter";
 import ProjectCard from "./components/ProjectCard";
 import Sidebar from "./components/sidebar/Sidebar";
 import BibliographyCard from "./components/BibliographyCard";
@@ -43,7 +43,7 @@ function Portfolio() {
             return null;
           }
 
-          const { data, content } = matter(raw);
+          const { attributes: data, body: content } = fm(raw);
           return { project, meta: data, content };
         })
       );
