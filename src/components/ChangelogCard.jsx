@@ -9,7 +9,7 @@ function ChangelogCard({ toggleSidebar }) {
     async function loadAllReleaseNotes() {
       try {
         // Load the versions list
-        const versionsResponse = await fetch("/releaseNotes/versions.json");
+        const versionsResponse = await fetch("releaseNotes/versions.json");
         if (!versionsResponse.ok) {
           console.error("Failed to load versions list");
           return;
@@ -54,7 +54,7 @@ function ChangelogCard({ toggleSidebar }) {
             console.error(`Failed to load ${version}:`, error);
           }
         }
-
+        console.log(allReleases);
         // Sort by version (newest first)
         allReleases.sort((a, b) => {
           const versionA = a.version.replace("v", "").split(".").map(Number);
