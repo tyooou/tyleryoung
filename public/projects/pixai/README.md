@@ -3,10 +3,11 @@ name: pixai
 title: PixAI
 subtitle: pixelise anything, beautifully.
 techStack:
-  - nodejs
-  - react
   - python
+  - js
+  - react
   - tailwindcss
+  - vite
   - flask
 media:
   - video.mp4

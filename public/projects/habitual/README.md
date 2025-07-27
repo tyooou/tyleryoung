@@ -3,11 +3,11 @@ name: habitual
 title: Habitual
 subtitle: Make habituals a daily ritual.
 techStack:
-  - nodejs
-  - react
-  - redux
-  - mongodb
-  - expressjs
+  - js
+  - astro
+  - tailwindcss
+  - supabase
+  - electron
 media:
   - video.mp4
   - image-1.jpg

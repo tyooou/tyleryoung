@@ -3,10 +3,10 @@ name: portfolio
 title: Portfolio
 subtitle: A digital archive. Of sorts.
 techStack:
+  - js
   - react
   - tailwindcss
   - vitejs
-  - npm
 media:
   - video.mp4
   - image-1.jpg

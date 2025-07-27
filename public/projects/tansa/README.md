@@ -1,12 +1,12 @@
 ---
 name: tansa
-title: TANSA Web Portal
-subtitle: A digital archive. Of sorts.
+title: TANSA Website
+subtitle: A web portal, event manager and content platform all in one.
 techStack:
+  - nextjs
   - react
   - tailwindcss
-  - vitejs
-  - npm
+  - supabase
 media:
   - video.mp4
   - image-1.jpg
@@ -16,4 +16,4 @@ code: https://www.example.com
 preview: https://www.example.com
 ---
 
-A personal portfolio inspired by the simplicity of the command line—minimal, fast, and focused. Built to showcase my projects, skills, and experience without the clutter. It features responsive design, intuitive navigation, and subtle interactivity. Visitors can explore my work, check in on friends I collaborate with, browse contact details, and switch between themes that suit their vibe. It’s professional without being sterile, playful without being loud, and above all, designed to stay out of the way while you look around.
+Welcome to the hub where Taiwanese spirit meets Kiwi vibe — the official web portal for the Taiwanese and New Zealand Students Association. Whether you’re hunting for the next epic cultural fest, looking to swap study hacks, or just want to find a crew that gets your vibe, this is your go-to spot. Stay in the loop with events, share stories, and connect with fellow students navigating the best of both worlds — no passport required.
