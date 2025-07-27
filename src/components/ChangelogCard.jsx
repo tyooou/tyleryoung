@@ -20,7 +20,7 @@ function ChangelogCard({ toggleSidebar }) {
 
         for (const version of versions) {
           try {
-            const response = await fetch(`/releaseNotes/${version}.md`);
+            const response = await fetch(`releaseNotes/${version}.md`);
             if (!response.ok) continue;
 
             const raw = await response.text();
