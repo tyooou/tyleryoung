@@ -6,14 +6,15 @@ techStack:
   - nextjs
   - react
   - tailwindcss
+  - docker
   - supabase
 media:
   - video.mp4
   - image-1.jpg
   - image-2.jpg
   - image-3.jpg
-code: https://www.example.com
-preview: https://www.example.com
+code: https://github.com/UoaWDCC/tansa
+preview: https://tansa.wdcc.co.nz
 ---
 
-Welcome to the hub where Taiwanese spirit meets Kiwi vibe — the official web portal for the Taiwanese and New Zealand Students Association. Whether you’re hunting for the next epic cultural fest, looking to swap study hacks, or just want to find a crew that gets your vibe, this is your go-to spot. Stay in the loop with events, share stories, and connect with fellow students navigating the best of both worlds — no passport required.
+This platform serves as the official hub for the Taiwanese and New Zealand Students Association, providing students with access to academic resources, cultural events, and opportunities for community engagement. It aims to support students in their studies while fostering a deeper understanding of both Taiwanese and New Zealand cultures. Here, students can connect, collaborate, and thrive in a welcoming and inclusive environment.
