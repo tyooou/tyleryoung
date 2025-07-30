@@ -6,10 +6,10 @@ const THEMES = [
   "theme-light",
   "theme-dark",
   "theme-forest",
-  "theme-yellow",
+  "theme-solace",
   "theme-rose",
   "theme-lavender",
-  "theme-sunset",
+  "theme-clementine",
   "theme-ice",
 ];
 

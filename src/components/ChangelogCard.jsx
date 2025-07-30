@@ -96,7 +96,7 @@ function ChangelogCard({ toggleSidebar }) {
 
   return (
     <>
-      <div className="w-full h-full p-5 font-mono flex flex-col">
+      <div className="w-full h-full p-5 font-mono flex flex-col select-none cursor-default">
         <h2 className="font-bold text-9xl flex-shrink-0">Changelog.</h2>
 
         <div className="flex-1 overflow-y-auto mt-4">

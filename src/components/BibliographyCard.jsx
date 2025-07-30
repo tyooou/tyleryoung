@@ -7,7 +7,7 @@ function BibliographyCard({ toggleSidebar }) {
 
   return (
     <>
-      <div className="w-full h-full p-5 font-mono">
+      <div className="w-full h-full p-5 font-mono select-none cursor-default">
         <DecodeText text="Tyler Young" speed={80} />
         <div className="ml-3">
           <p className="text-lg mt-4 font-bold text-[var(--text-secondary)]">
@@ -36,15 +36,8 @@ function BibliographyCard({ toggleSidebar }) {
               beautifully.
             </li>
           </ul>
-
           <button
-            className="text-lg px-3 py-2 mt-4 hover:bg-[var(--bg-secondary)]"
-            onClick={() => toggleSidebar(true)}
-          >
-            → <span className="font-bold">Start exploring!</span>
-          </button>
-          <button
-            className="text-lg ml-4 px-3 py-2 mt-4 hover:bg-[var(--bg-secondary)]"
+            className="text-lg px-3 py-2 mt-4 hover:bg-[var(--bg-secondary)] cursor-pointer"
             onClick={cycleTheme}
           >
             → <span className="font-bold">Switch theme!</span>

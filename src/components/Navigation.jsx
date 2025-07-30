@@ -17,7 +17,9 @@ function Navigation({ updatePage, updateSidebar, deleteTab, openTabs, page }) {
             }`}
           >
             <button
-              className="font-mono text-xs truncate overflow-hidden whitespace-nowrap max-w-[150px]"
+              className={`font-mono text-xs truncate overflow-hidden whitespace-nowrap max-w-[150px] ${
+                tab === page ? "" : "cursor-pointer"
+              }`}
               onClick={() => updatePage(`${tab}`)}
             >
               {`${tab.replace(/ /g, "-")}.txt`}
@@ -38,13 +40,13 @@ function Navigation({ updatePage, updateSidebar, deleteTab, openTabs, page }) {
         ))}
         <div className="ml-auto flex items-center space-x-1">
           <button
-            className="hover:bg-[var(--bg-tertiary)] py-[0.5px] px-1 rounded"
+            className="hover:bg-[var(--bg-tertiary)] py-[0.5px] px-1 rounded cursor-pointer"
             onClick={cycleTheme}
           >
             <Palette className="w-4" />
           </button>
           <button
-            className="hover:bg-[var(--bg-tertiary)] py-[0.5px] px-1 mr-2 rounded"
+            className="hover:bg-[var(--bg-tertiary)] py-[0.5px] px-1 mr-2 rounded cursor-pointer"
             onClick={() => updateSidebar((prev) => !prev)}
           >
             <PanelLeft className="w-4" />

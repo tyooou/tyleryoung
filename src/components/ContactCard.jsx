@@ -3,7 +3,7 @@ import ExternalLink from "./ExternalLink";
 function ContactCard() {
   return (
     <>
-      <div className="w-full h-full p-5 font-mono">
+      <div className="w-full h-full p-5 font-mono select-none cursor-default">
         <div className="flex flex-col">
           <h2 className="font-bold text-9xl">Contact.</h2>
           <p className="text-xl mt-3 ml-2 mb-2">

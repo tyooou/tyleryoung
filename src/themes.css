@@ -42,7 +42,7 @@ html.theme-forest {
   --border-secondary: #4ade80;
 }
 
-html.theme-yellow {
+html.theme-solace {
   --bg: #fefce8;
   --bg-secondary: #fef3c7;
   --bg-tertiary: #fde68a;
@@ -81,7 +81,7 @@ html.theme-lavender {
   --border-secondary: #c4b5fd;
 }
 
-html.theme-sunset {
+html.theme-clementine {
   --bg: #fff7ed;
   --bg-secondary: #ffedd5;
   --bg-tertiary: #fed7aa;

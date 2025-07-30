@@ -14,7 +14,7 @@ media:
   - image-1.jpg
   - image-2.jpg
   - image-3.jpg
-code: https://www.example.com
+code: https://github.com/tyooou/pixai
 preview: https://www.example.com
 ---
 

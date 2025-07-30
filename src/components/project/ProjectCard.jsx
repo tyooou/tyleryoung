@@ -15,8 +15,12 @@ function ProjectCard({ project }) {
             <p className="font-mono text-sm mt-4">{project.content}</p>
             <TechStack techStack={project.meta.techStack} />
             <div className="flex flex-col space-y-2 font-mono mt-6">
-              <ExternalLink text="→ Code" link={project.meta.code} />
-              <ExternalLink text="→ Preview" link={project.meta.preview} />
+              {project?.meta?.code != null && (
+                <ExternalLink text="→ Code" link={project.meta.code} />
+              )}
+              {project?.meta?.preview != null && (
+                <ExternalLink text="→ Preview" link={project.meta.preview} />
+              )}
             </div>
           </div>
         </div>

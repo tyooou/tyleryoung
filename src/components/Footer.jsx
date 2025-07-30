@@ -18,7 +18,7 @@ function Footer({ toggleSidebar }) {
           © {new Date().getFullYear()} Tyler Young
         </span>
         <span className="flex-1 text-center">{getThemeDisplayName(theme)}</span>
-        <span className="flex-1 text-right">v1.0.0</span>
+        <span className="flex-1 text-right">v1.0.1</span>
       </footer>
     </>
   );

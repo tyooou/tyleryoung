@@ -3,7 +3,7 @@ import ExternalLink from "./ExternalLink";
 function FriendsCard() {
   return (
     <>
-      <div className="w-full h-full p-5 font-mono">
+      <div className="w-full h-full p-5 font-mono select-none cursor-default">
         <div className="flex flex-col">
           <h2 className="font-bold text-9xl">Friends.</h2>
           <p className="text-xl mt-3 ml-3">
@@ -28,6 +28,12 @@ function FriendsCard() {
               text="Christoph Kim"
               link={"https://christoph.framer.website"}
             />
+            <ExternalLink
+              text="Nicholas Wilson"
+              link={"https://niccholasw.cloud"}
+            />
+            <ExternalLink text="Dave Khadka" link={"https://davekhadka.com"} />
+            <ExternalLink text="Tony Lim" link={"https://tonylxm.com"} />
           </div>
         </div>
       </div>

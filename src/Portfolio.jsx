@@ -11,7 +11,7 @@ import ContactCard from "./components/ContactCard";
 import ChangelogCard from "./components/ChangelogCard";
 
 function Portfolio() {
-  const [sidebarState, setSidebar] = useState(false);
+  const [sidebarState, setSidebar] = useState(true);
   const [page, setPage] = useState("bibliography");
   const [openTabs, setOpenTabs] = useState(["bibliography"]);
   const [projects, setProjects] = useState([]);
