@@ -3,13 +3,15 @@ import ExternalLink from "./ExternalLink";
 function FriendsCard() {
   return (
     <>
-      <div className="w-full h-full p-5 font-mono select-none cursor-default">
+      <div className="w-full h-full p-3 sm:p-5 font-mono select-none cursor-default">
         <div className="flex flex-col">
-          <h2 className="font-bold text-9xl">Friends.</h2>
-          <p className="text-xl mt-3 ml-3">
+          <h2 className="font-bold text-8xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl">
+            Friends.
+          </h2>
+          <p className="text-xl sm:text-lg md:text-xl mt-3 ml-2 sm:ml-3">
             The biggest sources of my inspiration. Please visit them!
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1 mt-6 ml-2">
+          <div className="text-xl sm:text-lg grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1 mt-6 ml-2">
             <ExternalLink
               text="Koutaro Yumiba"
               link={"https://koutaroyumiba.com"}

@@ -1,8 +1,17 @@
-function SidebarLink({ text, updatePage }) {
+function SidebarLink({ text, updatePage, updateSidebar }) {
+  const handleClick = () => {
+    updatePage(text);
+    // Close sidebar on mobile when link is clicked
+    if (window.innerWidth < 768) {
+      // sm breakpoint
+      updateSidebar(false);
+    }
+  };
+
   return (
     <a
-      className="font-mono text-xs hover:bg-[var(--bg)] px-5 py-1 inline-block group relative cursor-pointer"
-      onClick={() => updatePage(text)}
+      className="font-mono text-lg sm:text-xs hover:bg-[var(--bg)] px-10 sm:px-5 py-1 inline-block group relative cursor-pointer"
+      onClick={handleClick}
     >
       <span className="inline-block transition-transform duration-200 group-hover:translate-x-2">
         {text}

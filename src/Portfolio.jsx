@@ -9,13 +9,18 @@ import Footer from "./components/Footer";
 import FriendsCard from "./components/FriendsCard";
 import ContactCard from "./components/ContactCard";
 import ChangelogCard from "./components/ChangelogCard";
+import LeetcodeCard from "./components/pages/LeetcodeCard";
 
 function Portfolio() {
-  const [sidebarState, setSidebar] = useState(true);
+  const [sidebarState, setSidebar] = useState(() => {
+    return window.innerWidth >= 768;
+  });
   const [page, setPage] = useState("bibliography");
   const [openTabs, setOpenTabs] = useState(["bibliography"]);
   const [projects, setProjects] = useState([]);
   const [projectList, setProjectList] = useState([]);
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
 
   useEffect(() => {
     async function findProjects() {
@@ -76,17 +81,49 @@ function Portfolio() {
     }
   };
 
+  // Swipe detection
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e) => setTouchEnd(e.targetTouches[0].clientX);
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    // Only handle swipes on mobile
+    if (window.innerWidth < 768) {
+      if (isRightSwipe && !sidebarState) {
+        // Swipe right to open sidebar
+        setSidebar(true);
+      } else if (isLeftSwipe && sidebarState) {
+        // Swipe left to close sidebar
+        setSidebar(false);
+      }
+    }
+  };
+
   return (
     <>
       <Sidebar
         updatePage={updatePage}
+        updateSidebar={updateSidebar}
         state={sidebarState}
         projects={projects.map((project) => project.meta.name)}
       />
       <div
         className={`flex flex-col h-screen transition-all duration-300 ${
-          sidebarState ? "ml-64" : "ml-0"
+          sidebarState ? "translate-x-full sm:translate-x-0 sm:ml-64" : "ml-0"
         }`}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
       >
         <Navigation
           updatePage={updatePage}
@@ -96,7 +133,9 @@ function Portfolio() {
           page={page}
         />
         <div className="flex flex-1 overflow-hidden">
-          <VerticalNumbering />
+          <div className="hidden sm:block">
+            <VerticalNumbering />
+          </div>
           <div className="flex-1 bg-[var(--bg)] text-[var(--text)]">
             {page === "bibliography" && (
               <BibliographyCard toggleSidebar={updateSidebar} />

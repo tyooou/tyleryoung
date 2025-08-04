@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import fm from "front-matter";
 
-function ChangelogCard({ toggleSidebar }) {
+function ChangelogCard() {
   const [releaseNotes, setReleaseNotes] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -85,10 +85,12 @@ function ChangelogCard({ toggleSidebar }) {
 
   if (loading) {
     return (
-      <div className="w-full h-full p-5 font-mono">
-        <h2 className="font-bold text-9xl">Changelog.</h2>
+      <div className="w-full h-full p-3 sm:p-5 font-mono">
+        <h2 className="font-bold text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl">
+          Changelog.
+        </h2>
         <div className="border-l-4 border-[var(--border-secondary)] pl-6 mt-4">
-          <p>Loading release notes...</p>
+          <p className="text-sm sm:text-base">Loading release notes...</p>
         </div>
       </div>
     );
@@ -96,28 +98,35 @@ function ChangelogCard({ toggleSidebar }) {
 
   return (
     <>
-      <div className="w-full h-full p-5 font-mono flex flex-col select-none cursor-default">
-        <h2 className="font-bold text-9xl flex-shrink-0">Changelog.</h2>
+      <div className="w-full h-full p-3 sm:p-5 font-mono flex flex-col select-none cursor-default">
+        <h2 className="font-bold text-7xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl flex-shrink-0">
+          Changelog.
+        </h2>
 
-        <div className="flex-1 overflow-y-auto mt-4">
+        <div className="flex-1 overflow-y-auto mt-4 pb-10 sm:pb-4">
           {releaseNotes.map((release, index) => (
             <div
               key={release.version}
-              className="border-l-4 border-[var(--border-secondary)] pl-6 mb-6"
+              className="border-l-4 border-[var(--border-secondary)] pl-4 sm:pl-6 mb-6"
             >
-              <h4 className="text-xl font-bold">
+              <h4 className="text-xl sm:text-xl font-bold">
                 {release.version}
-                <span className="ml-4 text-xs text-[var(--bg-quaternary)]">
+                <span className="block sm:inline sm:ml-4 text-sm sm:text-xs text-[var(--bg-quaternary)]">
                   {release.date}
                 </span>
               </h4>
-              <p className="text-base">{release.title}</p>
+              <p className="text-base sm:text-base">{release.title}</p>
 
               {release.completed.length > 0 && (
                 <ul className="list-disc mt-3">
-                  <span className="font-bold text-base">Completed:</span>
+                  <span className="font-bold text-base sm:text-base">
+                    Completed:
+                  </span>
                   {release.completed.map((item, itemIndex) => (
-                    <li key={itemIndex} className="ml-6 text-base">
+                    <li
+                      key={itemIndex}
+                      className="ml-4 sm:ml-6 text-base sm:text-base"
+                    >
                       {item}
                     </li>
                   ))}
@@ -126,9 +135,14 @@ function ChangelogCard({ toggleSidebar }) {
 
               {release.planned.length > 0 && (
                 <ul className="list-disc mt-3">
-                  <span className="font-bold text-base">Planned:</span>
+                  <span className="font-bold text-base sm:text-base">
+                    Planned:
+                  </span>
                   {release.planned.map((item, itemIndex) => (
-                    <li key={itemIndex} className="ml-6 text-base">
+                    <li
+                      key={itemIndex}
+                      className="ml-4 sm:ml-6 text-base sm:text-base"
+                    >
                       {item}
                     </li>
                   ))}

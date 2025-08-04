@@ -4,7 +4,7 @@ import ProjectVideo from "./ProjectVideo";
 function ProjectCarousel({ folderName, media }) {
   return (
     <>
-      <div className="max-h-screen overflow-y-auto px-6 py-6">
+      <div className="max-h-screen overflow-y-auto px-6">
         <div className="flex flex-col space-y-6">
           {media.map((filename, index) => {
             const extension = filename.split(".").pop();
