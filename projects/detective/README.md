@@ -1,6 +1,6 @@
 ---
 name: detective
-title: Theft
+title: Theft of Ambrosian Saffron
 subtitle: Speak. Investigate. Solve.
 techStack:
   - java
