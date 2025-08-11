@@ -140,6 +140,7 @@ function Portfolio() {
             {page === "bibliography" && (
               <BibliographyCard toggleSidebar={updateSidebar} />
             )}
+            {page === "leetcode" && <LeetcodeCard />}
             {page === "friends" && <FriendsCard />}
             {page === "contact" && <ContactCard />}
             {page === "changelog" && <ChangelogCard />}

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import SidebarLink from "./SidebarLink";
 import SidebarIcon from "./SidebarIcon";
 import { FileUser, Mail, Linkedin, Github, X } from "lucide-react";
@@ -67,6 +66,11 @@ function Sidebar({ updatePage, updateSidebar, state, projects }) {
           />
           <SidebarLink
             text="contact"
+            updatePage={updatePage}
+            updateSidebar={updateSidebar}
+          />
+          <SidebarLink
+            text="leetcode"
             updatePage={updatePage}
             updateSidebar={updateSidebar}
           />

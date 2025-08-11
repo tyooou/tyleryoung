@@ -4,6 +4,7 @@ import fm from "front-matter";
 function ChangelogCard() {
   const [releaseNotes, setReleaseNotes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeVersion, setActiveVersion] = useState(null);
 
   useEffect(() => {
     async function loadAllReleaseNotes() {
@@ -73,6 +74,10 @@ function ChangelogCard() {
         });
 
         setReleaseNotes(allReleases);
+
+        if (allReleases.length > 0) {
+          setActiveVersion(allReleases[0].version);
+        }
       } catch (error) {
         console.error("Failed to load release notes:", error);
       } finally {
@@ -103,53 +108,72 @@ function ChangelogCard() {
           Changelog.
         </h2>
 
-        <div className="flex-1 overflow-y-auto mt-4 pb-10 sm:pb-4">
-          {releaseNotes.map((release, index) => (
-            <div
+        {/* Version tabs */}
+        <div className="mt-4 mb-4">
+          {releaseNotes.map((release) => (
+            <button
               key={release.version}
-              className="border-l-4 border-[var(--border-secondary)] pl-4 sm:pl-6 mb-6"
+              onClick={() => setActiveVersion(release.version)}
+              className={`rounded px-2 py-1 ${
+                activeVersion === release.version
+                  ? "font-bold bg-[var(--bg-tertiary)]"
+                  : "hover:bg-[var(--bg-secondary)]"
+              }`}
             >
-              <h4 className="text-xl sm:text-xl font-bold">
-                {release.version}
-                <span className="block sm:inline sm:ml-4 text-sm sm:text-xs text-[var(--bg-quaternary)]">
-                  {release.date}
-                </span>
-              </h4>
-              <p className="text-base sm:text-base">{release.title}</p>
-
-              {release.completed.length > 0 && (
-                <ul className="list-disc mt-3">
-                  <span className="font-bold text-base sm:text-base">
-                    Completed:
-                  </span>
-                  {release.completed.map((item, itemIndex) => (
-                    <li
-                      key={itemIndex}
-                      className="ml-4 sm:ml-6 text-base sm:text-base"
-                    >
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              )}
-
-              {release.planned.length > 0 && (
-                <ul className="list-disc mt-3">
-                  <span className="font-bold text-base sm:text-base">
-                    Planned:
-                  </span>
-                  {release.planned.map((item, itemIndex) => (
-                    <li
-                      key={itemIndex}
-                      className="ml-4 sm:ml-6 text-base sm:text-base"
-                    >
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+              {release.version}
+            </button>
           ))}
+        </div>
+
+        <div className="flex-1 overflow-y-auto pb-10 sm:pb-4">
+          {releaseNotes
+            .filter((release) => release.version === activeVersion)
+            .map((release) => (
+              <div
+                key={release.version}
+                className="border-l-4 border-[var(--border-secondary)] pl-4 sm:pl-6"
+              >
+                <h4 className="text-xl sm:text-xl font-bold">
+                  {release.version}
+                  <span className="block sm:inline sm:ml-4 text-sm sm:text-xs text-[var(--bg-quaternary)]">
+                    {release.date}
+                  </span>
+                </h4>
+                <p className="text-base sm:text-base">{release.title}</p>
+
+                {release.completed.length > 0 && (
+                  <ul className="list-disc mt-3">
+                    <span className="font-bold text-base sm:text-base">
+                      Completed:
+                    </span>
+                    {release.completed.map((item, itemIndex) => (
+                      <li
+                        key={itemIndex}
+                        className="ml-4 sm:ml-6 text-base sm:text-base"
+                      >
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                {release.planned.length > 0 && (
+                  <ul className="list-disc mt-3">
+                    <span className="font-bold text-base sm:text-base">
+                      Planned:
+                    </span>
+                    {release.planned.map((item, itemIndex) => (
+                      <li
+                        key={itemIndex}
+                        className="ml-4 sm:ml-6 text-base sm:text-base"
+                      >
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
         </div>
       </div>
     </>

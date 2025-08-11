@@ -64,8 +64,8 @@ html.theme-rose {
   --text-secondary: #9d174d;
   --accent: #e11d48;
   --accent-secondary: #f43f5e;
-  --border: #fecdd3;
-  --border-secondary: #fda4af;
+  --border: #fca5a5;
+  --border-secondary: #f87171;
 }
 
 html.theme-lavender {
@@ -77,8 +77,8 @@ html.theme-lavender {
   --text-secondary: #5b21b6;
   --accent: #7c3aed;
   --accent-secondary: #8b5cf6;
-  --border: #ddd6fe;
-  --border-secondary: #c4b5fd;
+  --border: #c4b5fd;
+  --border-secondary: #a78bfa;
 }
 
 html.theme-clementine {
