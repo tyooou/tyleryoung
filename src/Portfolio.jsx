@@ -10,8 +10,10 @@ import FriendsCard from "./components/pages/FriendsCard";
 import ContactCard from "./components/pages/ContactCard";
 import ChangelogCard from "./components/pages/ChangelogCard";
 import LeetcodeCard from "./components/pages/leetcode/LeetcodeCard";
+import { useTheme } from "./components/ThemeContext";
 
 function Portfolio() {
+  const { cycleTheme } = useTheme();
   const [sidebarState, setSidebar] = useState(() => {
     return window.innerWidth >= 768;
   });
@@ -21,6 +23,33 @@ function Portfolio() {
   const [projectList, setProjectList] = useState([]);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.ctrlKey && event.key === "b") {
+        event.preventDefault();
+        setSidebar((prev) => !prev);
+      }
+
+      if (event.ctrlKey && event.key === "w") {
+        event.preventDefault();
+        if (page !== "bibliography") {
+          deleteTab(page);
+        }
+      }
+
+      if (event.ctrlKey && event.key === "c") {
+        event.preventDefault();
+        cycleTheme();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [page, cycleTheme]);
 
   useEffect(() => {
     async function findProjects() {
@@ -77,11 +106,16 @@ function Portfolio() {
     const newTabs = openTabs.filter((tab) => tab !== targetTab);
     setOpenTabs(newTabs);
     if (page === targetTab) {
-      setPage(newTabs.length > 0 ? newTabs[0] : "bibliography");
+      if (newTabs.length > 0) {
+        const deletedIndex = openTabs.indexOf(targetTab);
+        const nextIndex = deletedIndex > 0 ? deletedIndex - 1 : 0;
+        setPage(newTabs[nextIndex]);
+      } else {
+        setPage("bibliography");
+      }
     }
   };
 
-  // Swipe detection
   const minSwipeDistance = 50;
 
   const onTouchStart = (e) => {

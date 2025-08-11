@@ -9,7 +9,6 @@ function ChangelogCard() {
   useEffect(() => {
     async function loadAllReleaseNotes() {
       try {
-        // Load the versions list
         const versionsResponse = await fetch(
           import.meta.env.BASE_URL + "/releaseNotes/versions.json"
         );
@@ -109,7 +108,7 @@ function ChangelogCard() {
         </h2>
 
         {/* Version tabs */}
-        <div className="mt-4 mb-4 space-x-2">
+        <div className="mt-6 mb-4 space-x-2">
           {releaseNotes.map((release) => (
             <button
               key={release.version}

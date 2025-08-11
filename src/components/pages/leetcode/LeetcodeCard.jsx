@@ -23,10 +23,10 @@ function LeetcodeCard() {
         <div className="flex flex-col">
           <h2 className="font-bold text-9xl">Leetcode.</h2>
           <p className="text-2xl sm:text-lg md:text-xl mt-3 ml-2 mb-2">
-            I love to challenge my technical skills with puzzles.{" "}
-            <br className="hidden sm:block" />
-            <span className="sm:hidden"> </span>Check here for my Leetcode
-            progress!
+            My journey to get better everyday - my Leetcode progress at a
+            glance. <br className="hidden sm:block" />
+            <span className="sm:hidden"> </span>Maybe one day I'll share my
+            solutions!
           </p>
           {!stats && <p className="ml-2">Loading...</p>}
           {stats && (

@@ -1,6 +1,6 @@
 ---
 name: tansa
-title: TANSA Website
+title: TANSA Web Portal
 subtitle: A web portal, event manager and content platform all in one.
 techStack:
   - nextjs
