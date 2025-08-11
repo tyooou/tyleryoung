@@ -21,7 +21,7 @@ function Footer({ toggleSidebar }) {
           <span className="sm:hidden">© {new Date().getFullYear()}</span>
         </span>
         <span className="flex-1 text-center">{getThemeDisplayName(theme)}</span>
-        <span className="flex-1 text-right">v1.1.0</span>
+        <span className="flex-1 text-right">v1.2.0</span>
       </footer>
     </>
   );

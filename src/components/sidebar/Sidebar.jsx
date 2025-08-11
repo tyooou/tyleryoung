@@ -44,13 +44,14 @@ function Sidebar({ updatePage, updateSidebar, state, projects }) {
           <h2 className="font-bold text-xl sm:text-xs text-[var(--text-secondary)] px-6 sm:px-3 py-2 sm:py-1 pt-10 sm:pt-5">
             PROJECTS
           </h2>
-          {projects.map((projectName, index) => {
+          {projects.map((project, index) => {
             return (
               <SidebarLink
-                key={projectName}
-                text={projectName}
+                key={project.name}
+                text={project.title}
                 updatePage={updatePage}
                 updateSidebar={updateSidebar}
+                projectName={project.name}
               />
             );
           })}

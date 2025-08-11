@@ -1,9 +1,7 @@
-function SidebarLink({ text, updatePage, updateSidebar }) {
+function SidebarLink({ text, updatePage, updateSidebar, projectName }) {
   const handleClick = () => {
-    updatePage(text);
-    // Close sidebar on mobile when link is clicked
+    updatePage(projectName || text);
     if (window.innerWidth < 768) {
-      // sm breakpoint
       updateSidebar(false);
     }
   };

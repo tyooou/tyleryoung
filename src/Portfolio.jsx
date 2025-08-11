@@ -1,15 +1,15 @@
 import { useState, useEffect } from "react";
 import fm from "front-matter";
-import ProjectCard from "./components/project/ProjectCard";
+import ProjectCard from "./components/pages/project/ProjectCard";
 import Sidebar from "./components/sidebar/Sidebar";
-import BibliographyCard from "./components/BibliographyCard";
+import BibliographyCard from "./components/pages/BibliographyCard";
 import Navigation from "./components/Navigation";
-import VerticalNumbering from "./components/VerticalNumbering";
+import VerticalNumbering from "./components/pages/VerticalNumbering";
 import Footer from "./components/Footer";
-import FriendsCard from "./components/FriendsCard";
-import ContactCard from "./components/ContactCard";
-import ChangelogCard from "./components/ChangelogCard";
-import LeetcodeCard from "./components/pages/LeetcodeCard";
+import FriendsCard from "./components/pages/FriendsCard";
+import ContactCard from "./components/pages/ContactCard";
+import ChangelogCard from "./components/pages/ChangelogCard";
+import LeetcodeCard from "./components/pages/leetcode/LeetcodeCard";
 
 function Portfolio() {
   const [sidebarState, setSidebar] = useState(() => {
@@ -115,7 +115,7 @@ function Portfolio() {
         updatePage={updatePage}
         updateSidebar={updateSidebar}
         state={sidebarState}
-        projects={projects.map((project) => project.meta.name)}
+        projects={projects.map((project) => project.meta)}
       />
       <div
         className={`flex flex-col h-screen transition-all duration-300 ${

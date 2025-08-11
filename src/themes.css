@@ -14,6 +14,10 @@ html.theme-light {
   --accent-secondary: #60a5fa;
   --border: #d1d5db;
   --border-secondary: #9ca3af;
+  --heatmap1: #f3f4f6;
+  --heatmap2: #dbeafe;
+  --heatmap3: #93c5fd;
+  --heatmap4: #3b82f6;
 }
 
 html.theme-dark {
@@ -27,6 +31,10 @@ html.theme-dark {
   --accent-secondary: #60a5fa;
   --border: #4b4b4b;
   --border-secondary: #5a5a5a;
+  --heatmap1: #064e3b;
+  --heatmap2: #065f46;
+  --heatmap3: #047857;
+  --heatmap4: #10b981;
 }
 
 html.theme-forest {
@@ -40,6 +48,10 @@ html.theme-forest {
   --accent-secondary: #22c55e;
   --border: #86efac;
   --border-secondary: #4ade80;
+  --heatmap1: #dcfce7;
+  --heatmap2: #bbf7d0;
+  --heatmap3: #4ade80;
+  --heatmap4: #15803d;
 }
 
 html.theme-solace {
@@ -53,6 +65,10 @@ html.theme-solace {
   --accent-secondary: #f59e0b;
   --border: #fcd34d;
   --border-secondary: #fbbf24;
+  --heatmap1: #fef3c7;
+  --heatmap2: #fde68a;
+  --heatmap3: #fbbf24;
+  --heatmap4: #d97706;
 }
 
 html.theme-rose {
@@ -66,6 +82,10 @@ html.theme-rose {
   --accent-secondary: #f43f5e;
   --border: #fca5a5;
   --border-secondary: #f87171;
+  --heatmap1: #ffe4e6;
+  --heatmap2: #fecdd3;
+  --heatmap3: #f87171;
+  --heatmap4: #e11d48;
 }
 
 html.theme-lavender {
@@ -79,6 +99,10 @@ html.theme-lavender {
   --accent-secondary: #8b5cf6;
   --border: #c4b5fd;
   --border-secondary: #a78bfa;
+  --heatmap1: #ede9fe;
+  --heatmap2: #ddd6fe;
+  --heatmap3: #a78bfa;
+  --heatmap4: #7c3aed;
 }
 
 html.theme-clementine {
@@ -92,6 +116,10 @@ html.theme-clementine {
   --accent-secondary: #f97316;
   --border: #fdba74;
   --border-secondary: #fb923c;
+  --heatmap1: #ffedd5;
+  --heatmap2: #fed7aa;
+  --heatmap3: #fb923c;
+  --heatmap4: #ea580c;
 }
 
 html.theme-ice {
@@ -105,4 +133,8 @@ html.theme-ice {
   --accent-secondary: #0ea5e9;
   --border: #7dd3fc;
   --border-secondary: #38bdf8;
+  --heatmap1: #e0f2fe;
+  --heatmap2: #bae6fd;
+  --heatmap3: #38bdf8;
+  --heatmap4: #0284c7;
 }
