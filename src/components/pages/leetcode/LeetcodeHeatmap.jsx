@@ -109,38 +109,46 @@ function LeetcodeHeatmap({ submissionCalendar }) {
     });
   };
 
+  // Helper to format month/year as "Mon 'yy"
+  function formatMonthYear(date) {
+    return (
+      date.toLocaleDateString("en-US", { month: "short" }) +
+      " '" +
+      date.getFullYear().toString().slice(-2)
+    );
+  }
+
   return (
     <div className="mt-6 ml-2">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-xl font-bold ml-13">
-          {new Date(
-            currentMonth.getFullYear(),
-            currentMonth.getMonth() - 1
-          ).toLocaleDateString("en-US", {
-            month: "short",
-          })}{" "}
-          '
-          {new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1)
-            .getFullYear()
-            .toString()
-            .slice(-2)}{" "}
-          -{" "}
-          {new Date(
-            currentMonth.getFullYear(),
-            currentMonth.getMonth() + 2
-          ).toLocaleDateString("en-US", {
-            month: "short",
-          })}{" "}
-          '
-          {new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 2)
-            .getFullYear()
-            .toString()
-            .slice(-2)}{" "}
-          Activity
+      <div className="flex items-center gap-3 mb-3">
+        <h3 className="text-xl font-bold ml-13 mr-4">
+          {formatMonthYear(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
+          {" - "}
+          {formatMonthYear(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 2))}
+          {" Activity"}
         </h3>
+          <button
+            onClick={() => changeMonth(-1)}
+            className="px-2 py-0.5 text-sm font-mono bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded"
+          >
+            ←
+          </button>
+          <button
+            onClick={() => setCurrentMonth(new Date())}
+            className="px-2 py-0.5 text-sm font-mono bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded"
+          >
+            Present
+          </button>
+          <button
+            onClick={() => changeMonth(1)}
+            className="px-2 py-0.5 text-sm font-mono bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded"
+          >
+            →
+          </button>
+   
       </div>
       <div className="flex items-start gap-1">
-        <div className="flex flex-col gap-1 pt-1">
+        <div className="flex flex-col gap-1">
           {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
             <div
               key={day}
@@ -203,26 +211,6 @@ function LeetcodeHeatmap({ submissionCalendar }) {
             </div>
           ))}
         </div>
-      </div>
-      <div className="flex justify-center space-x-2 mt-4">
-        <button
-          onClick={() => changeMonth(-1)}
-          className="px-2 py-1 text-sm font-mono bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded"
-        >
-          ←
-        </button>
-        <button
-          onClick={() => setCurrentMonth(new Date())}
-          className="px-3 py-1 text-sm font-mono bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded"
-        >
-          Present
-        </button>
-        <button
-          onClick={() => changeMonth(1)}
-          className="px-2 py-1 text-sm font-mono bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded"
-        >
-          →
-        </button>
       </div>
     </div>
   );

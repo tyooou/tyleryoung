@@ -1,12 +1,50 @@
-import SidebarLink from "./SidebarLink";
-import SidebarIcon from "./SidebarIcon";
 import { FileUser, Mail, Linkedin, Github, X } from "lucide-react";
+
+function SidebarIcon({ href, label, children }) {
+  return (
+    <a
+      className="group relative inline-block hover:bg-[var(--bg-tertiary)] rounded py-2 sm:py-1 px-2"
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      {children}
+      <div className="absolute top-full left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition pointer-events-none text-md sm:text-xs font-mono py-0 pt-1 z-10 whitespace-nowrap">
+        {label}
+      </div>
+    </a>
+  );
+}
+
+function SidebarLink({ text, updatePage, updateSidebar, projectName }) {
+  const handleClick = () => {
+    updatePage(projectName || text);
+    if (window.innerWidth < 768) {
+      updateSidebar(false);
+    }
+  };
+
+  return (
+    <a
+      className="font-mono text-lg sm:text-xs hover:bg-[var(--bg)] px-10 sm:px-5 py-1 inline-block group relative cursor-pointer"
+      onClick={handleClick}
+    >
+      <span className="inline-block transition-transform duration-200 group-hover:translate-x-2">
+        {text}
+      </span>
+
+      <span className="absolute top-1/2 right-2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        →
+      </span>
+    </a>
+  );
+}
 
 function Sidebar({ updatePage, updateSidebar, state, projects }) {
   return (
     <>
       <div
-        className={`font-mono fixed top-0 left-0 h-full w-full sm:w-64 bg-[var(--bg-secondary)] text-[var(--text)] border-[var(--border-secondary)] border-r transition-transform duration-300 select-none ${
+        className={`font-mono fixed left-0 h-full w-full sm:w-64 bg-[var(--bg-secondary)] text-[var(--text)] border-[var(--border-secondary)] border-r transition-transform duration-300 select-none z-30 ${
           state ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -66,7 +104,12 @@ function Sidebar({ updatePage, updateSidebar, state, projects }) {
             updateSidebar={updateSidebar}
           />
           <SidebarLink
-            text="contact"
+            text="experience"
+            updatePage={updatePage}
+            updateSidebar={updateSidebar}
+          />
+          <SidebarLink
+            text="books"
             updatePage={updatePage}
             updateSidebar={updateSidebar}
           />
@@ -77,6 +120,11 @@ function Sidebar({ updatePage, updateSidebar, state, projects }) {
           />
           <SidebarLink
             text="friends"
+            updatePage={updatePage}
+            updateSidebar={updateSidebar}
+          />   
+          <SidebarLink
+            text="contact"
             updatePage={updatePage}
             updateSidebar={updateSidebar}
           />

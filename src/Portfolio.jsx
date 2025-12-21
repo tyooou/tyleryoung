@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import fm from "front-matter";
 import ProjectCard from "./components/pages/project/ProjectCard";
-import Sidebar from "./components/sidebar/Sidebar";
+import Sidebar from "./components/Sidebar";
 import BibliographyCard from "./components/pages/BibliographyCard";
 import Navigation from "./components/Navigation";
 import VerticalNumbering from "./components/pages/VerticalNumbering";
@@ -10,7 +10,10 @@ import FriendsCard from "./components/pages/FriendsCard";
 import ContactCard from "./components/pages/ContactCard";
 import ChangelogCard from "./components/pages/ChangelogCard";
 import LeetcodeCard from "./components/pages/leetcode/LeetcodeCard";
+import ExperienceCard from "./components/pages/ExperienceCard";
+import BooksCard from "./components/pages/BooksCard";
 import { useTheme } from "./components/ThemeContext";
+import SearchBar from "./components/SearchBar";
 
 function Portfolio() {
   const { cycleTheme } = useTheme();
@@ -131,13 +134,10 @@ function Portfolio() {
     const isLeftSwipe = distance > minSwipeDistance;
     const isRightSwipe = distance < -minSwipeDistance;
 
-    // Only handle swipes on mobile
     if (window.innerWidth < 768) {
       if (isRightSwipe && !sidebarState) {
-        // Swipe right to open sidebar
         setSidebar(true);
       } else if (isLeftSwipe && sidebarState) {
-        // Swipe left to close sidebar
         setSidebar(false);
       }
     }
@@ -145,48 +145,54 @@ function Portfolio() {
 
   return (
     <>
-      <Sidebar
-        updatePage={updatePage}
-        updateSidebar={updateSidebar}
-        state={sidebarState}
-        projects={projects.map((project) => project.meta)}
-      />
-      <div
-        className={`flex flex-col h-screen transition-all duration-300 ${
-          sidebarState ? "translate-x-full sm:translate-x-0 sm:ml-64" : "ml-0"
-        }`}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-      >
-        <Navigation
-          updatePage={updatePage}
-          updateSidebar={updateSidebar}
-          deleteTab={deleteTab}
-          openTabs={openTabs}
-          page={page}
-        />
-        <div className="flex flex-1 overflow-hidden">
-          <div className="hidden sm:block">
-            <VerticalNumbering />
-          </div>
-          <div className="flex-1 bg-[var(--bg)] text-[var(--text)]">
-            {page === "bibliography" && (
-              <BibliographyCard toggleSidebar={updateSidebar} />
-            )}
-            {page === "leetcode" && <LeetcodeCard />}
-            {page === "friends" && <FriendsCard />}
-            {page === "contact" && <ContactCard />}
-            {page === "changelog" && <ChangelogCard />}
-            {projects.some((project) => project.meta.name === page) && (
-              <ProjectCard
-                project={projects.find((project) => project.meta.name === page)}
-              />
-            )}
+      <div className="flex flex-col min-h-screen fixed w-full">
+        <SearchBar updateSidebar={updateSidebar} />
+        <div className="flex-1 flex flex-row w-full h-full">
+          <Sidebar
+            updatePage={updatePage}
+            updateSidebar={updateSidebar}
+            state={sidebarState}
+            projects={projects.map((project) => project.meta)}
+          />
+          <div
+            className={`flex flex-col flex-1 h-full transition-all duration-300 ${
+              sidebarState ? "translate-x-full sm:translate-x-0 sm:ml-64" : "ml-0"
+            }`}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+          >
+            <Navigation
+              updatePage={updatePage}
+              deleteTab={deleteTab}
+              openTabs={openTabs}
+              page={page}
+            />
+            <div className="flex flex-1 overflow-hidden">
+              <div className="hidden sm:block">
+                <VerticalNumbering />
+              </div>
+              <div className="flex-1 bg-[var(--bg)] text-[var(--text)]">
+                {page === "bibliography" && (
+                  <BibliographyCard toggleSidebar={updateSidebar} />
+                )}
+                {page === "experience" && <ExperienceCard />}
+                {page === "books" && <BooksCard />}
+                {page === "leetcode" && <LeetcodeCard />}
+                {page === "friends" && <FriendsCard />}
+                {page === "contact" && <ContactCard />}
+                {page === "changelog" && <ChangelogCard />}
+                {projects.some((project) => project.meta.name === page) && (
+                  <ProjectCard
+                    project={projects.find((project) => project.meta.name === page)}
+                  />
+                )}
+              </div>
+            </div>
           </div>
         </div>
+        <Footer />
       </div>
-      <Footer />
     </>
   );
 }

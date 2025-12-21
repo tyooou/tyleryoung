@@ -1,8 +1,4 @@
-import { Palette, PanelLeft } from "lucide-react";
-import { useTheme } from "./ThemeContext";
-
-function Navigation({ updatePage, updateSidebar, deleteTab, openTabs, page }) {
-  const { cycleTheme } = useTheme();
+function Navigation({ updatePage, deleteTab, openTabs, page }) {
 
   return (
     <>
@@ -48,20 +44,6 @@ function Navigation({ updatePage, updateSidebar, deleteTab, openTabs, page }) {
               )}
             </div>
           ))}
-        </div>
-        <div className="ml-auto flex items-center space-x-1">
-          <button
-            className="hover:bg-[var(--bg-tertiary)] py-2 px-2 sm:py-[0.5px] sm:px-1 rounded cursor-pointer"
-            onClick={cycleTheme}
-          >
-            <Palette className="w-6 sm:w-4" />
-          </button>
-          <button
-            className="hover:bg-[var(--bg-tertiary)] py-2 px-2 mr-2 sm:py-[0.5px] sm:px-1 sm:mr-2 rounded cursor-pointer"
-            onClick={() => updateSidebar((prev) => !prev)}
-          >
-            <PanelLeft className="w-6 sm:w-4" />
-          </button>
         </div>
       </nav>
     </>

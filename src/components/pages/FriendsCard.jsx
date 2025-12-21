@@ -1,6 +1,28 @@
+import { useEffect, useState } from "react";
 import ExternalLink from "../ExternalLink";
 
 function FriendsCard() {
+  const [friends, setFriends] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchFriends() {
+      try {
+        const response = await fetch(
+          import.meta.env.BASE_URL + "/friends.json"
+        );
+        if (!response.ok) throw new Error("Failed to load friends");
+        const data = await response.json();
+        setFriends(data);
+      } catch (err) {
+        setFriends([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchFriends();
+  }, []);
+
   return (
     <>
       <div className="w-full h-full p-3 sm:p-5 font-mono select-none cursor-default">
@@ -12,30 +34,17 @@ function FriendsCard() {
             The biggest sources of my inspiration. Please visit them!
           </p>
           <div className="text-xl sm:text-lg grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1 mt-6 ml-2">
-            <ExternalLink
-              text="Koutaro Yumiba"
-              link={"https://koutaroyumiba.com"}
-            />
-            <ExternalLink
-              text="Alex Liang"
-              link={"https://alux444.github.io"}
-            />
-            <ExternalLink
-              text="Atul Kodla"
-              link={"https://www.atulkodla.com"}
-            />
-            <ExternalLink text="Newton Yuan" link={"https://newtonyuan.com"} />
-            <ExternalLink text="Jaidyn Tam" link={"https://jtamdent.com.au"} />
-            <ExternalLink
-              text="Christoph Kim"
-              link={"https://christoph.framer.website"}
-            />
-            <ExternalLink
-              text="Nicholas Wilson"
-              link={"https://niccholasw.cloud"}
-            />
-            <ExternalLink text="Dave Khadka" link={"https://davekhadka.com"} />
-            <ExternalLink text="Tony Lim" link={"https://tonylxm.com"} />
+            {loading ? (
+              <p>Loading...</p>
+            ) : (
+              friends.map((friend) => (
+                <ExternalLink
+                  key={friend.name}
+                  text={friend.name}
+                  link={friend.link}
+                />
+              ))
+            )}
           </div>
         </div>
       </div>

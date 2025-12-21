@@ -10,7 +10,7 @@ function BibliographyCard({ toggleSidebar }) {
       <div className="w-full h-full p-5 font-mono select-none cursor-default">
         <DecodeText text="Tyler Young" speed={80} />
         <div className="ml-3">
-          <p className="text-xl sm:text-lg mt-4 font-bold text-[var(--text-secondary)]">
+          <p className="text-xl sm:text-lg mt-8 font-bold text-[var(--text-secondary)]">
             Creative by design.{" "}
             <span className="italic">Technical by habit.</span>
           </p>
@@ -23,6 +23,7 @@ function BibliographyCard({ toggleSidebar }) {
               hover={false}
             />
           </p>
+          
           <p className="font-bold text-xl sm:text-lg mt-4 mb-2">
             Tinkering on:
           </p>
@@ -31,10 +32,10 @@ function BibliographyCard({ toggleSidebar }) {
               <span className="font-bold">habitual</span> - make habits a daily
               ritual.
             </li>
-            <li className="ml-6">
+            {/* <li className="ml-6">
               <span className="font-bold">pixai</span> - pixelise anything,
               beautifully.
-            </li>
+            </li> */}
           </ul>
           <div className="flex flex-col items-start">
             <button
