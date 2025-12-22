@@ -73,7 +73,7 @@ function Sidebar({ updatePage, updateSidebar, state, projects }) {
           </SidebarIcon>
           <SidebarIcon
             href="https://drive.google.com/file/d/14Aru2JXekxazMWw34HCe7SZbIk4kuTkP/view?usp=sharing"
-            label="résumé"
+            label="cv"
           >
             <FileUser className="w-6 sm:w-4" />
           </SidebarIcon>

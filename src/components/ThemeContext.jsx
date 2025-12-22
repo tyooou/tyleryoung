@@ -2,11 +2,11 @@ import { createContext, useContext, useEffect, useState } from "react";
 
 const ThemeContext = createContext();
 
-const THEMES = [
+export const THEMES = [
   "theme-light",
   "theme-dark",
   "theme-forest",
-  "theme-solace",
+  "theme-honeycomb",
   "theme-rose",
   "theme-lavender",
   "theme-clementine",

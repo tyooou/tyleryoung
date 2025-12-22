@@ -14,8 +14,8 @@ function BibliographyCard({ toggleSidebar }) {
             Creative by design.{" "}
             <span className="italic">Technical by habit.</span>
           </p>
-          <p className="text-xl sm:text-lg mt-4 max-w-2xl">
-            A software engineer, creative technologist and bedroom dweller
+          <p className="text-xl sm:text-lg mt-4 max-w-3xl">
+            An undergraduate software engineer, creative technologist and bedroom dweller
             studying at the{" "}
             <ExternalLink
               text="University of Auckland."

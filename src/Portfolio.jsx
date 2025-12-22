@@ -22,6 +22,8 @@ function Portfolio() {
   });
   const [page, setPage] = useState("bibliography");
   const [openTabs, setOpenTabs] = useState(["bibliography"]);
+  const [forwardTabs, setForwardTabs] = useState([]);
+  const [backTabs, setBackTabs] = useState([]);
   const [projects, setProjects] = useState([]);
   const [projectList, setProjectList] = useState([]);
   const [touchStart, setTouchStart] = useState(null);
@@ -103,6 +105,24 @@ function Portfolio() {
     setOpenTabs((prevTabs) =>
       prevTabs.includes(newPage) ? prevTabs : [...prevTabs, newPage]
     );
+    setBackTabs((prevBack) => [...prevBack, page]);
+    setForwardTabs([]);
+  };
+
+  const goBack = () => {
+    const previous = backTabs.pop();
+    if (previous) {
+      setForwardTabs((prevForward) => [...prevForward, page]);
+      setPage(previous);
+    }
+  };
+
+  const goForward = () => {
+    const next = forwardTabs.pop();
+    if (next) {
+      setBackTabs((prevBack) => [...prevBack, page]);
+      setPage(next);
+    }
   };
 
   const deleteTab = (targetTab) => {
@@ -145,8 +165,8 @@ function Portfolio() {
 
   return (
     <>
-      <div className="flex flex-col min-h-screen fixed w-full">
-        <SearchBar updateSidebar={updateSidebar} />
+      <div className="flex flex-col min-h-screen fixed w-full bg-[var(--bg-secondary)]">
+        <SearchBar updateSidebar={updateSidebar} updatePage={updatePage} goBack={goBack} goForward={goForward} projects={projects.map((project) => project.meta)} />
         <div className="flex-1 flex flex-row w-full h-full">
           <Sidebar
             updatePage={updatePage}
