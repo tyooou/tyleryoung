@@ -8,7 +8,6 @@ function BibliographyCard({ toggleSidebar }) {
   return (
     <>
       <div className="w-full h-full p-5 font-mono select-none cursor-default">
-        
         <DecodeText text="Tyler Young" speed={80} />
         <div className="ml-3">
           <p className="text-xl sm:text-lg mt-8 font-bold text-[var(--text-secondary)]">

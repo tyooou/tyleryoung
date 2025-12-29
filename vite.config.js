@@ -5,7 +5,7 @@ import { NodeGlobalsPolyfillPlugin } from "@esbuild-plugins/node-globals-polyfil
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: "/tyleryoung/",
+  base: "./",
   plugins: [react(), tailwindcss()],
   optimizeDeps: {
     esbuildOptions: {

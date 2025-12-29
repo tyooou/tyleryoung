@@ -268,10 +268,10 @@ function SearchBar({ updateSidebar, updatePage, goBack, goForward, projects }) {
           <div className={`flex flex-1 justify-center ${expanded ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"}`}>
             <button
               type="button"
-              className="text-xs outline-none border border-[var(--border-secondary)] bg-[var(--bg)] text-[var(--text)] px-2 py-1 rounded focus:border-[var(--text-secondary)] text-center w-full"
+              className="text-xs outline-none border border-[var(--border-secondary)] bg-[var(--bg)] text-[var(--border-secondary)] px-2 py-1 rounded focus:border-[var(--text-secondary)] text-center w-full"
               onClick={() => setExpanded(true)}
             >
-              Tyler Young
+              tyou.dev
             </button>
           </div>
           

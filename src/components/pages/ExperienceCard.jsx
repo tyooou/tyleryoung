@@ -24,6 +24,31 @@ function Experience({ role, company, location, description, start, end = "Presen
   );
 }
 
+function BrailleSpinner() {
+  const frames = [
+    '\u280B', // ⠋
+    '\u2819', // ⠙
+    '\u2839', // ⠹
+    '\u2838', // ⠸
+    '\u283C', // ⠼
+    '\u2834', // ⠴
+    '\u2826', // ⠦
+    '\u2827', // ⠧
+    '\u2807', // ⠇
+    '\u280F', // ⠏
+  ];
+  const [frame, setFrame] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setFrame(f => (f + 1) % frames.length);
+    }, 80);
+    return () => clearInterval(interval);
+  }, []);
+  return (
+    <p>{frames[frame]}</p>
+  );
+}
+
 function ExperienceCard() {
   const [experiences, setExperiences] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -44,6 +69,14 @@ function ExperienceCard() {
     fetchExperiences();
   }, []);
 
+  useEffect(() => {
+    if (!loading) return;
+    const interval = setInterval(() => {
+      setDots((prev) => (prev.length < 3 ? prev + '.' : ''));
+    }, 200);
+    return () => clearInterval(interval);
+  }, [loading]);
+
   return (
     <>
       <div className="w-full h-full p-3 sm:p-5 font-mono select-none cursor-default">
@@ -57,11 +90,13 @@ function ExperienceCard() {
             </p>
             <div className="flex flex-col mt-6 gap-3 scroll overflow-y-auto max-h-[70vh] pr-2">
               {loading ? (
-                <span>Loading...</span>
-              ) : (
+                <BrailleSpinner />
+              ) : experiences.length > 0 ? (
                 experiences.map((exp, idx) => (
                   <Experience key={exp.company + exp.role + idx} {...exp} />
                 ))
+              ) : (
+                <p className="">No experiences found :(</p>
               )}
             </div>
           </div>

@@ -103,11 +103,9 @@ function BooksCard() {
           )}
 
           {!loading && bookList.length === 0 && (
-            <div className="border-l-4 border-[var(--border-secondary)] pl-6 mt-4">
-              <p className="text-sm sm:text-base">
-                No books found. Check back later!
-              </p>
-            </div>
+            <p className="text-sm sm:text-base mt-4">
+              No books found. Check back later!
+            </p>
           )}
 
           {!loading && bookList.length > 0 && (
