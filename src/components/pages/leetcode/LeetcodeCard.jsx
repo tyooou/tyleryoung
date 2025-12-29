@@ -2,17 +2,30 @@ import { useState, useEffect } from "react";
 import LeetcodeStat from "./LeetcodeStat";
 import LeetcodeHeatmap from "./LeetcodeHeatmap";
 
+const CACHE_KEY = "leetcodeStatsCache";
+const CACHE_DURATION = 1000 * 60 * 60; // 1 hour
+
 function LeetcodeCard() {
   const [stats, setStats] = useState(null);
   const [submissionCalendar, setSubmissionCalendar] = useState({});
 
   useEffect(() => {
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      const { data, timestamp } = JSON.parse(cached);
+      if (Date.now() - timestamp < CACHE_DURATION) {
+        setStats(data);
+        setSubmissionCalendar(data.submissionCalendar || {});
+        return;
+      }
+    }
     fetch("https://leetcode-stats-api.herokuapp.com/tyooou")
       .then((res) => res.json())
       .then((data) => {
         setStats(data);
         const calendar = data.submissionCalendar || {};
         setSubmissionCalendar(calendar);
+        localStorage.setItem(CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
       })
       .catch((err) => console.error(err));
   }, []);

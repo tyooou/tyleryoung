@@ -53,9 +53,9 @@ function ExperienceCard() {
           </h2>
           <div className="mt-6 ml-2 max-w-4xl">
             <p className="text-2xl sm:text-lg md:text-xl mb-2">
-              The amazing companies I've learnt from and grown with!
+              The amazing groups and companies I've learnt from and grown with!
             </p>
-            <div className="flex flex-col mt-6 gap-3">
+            <div className="flex flex-col mt-6 gap-3 scroll overflow-y-auto max-h-[70vh] pr-2">
               {loading ? (
                 <span>Loading...</span>
               ) : (

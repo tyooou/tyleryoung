@@ -28,7 +28,7 @@ function SearchBar({ updateSidebar, updatePage, goBack, goForward, projects }) {
   ];
 
   const mainOptions = [
-    { label: "Go to Page", action: () => { setMenuContext("page"); setSelectedOption(0); } },
+    { label: "Go to Contents", action: () => { setMenuContext("page"); setSelectedOption(0); } },
     { label: "Go to Projects", action: () => { setMenuContext("projects"); setSelectedOption(0); } },
     { label: "Show and Run Commands >", action: () => { setMenuContext("commands"); setSelectedOption(0); setInput(">"); } },
     { label: "Toggle Sidebar", action: () => { updateSidebar(prev => !prev); } },
@@ -137,11 +137,27 @@ function SearchBar({ updateSidebar, updatePage, goBack, goForward, projects }) {
     }
   };
 
-  // Filter command options by text input when in commands menu and input starts with '>'
   const getFilteredOptions = () => {
     if (menuContext === "commands" && input.trim().startsWith(">")) {
       const lower = input.trim().slice(1).toLowerCase();
       return commandOptions.filter(opt => opt.label.toLowerCase().includes(lower));
+    }
+    if (menuContext === "main" && input.trim() !== "") {
+      const lower = input.trim().toLowerCase();
+      const allOptions = [...pageOptions, ...projectOptions];
+      return allOptions.filter(opt => opt.label.toLowerCase().includes(lower));
+    }
+    if (menuContext === "page" && input.trim() !== "") {
+      const lower = input.trim().toLowerCase();
+      return pageOptions.filter(opt => opt.label.toLowerCase().includes(lower));
+    }
+    if (menuContext === "projects" && input.trim() !== "") {
+      const lower = input.trim().toLowerCase();
+      return projectOptions.filter(opt => opt.label.toLowerCase().includes(lower));
+    }
+    if (menuContext === "theme" && input.trim() !== "") {
+      const lower = input.trim().toLowerCase();
+      return themeOptions.filter(opt => opt.label.toLowerCase().includes(lower));
     }
     return getCurrentOptions();
   };
@@ -153,8 +169,6 @@ function SearchBar({ updateSidebar, updatePage, goBack, goForward, projects }) {
     setIsCmd(value.trim().charAt(0) === ">");
     if (value.trim().charAt(0) === ">") {
       setMenuContext("commands");
-    } else if (menuContext === "commands") {
-      setMenuContext("main");
     }
     setSelectedOption(0);
   };

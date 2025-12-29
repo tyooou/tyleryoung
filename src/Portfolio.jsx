@@ -20,8 +20,15 @@ function Portfolio() {
   const [sidebarState, setSidebar] = useState(() => {
     return window.innerWidth >= 768;
   });
-  const [page, setPage] = useState("bibliography");
-  const [openTabs, setOpenTabs] = useState(["bibliography"]);
+  // Load from localStorage if available
+  const [openTabs, setOpenTabs] = useState(() => {
+    const saved = localStorage.getItem("openTabs");
+    return saved ? JSON.parse(saved) : ["bibliography"];
+  });
+  const [page, setPage] = useState(() => {
+    const saved = localStorage.getItem("activeTab");
+    return saved ? saved : "bibliography";
+  });
   const [forwardTabs, setForwardTabs] = useState([]);
   const [backTabs, setBackTabs] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -95,6 +102,14 @@ function Portfolio() {
     }
     loadProjects();
   }, [projectList]);
+
+  // Persist openTabs and page to localStorage
+  useEffect(() => {
+    localStorage.setItem("openTabs", JSON.stringify(openTabs));
+  }, [openTabs]);
+  useEffect(() => {
+    localStorage.setItem("activeTab", page);
+  }, [page]);
 
   const updateSidebar = (newState) => {
     setSidebar(newState);
