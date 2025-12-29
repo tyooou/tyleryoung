@@ -1,0 +1,29 @@
+[
+  {
+    "role": "Software Engineer Intern",
+    "company": "Alimetry",
+    "location": "Auckland, NZ",
+    "description": "Built security tools that pull together audit logs from different systems (like cloud servers and mainframes), use AI and pattern recognition to spot issues, generate security reports, and make those logs way easier to read.",
+    "start": "2025-11-01",
+    "end": "2026-02-01",
+    "link": "https://www.alimetry.com"
+  },
+  {
+    "role": "Software Engineer Intern",
+    "company": "Marops",
+    "location": "Auckland, NZ",
+    "description": "Built an avionic emulator that mimics a real military camera inside a flight simulator, using actual communication messages to make the simulation feel just like the real thing.",
+    "start": "2024-11-01",
+    "end": "2025-02-01",
+    "link": "https://www.marops.net"
+  },
+  {
+    "role": "Production Technician",
+    "company": "Cloudstore",
+    "location": "Auckland, NZ",
+    "description": "Did hands-on work flashing new software onto hardware, testing devices with the latest updates, troubleshooting, packaging, and using Linux for day-to-day tasks.",
+    "start": "2024-08-01",
+    "end": "Present",
+    "link": "https://www.get-console.com/shop/"
+  }
+]
