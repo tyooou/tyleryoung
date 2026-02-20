@@ -110,6 +110,22 @@ function Portfolio() {
     localStorage.setItem("activeTab", page);
   }, [page]);
 
+  useEffect(() => {
+    const isMobile = window.innerWidth < 768;
+    if (sidebarState && isMobile) {
+      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+    }
+
+    return () => {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+    };
+  }, [sidebarState]);
+
   const updateSidebar = (newState) => {
     setSidebar(newState);
   };
@@ -185,7 +201,7 @@ function Portfolio() {
     <>
       <div className="flex flex-col min-h-screen sm:fixed w-full bg-[var(--bg-secondary)]">
         <SearchBar updateSidebar={updateSidebar} updatePage={updatePage} goBack={goBack} goForward={goForward} projects={projects.map((project) => project.meta)} />
-        <div className="flex-1 flex flex-row w-full sm:h-full overflow-y-auto sm:overflow-hidden">
+        <div className={`flex-1 flex flex-row w-full sm:h-full sm:overflow-hidden ${sidebarState ? "overflow-hidden" : "overflow-y-auto"}`}>
           <Sidebar
             updatePage={updatePage}
             updateSidebar={updateSidebar}

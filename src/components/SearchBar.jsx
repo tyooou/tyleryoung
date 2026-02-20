@@ -224,7 +224,7 @@ function SearchBar({ updateSidebar, updatePage, goBack, goForward, projects }) {
 
   return (
     <>
-      <div className="cursor-default select-none top-0 w-full z-40 flex items-center justify-center bg-[var(--bg-secondary)] border-b border-[var(--border-secondary)] py-2 px-1 sm:py-1 font-mono text-xs">
+      <div className="cursor-default select-none sticky top-0 w-full z-40 flex items-center justify-center bg-[var(--bg-secondary)] border-b border-[var(--border-secondary)] py-2 px-1 sm:py-1 font-mono text-xs">
         {expanded && (
           <div
             className="absolute z-100 border border-[var(--border-secondary)] bg-[var(--bg-tertiary)] flex flex-col items-center max-w-lg w-full p-1 top-1 rounded gap-2"
