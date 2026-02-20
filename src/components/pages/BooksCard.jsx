@@ -26,13 +26,19 @@ function formatDateDMY(dateStr) {
 function Books({ title, author, dateStarted, dateCompleted, notes }) {
   return (
     <>
-      <div className="grid grid-cols-[6fr_6fr_3fr_3fr_4fr_3fr] gap-2 mb-1 text-sm">
+      <div className="hidden sm:grid sm:grid-cols-[6fr_6fr_3fr_3fr_4fr_3fr] gap-2 mb-1 text-sm">
         <p className="italic truncate">{title}</p>
         <p className="truncate">{author}</p>
         <p className="truncate">{formatDateDMY(dateStarted)}</p>
         <p className="truncate">{formatDateDMY(dateCompleted)}</p>
         <p className="truncate">{calculateDateDifference(dateStarted, dateCompleted)}</p>
         <a className="truncate hover:text-[var(--text-secondary)] hover:underline" href={notes}>notes [↗]</a>
+      </div>
+      <div className="sm:hidden text-sm mb-2 pb-6 border-b border-[var(--border-secondary)]">
+        <p className="italic font-bold">{title}</p>
+        <p className="text-[var(--text-secondary)]">{author}</p>
+        <p className="text-[var(--text-secondary)]">{formatDateDMY(dateStarted)} — {formatDateDMY(dateCompleted)}</p>
+        <a className="text-[var(--text-secondary)] underline" href={notes}>notes [↗]</a>
       </div>
     </>
   );
@@ -85,25 +91,25 @@ function BooksCard() {
   
   return (
     <>
-      <div className="w-full h-full p-3 sm:p-5 font-mono select-none flex flex-col cursor-default">
-        <h2 className="font-bold text-8xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl">
+      <div className="w-full h-full p-3 sm:p-5 font-mono select-none flex flex-col cursor-default overflow-y-auto">
+        <h2 className="font-bold text-6xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl">
           Books.
         </h2>
         <div className="mt-3 ml-2">
-          <p className="text-2xl sm:text-lg md:text-xl mb-2">
+          <p className="text-base mb-2">
             Some of the books I've read and enjoyed recently.
           </p>
 
           {loading && (
-            <div className="border-l-4 border-[var(--border-secondary)] pl-6 mt-4">
-              <p className="text-sm sm:text-base">
+            <div className="sm:border-l-4 border-[var(--border-secondary)] sm:pl-6 mt-4">
+              <p className="text-sm">
                 Loading books...
               </p>
             </div>
           )}
 
           {!loading && bookList.length === 0 && (
-            <p className="text-sm sm:text-base mt-4">
+            <p className="text-sm mt-4">
               No books found. Check back later!
             </p>
           )}
@@ -145,8 +151,8 @@ function BooksCard() {
                   ];
                   months.sort((a, b) => monthOrder.indexOf(b) - monthOrder.indexOf(a));
                   return months.map((month) => (
-                    <div key={month} className="mb-4 border-l-4 border-[var(--border-secondary)] pl-6">
-                      <h4 className="font-bold text-lg mb-2">{month}</h4>
+                    <div key={month} className="mb-4 sm:border-l-4 border-[var(--border-secondary)] sm:pl-6 pl-0">
+                      <h4 className="font-bold text-base mb-2">{month}</h4>
                       {booksByMonth[month].map((book, idx) => (
                         <Books key={book.title + book.author + idx} {...book} />
                       ))}

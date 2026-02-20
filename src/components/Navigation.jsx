@@ -2,7 +2,7 @@ function Navigation({ updatePage, deleteTab, openTabs, page }) {
 
   return (
     <>
-      <nav className="flex justify-between bg-[var(--bg-quaternary)] text-[var(--text)] select-none border-b border-[var(--border-secondary)]">
+      <nav className="hidden md:flex justify-between bg-[var(--bg-quaternary)] text-[var(--text)] select-none border-b border-[var(--border-secondary)]">
         <div className="sm:hidden flex items-center space-x-2 px-4 py-3 border-r border-[var(--border-secondary)] bg-[var(--bg)] -mb-5 border-b-0">
           <button
             className="font-mono text-lg truncate overflow-hidden whitespace-nowrap max-w-[200px]"
@@ -12,7 +12,7 @@ function Navigation({ updatePage, deleteTab, openTabs, page }) {
           </button>
         </div>
 
-        <div className="hidden sm:flex">
+        <div className="flex">
           {openTabs.map((tab, index) => (
             <div
               key={index}

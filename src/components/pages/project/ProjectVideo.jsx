@@ -2,6 +2,7 @@ import React, { useState } from "react";
 
 function ProjectVideo({ src, type }) {
   const [loaded, setLoaded] = useState(false);
+  const videoSrc = import.meta.env.BASE_URL + src;
 
   return (
     <div
@@ -9,7 +10,7 @@ function ProjectVideo({ src, type }) {
       style={{ paddingTop: "56.25%" }} // 16:9 aspect ratio placeholder
     >
       <video
-        src={src}
+        src={videoSrc}
         type={type}
         autoPlay
         preload="auto"

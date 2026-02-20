@@ -5,25 +5,25 @@ function VersionCard({ release }) {
   return (
     <div
       key={release.version}
-      className="border-l-3 border-[var(--border-secondary)] pl-4 sm:pl-6"
+      className="border-l-3 border-[var(--border-secondary)] pl-0 pl-6"
     >
-      <h4 className="text-xl sm:text-xl font-bold">
+      <h4 className="text-sm font-bold">
         {release.version}
-        <span className="block sm:inline sm:ml-4 text-sm sm:text-xs text-[var(--bg-quaternary)]">
+        <span className="inline ml-4 text-sm text-[var(--bg-quaternary)]">
           {release.date}
         </span>
       </h4>
-      <p className="text-base sm:text-base">{release.title}</p>
+      <p className="text-sm">{release.title}</p>
 
       {release.completed.length > 0 && (
         <ul className="list-disc mt-3">
-          <span className="font-bold text-base sm:text-base">
+          <span className="font-bold text-sm">
             Completed:
           </span>
           {release.completed.map((item, itemIndex) => (
             <li
               key={itemIndex}
-              className="ml-4 sm:ml-6 text-base sm:text-base"
+              className="ml-4 text-sm"
             >
               {item}
             </li>
@@ -33,13 +33,13 @@ function VersionCard({ release }) {
 
       {release.planned.length > 0 && (
         <ul className="list-disc mt-3">
-          <span className="font-bold text-base sm:text-base">
+          <span className="font-bold text-sm">
             Planned:
           </span>
           {release.planned.map((item, itemIndex) => (
             <li
               key={itemIndex}
-              className="ml-4 sm:ml-6 text-base sm:text-base"
+              className="ml-4 text-sm"
             >
               {item}
             </li>
@@ -163,12 +163,12 @@ function ChangelogCard() {
 
   return (
     <>
-      <div className="w-full h-full p-3 sm:p-5 font-mono flex flex-col select-none cursor-default">
-        <h2 className="font-bold text-7xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl flex-shrink-0">
+      <div className="w-full h-full p-3 sm:p-5 font-mono flex flex-col select-none cursor-default overflow-y-auto">
+        <h2 className="font-bold text-6xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl flex-shrink-0">
           Changelog.
         </h2>
         <div className="ml-2 mt-6">
-          <p className="text-2xl sm:text-lg md:text-xl mb-2">
+          <p className="text-base mb-2">
             All notable changes to this project will be documented in this file.
           </p>
 
@@ -184,12 +184,12 @@ function ChangelogCard() {
 
           {releaseNotes.length > 0 && !loading && (
             <>
-              <div className="mt-6 mb-6 space-x-2">
+              <div className="mt-3 mb-6 space-x-2">
                 {releaseNotes.map((release) => (
                   <button
                   key={release.version}
                   onClick={() => setActiveVersion(release.version)}
-                  className={`rounded px-2 py-1 border border-[var(--border)] text-sm ${
+                  className={`rounded mt-2 px-2 py-1 border border-[var(--border)] text-sm ${
                     activeVersion === release.version
                       ? "font-bold bg-[var(--bg-quaternary)]"
                       : "bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)]"

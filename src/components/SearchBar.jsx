@@ -21,7 +21,7 @@ function SearchBar({ updateSidebar, updatePage, goBack, goForward, projects }) {
     "bibliography",
     "experience",
     "books",
-    "leetcode",
+    // "leetcode",
     "friends",
     "contact",
     "changelog"
@@ -169,6 +169,8 @@ function SearchBar({ updateSidebar, updatePage, goBack, goForward, projects }) {
     setIsCmd(value.trim().charAt(0) === ">");
     if (value.trim().charAt(0) === ">") {
       setMenuContext("commands");
+    } else if (menuContext === "commands" && value.trim() === "") { 
+      setMenuContext("main");
     }
     setSelectedOption(0);
   };
@@ -252,7 +254,7 @@ function SearchBar({ updateSidebar, updatePage, goBack, goForward, projects }) {
           </div>
         )}
         <div className="flex items-center w-full transition-all duration-300 gap-2">
-          <div className={`flex flex-1 items-center text-[var(--text)] justify-end ${expanded ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"}`}>
+          <div className={`flex sm:flex-1 items-center text-[var(--text)] justify-end ${expanded ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"}`}>
             <button className="hover:bg-[var(--bg-tertiary)] py-2 px-2 sm:py-[0.5px] sm:px-1 rounded cursor-pointer"
               onClick={goBack}
             >
@@ -265,7 +267,7 @@ function SearchBar({ updateSidebar, updatePage, goBack, goForward, projects }) {
             </button>
           </div>
 
-          <div className={`flex flex-1 justify-center ${expanded ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"}`}>
+          <div className={`hidden md:flex flex-1 justify-center ${expanded ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"}`}>
             <button
               type="button"
               className="text-xs outline-none border border-[var(--border-secondary)] bg-[var(--bg)] text-[var(--border-secondary)] px-2 py-1 rounded focus:border-[var(--text-secondary)] text-center w-full"

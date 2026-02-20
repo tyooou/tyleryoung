@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import ExternalLink from "../ExternalLink";
+import TechStack from "./project/TechStack";
 
 function formatMonthYear(dateStr) {
   if (!dateStr) return "";
@@ -10,15 +11,15 @@ function formatMonthYear(dateStr) {
   return `${month} '${year}`;
 }
 
-function Experience({ role, company, location, description, start, end = "Present", link, logo }) {
+function Experience({ role, company, location, description, start, end = "Present", link, logo, techStack }) {
   return (
     <>
-      <div className="flex flex-col mb-4 space-y-2 border-l-4 border-[var(--border-secondary)] pl-6">
-        <p className="font-bold">{role} @{link && <ExternalLink text={company} link={link} />}</p>
-        <div className="text-sm text-[var(--text-secondary)]">
+      <div className="flex flex-col mb-4 space-y-1 sm:space-y-2 border-[var(--border-secondary)] pr-2 w-full">
+        <p className="font-bold text-base">{role} @{link && <ExternalLink text={company} link={link} />}</p>
+        <div className="text-base text-[var(--text-secondary)]">
           {formatMonthYear(start)} to {formatMonthYear(end)} - {location}
         </div>
-        <p className="text-sm">{description}</p>
+        <p className="text-base">{description}</p>
       </div>
     </>
   );
@@ -56,7 +57,7 @@ function ExperienceCard() {
   useEffect(() => {
     async function fetchExperiences() {
       try {
-        const response = await fetch(import.meta.env.BASE_URL + "/experience.json");
+        const response = await fetch(import.meta.env.BASE_URL + "experience.json");
         if (!response.ok) throw new Error("Failed to load experiences");
         const data = await response.json();
         setExperiences(data);
@@ -79,26 +80,24 @@ function ExperienceCard() {
 
   return (
     <>
-      <div className="w-full h-full p-3 sm:p-5 font-mono select-none cursor-default">
+      <div className="w-full h-full p-3 sm:p-5 font-mono select-none cursor-default overflow-y-auto">
         <div className="flex flex-col">
-          <h2 className="font-bold text-8xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl">
+          <h2 className="font-bold text-5xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl">
             Experience.
           </h2>
-          <div className="mt-6 ml-2 max-w-4xl">
-            <p className="text-2xl sm:text-lg md:text-xl mb-2">
-              The amazing groups and companies I've learnt from and grown with!
-            </p>
-            <div className="flex flex-col mt-6 gap-3 scroll overflow-y-auto max-h-[70vh] pr-2">
-              {loading ? (
-                <BrailleSpinner />
-              ) : experiences.length > 0 ? (
-                experiences.map((exp, idx) => (
-                  <Experience key={exp.company + exp.role + idx} {...exp} />
-                ))
-              ) : (
-                <p className="">No experiences found :(</p>
-              )}
-            </div>
+          <p className="text-base md:text-xl mt-3 ml-2">
+            The amazing groups and companies I've learnt from and grown with!
+          </p>
+          <div className="flex flex-col ml-2 mt-6 gap-3 scroll sm:overflow-y-auto sm:max-h-[70vh] pr-2">
+            {loading ? (
+              <BrailleSpinner />
+            ) : experiences.length > 0 ? (
+              experiences.map((exp, idx) => (
+                <Experience key={exp.company + exp.role + idx} {...exp} />
+              ))
+            ) : (
+              <p className="">No experiences found :(</p>
+            )}
           </div>
         </div>
       </div>

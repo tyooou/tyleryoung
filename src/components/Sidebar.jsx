@@ -104,7 +104,7 @@ function Sidebar({ updatePage, updateSidebar, state, projects }) {
           <SidebarLink text="bibliography" updatePage={updatePage} updateSidebar={updateSidebar} icon={<User size={15}/>} />
           <SidebarLink text="experience" updatePage={updatePage} updateSidebar={updateSidebar} icon={<Briefcase size={15}/>} />
           <SidebarLink text="books" updatePage={updatePage} updateSidebar={updateSidebar} icon={<Book size={15}/>} />
-          <SidebarLink text="leetcode" updatePage={updatePage} updateSidebar={updateSidebar} icon={<ListTodo size={15}/>} />
+          {/* <SidebarLink text="leetcode" updatePage={updatePage} updateSidebar={updateSidebar} icon={<ListTodo size={15}/>} /> */}
           <SidebarLink text="friends" updatePage={updatePage} updateSidebar={updateSidebar} icon={<Users size={15}/>} />
           <SidebarLink text="contact" updatePage={updatePage} updateSidebar={updateSidebar} icon={<MailIcon size={15}/>} />
           <SidebarLink text="changelog" updatePage={updatePage} updateSidebar={updateSidebar} icon={<History size={15}/>} />

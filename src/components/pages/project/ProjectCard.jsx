@@ -3,9 +3,7 @@ import ProjectCarousel from "./ProjectCarousel";
 import ExternalLink from "../../ExternalLink";
 
 function ProjectCard({ project }) {
-  // Determine title size based on length
   const getTitleSizeClass = (title) => {
-    console.log(title.length);
     if (title.length > 20) {
       return "text-5xl sm:text-6xl";
     } else if (title.length > 10) {
@@ -17,7 +15,7 @@ function ProjectCard({ project }) {
 
   return (
     <>
-      <div className="flex w-full h-full select-none cursor-default">
+      <div className="flex flex-col sm:flex-row w-full sm:h-full select-none cursor-default">
         <div className="flex-2 flex-col p-3 sm:p-6">
           <h1
             className={`font-mono font-bold ${getTitleSizeClass(
@@ -44,7 +42,7 @@ function ProjectCard({ project }) {
             </div>
           </div>
         </div>
-        <div className="flex-3 pt-6 hidden sm:block">
+        <div className="flex-3 pt-6 w-full sm:w-auto">
           <ProjectCarousel
             folderName={project.meta.name}
             media={project.meta.media}

@@ -33,10 +33,10 @@ function Footer() {
   }, [theme]);
 
   const svgElement = (
-   <svg width="20" height="17" viewBox="0 0 4.1210098 2.9389598" xmlns="http://www.w3.org/2000/svg">
-    <g transform="translate(-75.810791,-94.114487)">
-      <text xmlSpace="preserve" style={{fontSize:'3.175px',fontFamily:'Press Start 2P',fill:svgColor,stroke:svgColor,strokeWidth:0.243}} x="75.560226" y="96.293221"> <tspan style={{fontFamily:'Andale Mono',fill:svgColor,stroke:svgColor,strokeWidth:0.243}} x="75.560226" y="96.293221">ty</tspan></text>
-      <text xmlSpace="preserve" style={{fontSize:'3.175px',fontFamily:'Press Start 2P',fill:svgColor,stroke:svgColor,strokeWidth:0.243}} x="78.673943" y="96.408546"> <tspan style={{fontFamily:'Andale Mono',fill:svgColor,stroke:svgColor,strokeWidth:0.243}} x="78.673943" y="96.408546">.</tspan></text>
+   <svg width="24" height="15" viewBox="75.5 94 4 3" xmlns="http://www.w3.org/2000/svg" style={{display:'block', minWidth: '24px', minHeight: '15px'}}>
+    <g>
+      <text xmlSpace="preserve" style={{fontSize:'3.175px',fontFamily:'Press Start 2P',fill:svgColor,stroke:svgColor,strokeWidth:0.243}} x="75.56" y="96.29"> <tspan style={{fontFamily:'Andale Mono',fill:svgColor,stroke:svgColor,strokeWidth:0.243}} x="75.56" y="96.29">ty</tspan></text>
+      <text xmlSpace="preserve" style={{fontSize:'3.175px',fontFamily:'Press Start 2P',fill:svgColor,stroke:svgColor,strokeWidth:0.243}} x="78.67" y="96.41"> <tspan style={{fontFamily:'Andale Mono',fill:svgColor,stroke:svgColor,strokeWidth:0.243}} x="78.67" y="96.41">.</tspan></text>
     </g>
   </svg>
   );

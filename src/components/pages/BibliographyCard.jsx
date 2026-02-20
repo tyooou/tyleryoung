@@ -7,14 +7,14 @@ function BibliographyCard({ toggleSidebar }) {
 
   return (
     <>
-      <div className="w-full h-full p-5 font-mono select-none cursor-default">
+      <div className="w-full h-full p-3 sm:p-5 font-mono select-none cursor-default overflow-y-auto">
         <DecodeText text="Tyler Young" speed={80} />
-        <div className="ml-3">
-          <p className="text-xl sm:text-lg mt-8 font-bold text-[var(--text-secondary)]">
+        <div className="ml-2 sm:ml-3">
+          <p className="text-lg sm:text-xl mt-6 sm:mt-8 font-bold text-[var(--text-secondary)]">
             Creative by design.{" "}
             <span className="italic">Technical by habit.</span>
           </p>
-          <p className="text-xl sm:text-lg mt-4 max-w-3xl">
+          <p className="text-base sm:text-lg mt-3 sm:mt-4 max-w-3xl">
             An undergraduate software engineer, creative technologist and bedroom dweller
             studying at the{" "}
             <ExternalLink
@@ -24,29 +24,31 @@ function BibliographyCard({ toggleSidebar }) {
             />
           </p>
           
-          <p className="font-bold text-xl sm:text-lg mt-4 mb-2">
+          <p className="font-bold text-base sm:text-xl mt-3 sm:mt-4 mb-2">
             Tinkering on:
           </p>
-          <ul className="text-xl sm:text-lg list-disc">
-            <li className="ml-6">
+          <ul className="text-base sm:text-lg list-disc">
+            <li className="ml-4 sm:ml-6">
               <span className="font-bold">habitual</span> - make habits a daily
               ritual.
             </li>
-            {/* <li className="ml-6">
-              <span className="font-bold">pixai</span> - pixelise anything,
-              beautifully.
-            </li> */}
+            <li className="ml-4 sm:ml-6">
+              <span className="font-bold">basium</span> - smarter codebase intelligence.
+            </li>
+            <li className="ml-4 sm:ml-6">
+              <span className="font-bold">aesth</span> - creatives for creatives.
+            </li>
           </ul>
           <div className="flex flex-col items-start">
             <button
-              className="text-xl sm:text-lg px-3 py-2 mt-4 hover:bg-[var(--bg-secondary)] cursor-pointer"
+              className="text-base sm:text-lg px-2 sm:px-3 py-1 sm:py-2 mt-10 sm:mt-4 hover:bg-[var(--bg-secondary)] cursor-pointer"
               onClick={cycleTheme}
             >
               → <span className="font-bold">Switch theme!</span>
             </button>
 
             <button
-              className="sm:hidden text-xl px-3 py-2 mt-4 hover:bg-[var(--bg-secondary)] cursor-pointer"
+              className="sm:hidden text-base px-2 py-1 mt-3 hover:bg-[var(--bg-secondary)] cursor-pointer"
               onClick={() => toggleSidebar(true)}
             >
               → <span className="font-bold">Start exploring!</span>

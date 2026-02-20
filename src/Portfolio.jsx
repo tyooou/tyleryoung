@@ -183,9 +183,9 @@ function Portfolio() {
 
   return (
     <>
-      <div className="flex flex-col min-h-screen fixed w-full bg-[var(--bg-secondary)]">
+      <div className="flex flex-col min-h-screen sm:fixed w-full bg-[var(--bg-secondary)]">
         <SearchBar updateSidebar={updateSidebar} updatePage={updatePage} goBack={goBack} goForward={goForward} projects={projects.map((project) => project.meta)} />
-        <div className="flex-1 flex flex-row w-full h-full">
+        <div className="flex-1 flex flex-row w-full sm:h-full overflow-y-auto sm:overflow-hidden">
           <Sidebar
             updatePage={updatePage}
             updateSidebar={updateSidebar}
@@ -193,7 +193,7 @@ function Portfolio() {
             projects={projects.map((project) => project.meta)}
           />
           <div
-            className={`flex flex-col flex-1 h-full transition-all duration-300 ${
+            className={`flex flex-col flex-1 sm:h-full transition-all duration-300 ${
               sidebarState ? "translate-x-full sm:translate-x-0 sm:ml-64" : "ml-0"
             }`}
             onTouchStart={onTouchStart}
@@ -206,17 +206,17 @@ function Portfolio() {
               openTabs={openTabs}
               page={page}
             />
-            <div className="flex flex-1 overflow-hidden">
+            <div className="flex flex-col sm:flex-row flex-1 sm:overflow-hidden">
               <div className="hidden sm:block">
                 <VerticalNumbering />
               </div>
-              <div className="flex-1 bg-[var(--bg)] text-[var(--text)]">
+              <div className="flex-1 bg-[var(--bg)] text-[var(--text)] overflow-y-auto sm:overflow-hidden pb-14 sm:pb-0">
                 {page === "bibliography" && (
                   <BibliographyCard toggleSidebar={updateSidebar} />
                 )}
                 {page === "experience" && <ExperienceCard />}
                 {page === "books" && <BooksCard />}
-                {page === "leetcode" && <LeetcodeCard />}
+                {/* {page === "leetcode" && <LeetcodeCard />} */}
                 {page === "friends" && <FriendsCard />}
                 {page === "contact" && <ContactCard />}
                 {page === "changelog" && <ChangelogCard />}
