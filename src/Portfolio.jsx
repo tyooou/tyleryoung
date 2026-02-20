@@ -201,7 +201,7 @@ function Portfolio() {
     <>
       <div className="flex flex-col min-h-screen sm:fixed w-full bg-[var(--bg-secondary)]">
         <SearchBar updateSidebar={updateSidebar} updatePage={updatePage} goBack={goBack} goForward={goForward} projects={projects.map((project) => project.meta)} />
-        <div className={`flex-1 flex flex-row w-full sm:h-full sm:overflow-hidden ${sidebarState ? "overflow-hidden" : "overflow-y-auto"}`}>
+        <div className={`flex-1 flex flex-row w-full sm:h-full sm:overflow-hidden pt-[52px] sm:pt-0 ${sidebarState ? "overflow-hidden" : "overflow-y-auto"}`}>
           <Sidebar
             updatePage={updatePage}
             updateSidebar={updateSidebar}

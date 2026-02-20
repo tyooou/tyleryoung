@@ -21,16 +21,16 @@ html.theme-light {
 }
 
 html.theme-dark {
-  --bg: #1e1e1e;
-  --bg-secondary: #2d2d2d;
-  --bg-tertiary: #3c3c3c;
-  --bg-quaternary: #4b4b4b;
-  --text: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --accent: #3b82f6;
-  --accent-secondary: #60a5fa;
-  --border: #4b4b4b;
-  --border-secondary: #5a5a5a;
+  --bg: #0a0a0a;
+  --bg-secondary: #171717;
+  --bg-tertiary: #262626;
+  --bg-quaternary: #404040;
+  --text: #fafafa;
+  --text-secondary: #a3a3a3;
+  --accent: #818cf8;
+  --accent-secondary: #a5b4fc;
+  --border: #404040;
+  --border-secondary: #525252;
   --heatmap1: #14532d;
   --heatmap2: #166534;
   --heatmap3: #22c55e;

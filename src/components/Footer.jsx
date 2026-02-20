@@ -44,7 +44,7 @@ function Footer() {
   return (
     <>
       <footer className="fixed cursor-default select-none bottom-0 left-0 w-full border-t border-[var(--border-secondary)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] flex items-center z-40">
-        <div className="py-2 px-3 flex items-center bg-[var(--bg-tertiary)]">
+        <div className="px-3 flex items-center bg-[var(--bg-tertiary)] self-stretch">
           {svgElement}
         </div>
         <div className="text-sm sm:text-xs font-mono py-2 px-4 flex items-center w-full">
