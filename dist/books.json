@@ -1,0 +1,30 @@
+[
+  {
+    "isbn": "978-0135957059",
+    "title": "The Pragmatic Programmer",
+    "author": "C. Newport",
+    "dateStarted": "2025-12-01",
+    "dateCompleted": "2025-12-25"
+  },
+  {
+    "isbn": "978-0735211292",
+    "title": "Atomic Habits",
+    "author": "J. Clear",
+    "dateStarted": "2025-11-01",
+    "dateCompleted": "2025-11-20"
+  },
+  {
+    "isbn": "978-1484200773",
+    "title": "Pro Git",
+    "author": "S. Chacon, B. Straub",
+    "dateStarted": "2025-10-01",
+    "dateCompleted": "2025-10-15"
+  },
+  {
+    "isbn": "978-1617292231",
+    "title": "Grokking Algorithms",
+    "author": "A. Bhargava",
+    "dateStarted": "2025-09-01",
+    "dateCompleted": "2025-09-10"
+  }
+]

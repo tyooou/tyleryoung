@@ -12,9 +12,9 @@ function SearchBar({ updateSidebar, updatePage, goBack, goForward, projects }) {
   const inputRef = useRef(null);
   const panelRef = useRef(null);
 
-  const themes = THEMES.map(t => ({
-    name: t.replace("theme-", "").replace(/\b\w/g, c => c.toUpperCase()),
-    value: t
+  const themes = THEMES.map((t) => ({
+    name: t.replace("theme-", "").replace(/\b\w/g, (c) => c.toUpperCase()),
+    value: t,
   }));
 
   const contentLinks = [
@@ -24,25 +24,58 @@ function SearchBar({ updateSidebar, updatePage, goBack, goForward, projects }) {
     // "leetcode",
     "friends",
     "contact",
-    "changelog"
+    "changelog",
   ];
 
   const mainOptions = [
-    { label: "Go to Contents", action: () => { setMenuContext("page"); setSelectedOption(0); } },
-    { label: "Go to Projects", action: () => { setMenuContext("projects"); setSelectedOption(0); } },
-    { label: "Show and Run Commands >", action: () => { setMenuContext("commands"); setSelectedOption(0); setInput(">"); } },
-    { label: "Toggle Sidebar", action: () => { updateSidebar(prev => !prev); } },
-    { label: "Cycle Theme", action: () => { cycleTheme(); } },
-    { label: "Set Theme", action: () => { setMenuContext("theme"); setSelectedOption(0);} },
+    {
+      label: "Go to Contents",
+      action: () => {
+        setMenuContext("page");
+        setSelectedOption(0);
+      },
+    },
+    {
+      label: "Go to Projects",
+      action: () => {
+        setMenuContext("projects");
+        setSelectedOption(0);
+      },
+    },
+    {
+      label: "Show and Run Commands >",
+      action: () => {
+        setMenuContext("commands");
+        setSelectedOption(0);
+        setInput(">");
+      },
+    },
+    {
+      label: "Toggle Sidebar",
+      action: () => {
+        updateSidebar((prev) => !prev);
+      },
+    },
+    {
+      label: "Cycle Theme",
+      action: () => {
+        cycleTheme();
+      },
+    },
+    {
+      label: "Set Theme",
+      action: () => {
+        setMenuContext("theme");
+        setSelectedOption(0);
+      },
+    },
   ];
 
-  const pageLinks = [
-    ...contentLinks.map(c => ({ label: c, value: c }))
-  ];
+  const pageLinks = [...contentLinks.map((c) => ({ label: c, value: c }))];
 
   const projectLinks = [
-    ...projects.map(p => ({ label: p.title, value: p.name })),
-  ]
+    ...projects.map((p) => ({ label: p.title, value: p.name })),
+  ];
 
   const themeOptions = themes.map((t) => ({
     label: t.name,
@@ -75,15 +108,19 @@ function SearchBar({ updateSidebar, updatePage, goBack, goForward, projects }) {
     {
       label: "Document: Open CV",
       action: () => {
-        window.open("https://drive.google.com/file/d/14Aru2JXekxazMWw34HCe7SZbIk4kuTkP/view?usp=sharing", "_blank");
+        window.open(
+          "https://drive.google.com/file/d/14Aru2JXekxazMWw34HCe7SZbIk4kuTkP/view?usp=sharing",
+          "_blank",
+        );
         setExpanded(false);
       },
     },
     {
       label: "Document: Download CV",
       action: () => {
-        const link = document.createElement('a');
-        link.href = "https://drive.google.com/uc?export=download&id=14Aru2JXekxazMWw34HCe7SZbIk4kuTkP";
+        const link = document.createElement("a");
+        link.href =
+          "https://drive.google.com/uc?export=download&id=14Aru2JXekxazMWw34HCe7SZbIk4kuTkP";
         link.download = "TYLER-YOUNG-CV.pdf";
         document.body.appendChild(link);
         link.click();
@@ -140,24 +177,34 @@ function SearchBar({ updateSidebar, updatePage, goBack, goForward, projects }) {
   const getFilteredOptions = () => {
     if (menuContext === "commands" && input.trim().startsWith(">")) {
       const lower = input.trim().slice(1).toLowerCase();
-      return commandOptions.filter(opt => opt.label.toLowerCase().includes(lower));
+      return commandOptions.filter((opt) =>
+        opt.label.toLowerCase().includes(lower),
+      );
     }
     if (menuContext === "main" && input.trim() !== "") {
       const lower = input.trim().toLowerCase();
       const allOptions = [...pageOptions, ...projectOptions];
-      return allOptions.filter(opt => opt.label.toLowerCase().includes(lower));
+      return allOptions.filter((opt) =>
+        opt.label.toLowerCase().includes(lower),
+      );
     }
     if (menuContext === "page" && input.trim() !== "") {
       const lower = input.trim().toLowerCase();
-      return pageOptions.filter(opt => opt.label.toLowerCase().includes(lower));
+      return pageOptions.filter((opt) =>
+        opt.label.toLowerCase().includes(lower),
+      );
     }
     if (menuContext === "projects" && input.trim() !== "") {
       const lower = input.trim().toLowerCase();
-      return projectOptions.filter(opt => opt.label.toLowerCase().includes(lower));
+      return projectOptions.filter((opt) =>
+        opt.label.toLowerCase().includes(lower),
+      );
     }
     if (menuContext === "theme" && input.trim() !== "") {
       const lower = input.trim().toLowerCase();
-      return themeOptions.filter(opt => opt.label.toLowerCase().includes(lower));
+      return themeOptions.filter((opt) =>
+        opt.label.toLowerCase().includes(lower),
+      );
     }
     return getCurrentOptions();
   };
@@ -169,7 +216,7 @@ function SearchBar({ updateSidebar, updatePage, goBack, goForward, projects }) {
     setIsCmd(value.trim().charAt(0) === ">");
     if (value.trim().charAt(0) === ">") {
       setMenuContext("commands");
-    } else if (menuContext === "commands" && value.trim() === "") { 
+    } else if (menuContext === "commands" && value.trim() === "") {
       setMenuContext("main");
     }
     setSelectedOption(0);
@@ -193,7 +240,10 @@ function SearchBar({ updateSidebar, updatePage, goBack, goForward, projects }) {
         setSelectedOption((prev) => (prev + 1) % filteredOptions.length);
         e.preventDefault();
       } else if (e.key === "ArrowUp") {
-        setSelectedOption((prev) => (prev - 1 + filteredOptions.length) % filteredOptions.length);
+        setSelectedOption(
+          (prev) =>
+            (prev - 1 + filteredOptions.length) % filteredOptions.length,
+        );
         e.preventDefault();
       } else if (e.key === "Enter") {
         filteredOptions[selectedOption]?.action();
@@ -214,12 +264,17 @@ function SearchBar({ updateSidebar, updatePage, goBack, goForward, projects }) {
   useEffect(() => {
     if (!expanded) return;
     function handleClickOutside(e) {
-      if (panelRef.current && !panelRef.current.contains(e.target) && inputRef.current && !inputRef.current.contains(e.target)) {
+      if (
+        panelRef.current &&
+        !panelRef.current.contains(e.target) &&
+        inputRef.current &&
+        !inputRef.current.contains(e.target)
+      ) {
         setExpanded(false);
       }
     }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [expanded]);
 
   return (
@@ -243,7 +298,7 @@ function SearchBar({ updateSidebar, updatePage, goBack, goForward, projects }) {
               {filteredOptions.map((opt, idx) => (
                 <button
                   key={opt.label}
-                  className={`mb-1 text-left w-full px-2 py-1 rounded ${selectedOption === idx ? 'bg-[var(--bg)]' : 'hover:bg-[var(--bg)]'} text-[var(--text-secondary)]`}
+                  className={`mb-1 text-left w-full px-2 py-1 rounded ${selectedOption === idx ? "bg-[var(--bg)]" : "hover:bg-[var(--bg)]"} text-[var(--text-secondary)]`}
                   onClick={opt.action}
                   tabIndex={0}
                 >
@@ -254,20 +309,26 @@ function SearchBar({ updateSidebar, updatePage, goBack, goForward, projects }) {
           </div>
         )}
         <div className="flex items-center w-full transition-all duration-300 gap-2">
-          <div className={`flex sm:flex-1 items-center text-[var(--text)] justify-end ${expanded ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"}`}>
-            <button className="hover:bg-[var(--bg-tertiary)] py-2 px-2 sm:py-[0.5px] sm:px-1 rounded cursor-pointer"
+          <div
+            className={`flex sm:flex-1 items-center text-[var(--text)] justify-end ${expanded ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"}`}
+          >
+            <button
+              className="hover:bg-[var(--bg-tertiary)] py-2 px-2 sm:py-[0.5px] sm:px-1 rounded cursor-pointer"
               onClick={goBack}
             >
               <ArrowLeft className="w-6 sm:w-4" />
             </button>
-            <button className="hover:bg-[var(--bg-tertiary)] py-2 px-2 sm:py-[0.5px] sm:px-1 rounded cursor-pointer"
+            <button
+              className="hover:bg-[var(--bg-tertiary)] py-2 px-2 sm:py-[0.5px] sm:px-1 rounded cursor-pointer"
               onClick={goForward}
             >
               <ArrowRight className="w-6 sm:w-4" />
             </button>
           </div>
 
-          <div className={`hidden md:flex flex-1 justify-center ${expanded ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"}`}>
+          <div
+            className={`hidden sm:flex flex-1 justify-center ${expanded ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"}`}
+          >
             <button
               type="button"
               className="text-xs outline-none border border-[var(--border-secondary)] bg-[var(--bg)] text-[var(--border-secondary)] px-2 py-1 rounded focus:border-[var(--text-secondary)] text-center w-full"
@@ -276,7 +337,7 @@ function SearchBar({ updateSidebar, updatePage, goBack, goForward, projects }) {
               tyou.dev
             </button>
           </div>
-          
+
           <div className="flex flex-1 items-center justify-end text-[var(--text)] gap-1">
             <button
               className="hover:bg-[var(--bg-tertiary)] py-2 px-2 sm:py-[0.5px] sm:px-1 rounded cursor-pointer"
@@ -286,7 +347,7 @@ function SearchBar({ updateSidebar, updatePage, goBack, goForward, projects }) {
             </button>
             <button
               className="hover:bg-[var(--bg-tertiary)] py-2 px-2 sm:py-[0.5px] sm:px-1 rounded cursor-pointer"
-              onClick={() => updateSidebar(prev => !prev)}
+              onClick={() => updateSidebar((prev) => !prev)}
             >
               <PanelLeft className="w-6 sm:w-4" />
             </button>

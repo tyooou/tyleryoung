@@ -1,4 +1,19 @@
-import { FileUser, Mail, Linkedin, Github, X, User, Briefcase, Book, ListTodo, Users, Mail as MailIcon, History, Folder } from "lucide-react";
+import {
+  FileUser,
+  Mail,
+  Linkedin,
+  Github,
+  X,
+  User,
+  Briefcase,
+  Book,
+  ListTodo,
+  Users,
+  Mail as MailIcon,
+  History,
+  Folder,
+  Keyboard,
+} from "lucide-react";
 
 function SidebarIcon({ href, label, children }) {
   return (
@@ -30,7 +45,11 @@ function SidebarLink({ text, updatePage, updateSidebar, projectName, icon }) {
       onClick={handleClick}
     >
       <span className="flex items-center w-full">
-        {icon && <span className="mr-2 flex items-center transition-transform duration-200 group-hover:translate-x-2">{icon}</span>}
+        {icon && (
+          <span className="mr-2 flex items-center transition-transform duration-200 group-hover:translate-x-2">
+            {icon}
+          </span>
+        )}
         <span className="transition-transform duration-200 group-hover:translate-x-2">
           {text}
         </span>
@@ -101,13 +120,49 @@ function Sidebar({ updatePage, updateSidebar, state, projects }) {
           <h2 className="font-bold text-xl sm:text-xs text-[var(--text-secondary)] px-6 sm:px-3 py-1  pt-4">
             CONTENTS
           </h2>
-          <SidebarLink text="bibliography" updatePage={updatePage} updateSidebar={updateSidebar} icon={<User size={15}/>} />
-          <SidebarLink text="experience" updatePage={updatePage} updateSidebar={updateSidebar} icon={<Briefcase size={15}/>} />
-          <SidebarLink text="books" updatePage={updatePage} updateSidebar={updateSidebar} icon={<Book size={15}/>} />
+          <SidebarLink
+            text="bibliography"
+            updatePage={updatePage}
+            updateSidebar={updateSidebar}
+            icon={<User size={15} />}
+          />
+          <SidebarLink
+            text="experience"
+            updatePage={updatePage}
+            updateSidebar={updateSidebar}
+            icon={<Briefcase size={15} />}
+          />
+          <SidebarLink
+            text="books"
+            updatePage={updatePage}
+            updateSidebar={updateSidebar}
+            icon={<Book size={15} />}
+          />
           {/* <SidebarLink text="leetcode" updatePage={updatePage} updateSidebar={updateSidebar} icon={<ListTodo size={15}/>} /> */}
-          <SidebarLink text="friends" updatePage={updatePage} updateSidebar={updateSidebar} icon={<Users size={15}/>} />
-          <SidebarLink text="contact" updatePage={updatePage} updateSidebar={updateSidebar} icon={<MailIcon size={15}/>} />
-          <SidebarLink text="changelog" updatePage={updatePage} updateSidebar={updateSidebar} icon={<History size={15}/>} />
+          <SidebarLink
+            text="typing"
+            updatePage={updatePage}
+            updateSidebar={updateSidebar}
+            icon={<Keyboard size={15} />}
+          />
+          <SidebarLink
+            text="friends"
+            updatePage={updatePage}
+            updateSidebar={updateSidebar}
+            icon={<Users size={15} />}
+          />
+          <SidebarLink
+            text="contact"
+            updatePage={updatePage}
+            updateSidebar={updateSidebar}
+            icon={<MailIcon size={15} />}
+          />
+          <SidebarLink
+            text="changelog"
+            updatePage={updatePage}
+            updateSidebar={updateSidebar}
+            icon={<History size={15} />}
+          />
         </div>
       </div>
     </>

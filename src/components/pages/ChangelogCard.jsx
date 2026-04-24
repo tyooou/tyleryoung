@@ -59,7 +59,7 @@ function ChangelogCard() {
     async function loadAllReleaseNotes() {
       try {
         const versionsResponse = await fetch(
-          import.meta.env.BASE_URL + "/releaseNotes/versions.json"
+          import.meta.env.BASE_URL + "releaseNotes/versions.json"
         );
         if (!versionsResponse.ok) {
           console.error("Failed to load versions list");
@@ -72,7 +72,7 @@ function ChangelogCard() {
         for (const version of versions) {
           try {
             const response = await fetch(
-              import.meta.env.BASE_URL + `/releaseNotes/${version}.md`
+              import.meta.env.BASE_URL + `releaseNotes/${version}.md`
             );
             if (!response.ok) continue;
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import ExternalLink from "../ExternalLink";
+import BrailleSpinner from "../BrailleSpinner";
 
 function FriendsCard() {
   const [friends, setFriends] = useState([]);
@@ -8,9 +9,7 @@ function FriendsCard() {
   useEffect(() => {
     async function fetchFriends() {
       try {
-        const response = await fetch(
-          import.meta.env.BASE_URL + "friends.json"
-        );
+        const response = await fetch(import.meta.env.BASE_URL + "friends.json");
         if (!response.ok) throw new Error("Failed to load friends");
         const data = await response.json();
         setFriends(data);
@@ -22,39 +21,6 @@ function FriendsCard() {
     }
     fetchFriends();
   }, []);
-
-  useEffect(() => {
-    if (!loading) return;
-    const interval = setInterval(() => {
-      setDots((prev) => (prev.length < 3 ? prev + '.' : ''));
-    }, 200);
-    return () => clearInterval(interval);
-  }, [loading]);
-
-  function BrailleSpinner() {
-    const frames = [
-      '\u280B', // ⠋
-      '\u2819', // ⠙
-      '\u2839', // ⠹
-      '\u2838', // ⠸
-      '\u283C', // ⠼
-      '\u2834', // ⠴
-      '\u2826', // ⠦
-      '\u2827', // ⠧
-      '\u2807', // ⠇
-      '\u280F', // ⠏
-    ];
-    const [frame, setFrame] = useState(0);
-    useEffect(() => {
-      const interval = setInterval(() => {
-        setFrame(f => (f + 1) % frames.length);
-      }, 80);
-      return () => clearInterval(interval);
-    }, []);
-    return (
-      <p>{frames[frame]}</p>
-    );
-  }
 
   return (
     <>
@@ -69,18 +35,16 @@ function FriendsCard() {
           <div className="text-lg grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 mt-6 ml-2">
             {loading ? (
               <BrailleSpinner />
+            ) : friends.length > 0 ? (
+              friends.map((friend) => (
+                <ExternalLink
+                  key={friend.name}
+                  text={friend.name}
+                  link={friend.link}
+                />
+              ))
             ) : (
-              friends.length > 0 ? (
-                friends.map((friend) => (
-                  <ExternalLink
-                    key={friend.name}
-                    text={friend.name}
-                    link={friend.link}
-                  />
-                ))
-              ) : (
-                <p className="text-base">No friends found :(</p>
-              )
+              <p className="text-base">No friends found :(</p>
             )}
           </div>
         </div>

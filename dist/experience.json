@@ -1,0 +1,32 @@
+[
+  {
+    "role": "Software Engineer Intern",
+    "company": "Alimetry",
+    "location": "Auckland, NZ",
+    "description": "Built a Python audit log analyser for cloud medical systems, an Angular/TypeScript timeline platform with custom playback and annotation for device/log analysis, and led R&D on 3D anatomical mesh comparison using Open3D and non-rigid ICP registration.",
+    "start": "2025-11-01",
+    "end": "2026-02-01",
+    "link": "https://www.alimetry.com",
+    "techStack": ["python", "angular", "typescript"]
+  },
+  {
+    "role": "Software Engineer Intern",
+    "company": "Marops",
+    "location": "Auckland, NZ",
+    "description": "Built a real-time avionics viewport emulator in C/C++ and OpenGL with camera feedback and HUD overlays, integrating WGS84 coordinate transforms and geodesic calculations with hardware abstraction for testing without physical equipment.",
+    "start": "2024-11-01",
+    "end": "2025-02-01",
+    "link": "https://www.marops.net",
+    "techStack": ["c++", "c"]
+  },
+  {
+    "role": "Production Technician",
+    "company": "Agile Workspace",
+    "location": "Auckland, NZ",
+    "description": "Managed setup, configuration, and testing of IoT devices (Airconsole, Smartalock, Floorsense) while streamlining inventory tracking through software tools, audits, and process documentation to improve accuracy and reduce hardware loss.",
+    "start": "2024-08-01",
+    "end": "Present",
+    "link": "https://www.get-console.com/shop/",
+    "techStack": ["linux", "python", "javascript"]
+  }
+]

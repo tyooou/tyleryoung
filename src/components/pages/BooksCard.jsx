@@ -54,7 +54,7 @@ function BooksCard() {
     async function loadAllBooks() {
       try {
         const response = await fetch(
-          import.meta.env.BASE_URL + "/books.json"
+          import.meta.env.BASE_URL + "books.json"
         );
         if (!response.ok) {
           console.error("Failed to load books.json.");

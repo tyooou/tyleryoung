@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import ExternalLink from "../ExternalLink";
 import TechStack from "./project/TechStack";
+import BrailleSpinner from "../BrailleSpinner";
 
 function formatMonthYear(dateStr) {
   if (!dateStr) return "";
@@ -11,42 +12,29 @@ function formatMonthYear(dateStr) {
   return `${month} '${year}`;
 }
 
-function Experience({ role, company, location, description, start, end = "Present", link, logo, techStack }) {
+function Experience({
+  role,
+  company,
+  location,
+  description,
+  start,
+  end = "Present",
+  link,
+  logo,
+  techStack,
+}) {
   return (
     <>
       <div className="flex flex-col mb-4 space-y-1 sm:space-y-2 border-[var(--border-secondary)] pr-2 w-full">
-        <p className="font-bold text-base">{role} @{link && <ExternalLink text={company} link={link} />}</p>
+        <p className="font-bold text-base">
+          {role} @{link && <ExternalLink text={company} link={link} />}
+        </p>
         <div className="text-base text-[var(--text-secondary)]">
           {formatMonthYear(start)} to {formatMonthYear(end)} - {location}
         </div>
         <p className="text-base">{description}</p>
       </div>
     </>
-  );
-}
-
-function BrailleSpinner() {
-  const frames = [
-    '\u280B', // ⠋
-    '\u2819', // ⠙
-    '\u2839', // ⠹
-    '\u2838', // ⠸
-    '\u283C', // ⠼
-    '\u2834', // ⠴
-    '\u2826', // ⠦
-    '\u2827', // ⠧
-    '\u2807', // ⠇
-    '\u280F', // ⠏
-  ];
-  const [frame, setFrame] = useState(0);
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setFrame(f => (f + 1) % frames.length);
-    }, 80);
-    return () => clearInterval(interval);
-  }, []);
-  return (
-    <p>{frames[frame]}</p>
   );
 }
 
@@ -57,7 +45,9 @@ function ExperienceCard() {
   useEffect(() => {
     async function fetchExperiences() {
       try {
-        const response = await fetch(import.meta.env.BASE_URL + "experience.json");
+        const response = await fetch(
+          import.meta.env.BASE_URL + "experience.json",
+        );
         if (!response.ok) throw new Error("Failed to load experiences");
         const data = await response.json();
         setExperiences(data);
@@ -73,7 +63,7 @@ function ExperienceCard() {
   useEffect(() => {
     if (!loading) return;
     const interval = setInterval(() => {
-      setDots((prev) => (prev.length < 3 ? prev + '.' : ''));
+      setDots((prev) => (prev.length < 3 ? prev + "." : ""));
     }, 200);
     return () => clearInterval(interval);
   }, [loading]);

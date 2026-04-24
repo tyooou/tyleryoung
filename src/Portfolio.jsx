@@ -14,6 +14,7 @@ import ExperienceCard from "./components/pages/ExperienceCard";
 import BooksCard from "./components/pages/BooksCard";
 import { useTheme } from "./components/ThemeContext";
 import SearchBar from "./components/SearchBar";
+import TypingCard from "./components/pages/TypingCard";
 
 function Portfolio() {
   const { cycleTheme } = useTheme();
@@ -66,7 +67,7 @@ function Portfolio() {
   useEffect(() => {
     async function findProjects() {
       const res = await fetch(
-        import.meta.env.BASE_URL + "projects/projects.json"
+        import.meta.env.BASE_URL + "projects/projects.json",
       );
       if (!res.ok) return;
       const data = await res.json();
@@ -81,7 +82,7 @@ function Portfolio() {
       const loadedProjects = await Promise.all(
         projectList.map(async (project) => {
           const res = await fetch(
-            import.meta.env.BASE_URL + `projects/${project}/README.md`
+            import.meta.env.BASE_URL + `projects/${project}/README.md`,
           );
           if (!res.ok) return null;
           const raw = await res.text();
@@ -95,7 +96,7 @@ function Portfolio() {
 
           const { attributes: data, body: content } = fm(raw);
           return { project, meta: data, content };
-        })
+        }),
       );
       const filtered = loadedProjects.filter(Boolean);
       setProjects(filtered);
@@ -133,7 +134,7 @@ function Portfolio() {
   const updatePage = (newPage) => {
     setPage(newPage);
     setOpenTabs((prevTabs) =>
-      prevTabs.includes(newPage) ? prevTabs : [...prevTabs, newPage]
+      prevTabs.includes(newPage) ? prevTabs : [...prevTabs, newPage],
     );
     setBackTabs((prevBack) => [...prevBack, page]);
     setForwardTabs([]);
@@ -160,7 +161,9 @@ function Portfolio() {
     setOpenTabs(newTabs);
 
     setBackTabs((prevBack) => prevBack.filter((tab) => tab !== targetTab));
-    setForwardTabs((prevForward) => prevForward.filter((tab) => tab !== targetTab));
+    setForwardTabs((prevForward) =>
+      prevForward.filter((tab) => tab !== targetTab),
+    );
 
     if (page === targetTab) {
       if (newTabs.length > 0) {
@@ -200,8 +203,16 @@ function Portfolio() {
   return (
     <>
       <div className="flex flex-col min-h-screen sm:fixed w-full bg-[var(--bg-secondary)]">
-        <SearchBar updateSidebar={updateSidebar} updatePage={updatePage} goBack={goBack} goForward={goForward} projects={projects.map((project) => project.meta)} />
-        <div className={`flex-1 flex flex-row w-full sm:h-full sm:overflow-hidden pt-[52px] sm:pt-0 ${sidebarState ? "overflow-hidden" : "overflow-y-auto"}`}>
+        <SearchBar
+          updateSidebar={updateSidebar}
+          updatePage={updatePage}
+          goBack={goBack}
+          goForward={goForward}
+          projects={projects.map((project) => project.meta)}
+        />
+        <div
+          className={`flex-1 flex flex-row w-full sm:h-full sm:overflow-hidden pt-[52px] sm:pt-0 ${sidebarState ? "overflow-hidden" : "overflow-y-auto"}`}
+        >
           <Sidebar
             updatePage={updatePage}
             updateSidebar={updateSidebar}
@@ -210,7 +221,9 @@ function Portfolio() {
           />
           <div
             className={`flex flex-col flex-1 sm:h-full transition-all duration-300 ${
-              sidebarState ? "translate-x-full sm:translate-x-0 sm:ml-64" : "ml-0"
+              sidebarState
+                ? "translate-x-full sm:translate-x-0 sm:ml-64"
+                : "ml-0"
             }`}
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
@@ -236,9 +249,12 @@ function Portfolio() {
                 {page === "friends" && <FriendsCard />}
                 {page === "contact" && <ContactCard />}
                 {page === "changelog" && <ChangelogCard />}
+                {page === "typing" && <TypingCard />}
                 {projects.some((project) => project.meta.name === page) && (
                   <ProjectCard
-                    project={projects.find((project) => project.meta.name === page)}
+                    project={projects.find(
+                      (project) => project.meta.name === page,
+                    )}
                   />
                 )}
               </div>

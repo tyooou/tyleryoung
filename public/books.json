@@ -19,5 +19,12 @@
     "author": "S. Chacon, B. Straub",
     "dateStarted": "2025-10-01",
     "dateCompleted": "2025-10-15"
+  },
+  {
+    "isbn": "978-1617292231",
+    "title": "Grokking Algorithms",
+    "author": "A. Bhargava",
+    "dateStarted": "2025-09-01",
+    "dateCompleted": "2025-09-10"
   }
 ]
