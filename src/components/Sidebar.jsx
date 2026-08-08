@@ -1,19 +1,5 @@
-import {
-  FileUser,
-  Mail,
-  Linkedin,
-  Github,
-  X,
-  User,
-  Briefcase,
-  Book,
-  ListTodo,
-  Users,
-  Mail as MailIcon,
-  History,
-  Folder,
-  Keyboard,
-} from "lucide-react";
+import { FileUser, Mail, Linkedin, Github, X, Folder } from "lucide-react";
+import { getIcon } from "./iconMap";
 
 function SidebarIcon({ href, label, children }) {
   return (
@@ -61,7 +47,11 @@ function SidebarLink({ text, updatePage, updateSidebar, projectName, icon }) {
   );
 }
 
-function Sidebar({ updatePage, updateSidebar, state, projects }) {
+function Sidebar({ updatePage, updateSidebar, state, projects, pages }) {
+  const visiblePages = pages
+    .filter((p) => p.enabled)
+    .sort((a, b) => a.order - b.order);
+
   return (
     <>
       <div
@@ -120,49 +110,19 @@ function Sidebar({ updatePage, updateSidebar, state, projects }) {
           <h2 className="font-bold text-xl sm:text-xs text-[var(--text-secondary)] px-6 sm:px-3 py-1  pt-4">
             CONTENTS
           </h2>
-          <SidebarLink
-            text="bibliography"
-            updatePage={updatePage}
-            updateSidebar={updateSidebar}
-            icon={<User size={15} />}
-          />
-          <SidebarLink
-            text="experience"
-            updatePage={updatePage}
-            updateSidebar={updateSidebar}
-            icon={<Briefcase size={15} />}
-          />
-          <SidebarLink
-            text="books"
-            updatePage={updatePage}
-            updateSidebar={updateSidebar}
-            icon={<Book size={15} />}
-          />
-          {/* <SidebarLink text="leetcode" updatePage={updatePage} updateSidebar={updateSidebar} icon={<ListTodo size={15}/>} /> */}
-          <SidebarLink
-            text="typing"
-            updatePage={updatePage}
-            updateSidebar={updateSidebar}
-            icon={<Keyboard size={15} />}
-          />
-          <SidebarLink
-            text="friends"
-            updatePage={updatePage}
-            updateSidebar={updateSidebar}
-            icon={<Users size={15} />}
-          />
-          <SidebarLink
-            text="contact"
-            updatePage={updatePage}
-            updateSidebar={updateSidebar}
-            icon={<MailIcon size={15} />}
-          />
-          <SidebarLink
-            text="changelog"
-            updatePage={updatePage}
-            updateSidebar={updateSidebar}
-            icon={<History size={15} />}
-          />
+          {visiblePages.map((page) => {
+            const Icon = getIcon(page.icon);
+            return (
+              <SidebarLink
+                key={page.id}
+                text={page.label}
+                updatePage={updatePage}
+                updateSidebar={updateSidebar}
+                projectName={page.id}
+                icon={<Icon size={15} />}
+              />
+            );
+          })}
         </div>
       </div>
     </>
