@@ -1,5 +1,4 @@
 function Navigation({ updatePage, deleteTab, openTabs, page }) {
-
   return (
     <>
       <nav className="hidden md:flex justify-between bg-[var(--bg-quaternary)] text-[var(--text)] select-none border-b border-[var(--border-secondary)]">

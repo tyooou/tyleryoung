@@ -9,12 +9,21 @@ import Footer from "./components/Footer";
 import FriendsCard from "./components/pages/FriendsCard";
 import ContactCard from "./components/pages/ContactCard";
 import ChangelogCard from "./components/pages/ChangelogCard";
-import LeetcodeCard from "./components/pages/leetcode/LeetcodeCard";
 import ExperienceCard from "./components/pages/ExperienceCard";
 import BooksCard from "./components/pages/BooksCard";
 import { useTheme } from "./components/ThemeContext";
 import SearchBar from "./components/SearchBar";
 import TypingCard from "./components/pages/TypingCard";
+
+const PAGE_COMPONENTS = {
+  bibliography: BibliographyCard,
+  experience: ExperienceCard,
+  books: BooksCard,
+  friends: FriendsCard,
+  contact: ContactCard,
+  changelog: ChangelogCard,
+  typing: TypingCard,
+};
 
 function Portfolio() {
   const { cycleTheme } = useTheme();
@@ -34,6 +43,7 @@ function Portfolio() {
   const [backTabs, setBackTabs] = useState([]);
   const [projects, setProjects] = useState([]);
   const [projectList, setProjectList] = useState([]);
+  const [pages, setPages] = useState([]);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
 
@@ -63,6 +73,16 @@ function Portfolio() {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [page, cycleTheme]);
+
+  useEffect(() => {
+    async function findPages() {
+      const res = await fetch(import.meta.env.BASE_URL + "pages.json");
+      if (!res.ok) return;
+      const data = await res.json();
+      setPages(data);
+    }
+    findPages();
+  }, []);
 
   useEffect(() => {
     async function findProjects() {
@@ -209,6 +229,7 @@ function Portfolio() {
           goBack={goBack}
           goForward={goForward}
           projects={projects.map((project) => project.meta)}
+          pages={pages}
         />
         <div
           className={`flex-1 flex flex-row w-full sm:h-full sm:overflow-hidden pt-[52px] sm:pt-0 ${sidebarState ? "overflow-hidden" : "overflow-y-auto"}`}
@@ -218,6 +239,7 @@ function Portfolio() {
             updateSidebar={updateSidebar}
             state={sidebarState}
             projects={projects.map((project) => project.meta)}
+            pages={pages}
           />
           <div
             className={`flex flex-col flex-1 sm:h-full transition-all duration-300 ${
@@ -240,16 +262,14 @@ function Portfolio() {
                 <VerticalNumbering />
               </div>
               <div className="flex-1 bg-[var(--bg)] text-[var(--text)] overflow-y-auto sm:overflow-hidden pb-14 sm:pb-0">
-                {page === "bibliography" && (
-                  <BibliographyCard toggleSidebar={updateSidebar} />
-                )}
-                {page === "experience" && <ExperienceCard />}
-                {page === "books" && <BooksCard />}
-                {/* {page === "leetcode" && <LeetcodeCard />} */}
-                {page === "friends" && <FriendsCard />}
-                {page === "contact" && <ContactCard />}
-                {page === "changelog" && <ChangelogCard />}
-                {page === "typing" && <TypingCard />}
+                {(() => {
+                  const ActivePageComponent = PAGE_COMPONENTS[page];
+                  return (
+                    ActivePageComponent && (
+                      <ActivePageComponent toggleSidebar={updateSidebar} />
+                    )
+                  );
+                })()}
                 {projects.some((project) => project.meta.name === page) && (
                   <ProjectCard
                     project={projects.find(

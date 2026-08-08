@@ -2,7 +2,14 @@ import { useState, useRef, useEffect } from "react";
 import { ArrowLeft, ArrowRight, Palette, PanelLeft } from "lucide-react";
 import { useTheme, THEMES } from "./ThemeContext";
 
-function SearchBar({ updateSidebar, updatePage, goBack, goForward, projects }) {
+function SearchBar({
+  updateSidebar,
+  updatePage,
+  goBack,
+  goForward,
+  projects,
+  pages,
+}) {
   const { cycleTheme, setTheme } = useTheme();
   const [expanded, setExpanded] = useState(false);
   const [input, setInput] = useState("");
@@ -17,15 +24,10 @@ function SearchBar({ updateSidebar, updatePage, goBack, goForward, projects }) {
     value: t,
   }));
 
-  const contentLinks = [
-    "bibliography",
-    "experience",
-    "books",
-    // "leetcode",
-    "friends",
-    "contact",
-    "changelog",
-  ];
+  const contentLinks = pages
+    .filter((p) => p.enabled)
+    .sort((a, b) => a.order - b.order)
+    .map((p) => p.id);
 
   const mainOptions = [
     {
