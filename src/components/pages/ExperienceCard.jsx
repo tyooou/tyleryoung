@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import ExternalLink from "../ExternalLink";
 import TechStack from "./project/TechStack";
 import BrailleSpinner from "../BrailleSpinner";
+import { sanityClient } from "../../lib/sanityClient";
 
 function formatMonthYear(dateStr) {
   if (!dateStr) return "";
@@ -45,11 +46,11 @@ function ExperienceCard() {
   useEffect(() => {
     async function fetchExperiences() {
       try {
-        const response = await fetch(
-          import.meta.env.BASE_URL + "experience.json",
-        );
-        if (!response.ok) throw new Error("Failed to load experiences");
-        const data = await response.json();
+        const data = await sanityClient.fetch(`
+          *[_type == "experience"] | order(start desc){
+            role, company, location, description, start, end, link, techStack
+          }
+        `);
         setExperiences(data);
       } catch (err) {
         setExperiences([]);

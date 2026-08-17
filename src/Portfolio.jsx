@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import fm from "front-matter";
+import { sanityClient } from "./lib/sanityClient";
 import ProjectCard from "./components/pages/project/ProjectCard";
 import Sidebar from "./components/Sidebar";
 import BibliographyCard from "./components/pages/BibliographyCard";
@@ -42,7 +42,6 @@ function Portfolio() {
   const [forwardTabs, setForwardTabs] = useState([]);
   const [backTabs, setBackTabs] = useState([]);
   const [projects, setProjects] = useState([]);
-  const [projectList, setProjectList] = useState([]);
   const [pages, setPages] = useState([]);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
@@ -76,53 +75,42 @@ function Portfolio() {
 
   useEffect(() => {
     async function findPages() {
-      const res = await fetch(import.meta.env.BASE_URL + "pages.json");
-      if (!res.ok) return;
-      const data = await res.json();
-      setPages(data);
+      try {
+        const data = await sanityClient.fetch(
+          `*[_type == "page"] | order(order asc){ id, label, icon, enabled, order }`,
+        );
+        setPages(data);
+      } catch {
+        setPages([]);
+      }
     }
     findPages();
   }, []);
 
   useEffect(() => {
-    async function findProjects() {
-      const res = await fetch(
-        import.meta.env.BASE_URL + "projects/projects.json",
-      );
-      if (!res.ok) return;
-      const data = await res.json();
-      setProjectList(data.activeProjects);
-    }
-    findProjects();
-  }, []);
-
-  useEffect(() => {
-    if (!projectList.length) return;
     async function loadProjects() {
-      const loadedProjects = await Promise.all(
-        projectList.map(async (project) => {
-          const res = await fetch(
-            import.meta.env.BASE_URL + `projects/${project}/README.md`,
-          );
-          if (!res.ok) return null;
-          const raw = await res.text();
-          const isFallbackHTML =
-            raw.trim().toLowerCase().startsWith("<!doctype html>") ||
-            raw.trim().toLowerCase().startsWith("<html>");
-
-          if (isFallbackHTML) {
-            return null;
+      try {
+        const data = await sanityClient.fetch(`
+          *[_type == "project" && active == true]{
+            "name": name.current,
+            title,
+            subtitle,
+            "techStack": coalesce(techStack, []),
+            code,
+            preview,
+            "content": body,
+            "media": coalesce(media[]{ "url": asset->url, "mimeType": asset->mimeType, "filename": asset->originalFilename }, [])
           }
-
-          const { attributes: data, body: content } = fm(raw);
-          return { project, meta: data, content };
-        }),
-      );
-      const filtered = loadedProjects.filter(Boolean);
-      setProjects(filtered);
+        `);
+        setProjects(
+          data.map((meta) => ({ project: meta.name, meta, content: meta.content })),
+        );
+      } catch {
+        setProjects([]);
+      }
     }
     loadProjects();
-  }, [projectList]);
+  }, []);
 
   useEffect(() => {
     localStorage.setItem("openTabs", JSON.stringify(openTabs));

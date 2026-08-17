@@ -43,10 +43,7 @@ function ProjectCard({ project }) {
           </div>
         </div>
         <div className="flex-3 pt-6 w-full sm:w-auto">
-          <ProjectCarousel
-            folderName={project.meta.name}
-            media={project.meta.media}
-          />
+          <ProjectCarousel media={project.meta.media} />
         </div>
       </div>
     </>

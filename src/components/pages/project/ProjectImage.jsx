@@ -2,7 +2,6 @@ import React, { useState } from "react";
 
 function ProjectImage({ src, alt }) {
   const [loaded, setLoaded] = useState(false);
-  const imageSrc = import.meta.env.BASE_URL + src;
 
   return (
     <div
@@ -10,7 +9,7 @@ function ProjectImage({ src, alt }) {
       style={{ paddingTop: "56.25%" }} // 16:9 aspect ratio placeholder
     >
       <img
-        src={imageSrc}
+        src={src}
         alt={alt}
         loading="lazy"
         decoding="async"

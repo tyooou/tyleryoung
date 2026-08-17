@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import ExternalLink from "../ExternalLink";
 import BrailleSpinner from "../BrailleSpinner";
+import { sanityClient } from "../../lib/sanityClient";
 
 function FriendsCard() {
   const [friends, setFriends] = useState([]);
@@ -9,9 +10,7 @@ function FriendsCard() {
   useEffect(() => {
     async function fetchFriends() {
       try {
-        const response = await fetch(import.meta.env.BASE_URL + "friends.json");
-        if (!response.ok) throw new Error("Failed to load friends");
-        const data = await response.json();
+        const data = await sanityClient.fetch(`*[_type == "friend"]{ name, link }`);
         setFriends(data);
       } catch (err) {
         setFriends([]);

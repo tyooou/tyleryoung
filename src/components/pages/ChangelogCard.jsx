@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import fm from "front-matter";
+import { sanityClient } from "../../lib/sanityClient";
 
 function VersionCard({ release }) {
   return (
@@ -58,68 +58,13 @@ function ChangelogCard() {
   useEffect(() => {
     async function loadAllReleaseNotes() {
       try {
-        const versionsResponse = await fetch(
-          import.meta.env.BASE_URL + "releaseNotes/versions.json"
-        );
-        if (!versionsResponse.ok) {
-          console.error("Failed to load versions list");
-          return;
-        }
-
-        const { versions } = await versionsResponse.json();
-        const allReleases = [];
-
-        for (const version of versions) {
-          try {
-            const response = await fetch(
-              import.meta.env.BASE_URL + `releaseNotes/${version}.md`
-            );
-            if (!response.ok) continue;
-
-            const raw = await response.text();
-            const { attributes: data, body: content } = fm(raw);
-
-            // Parse the markdown content
-            const sections = content.split("## ").filter(Boolean);
-            const completed =
-              sections
-                .find((s) => s.startsWith("Completed"))
-                ?.split("\n")
-                .slice(1)
-                .filter((line) => line.trim().startsWith("-"))
-                .map((line) => line.trim().substring(2)) || [];
-            const planned =
-              sections
-                .find((s) => s.startsWith("Planned"))
-                ?.split("\n")
-                .slice(1)
-                .filter((line) => line.trim().startsWith("-"))
-                .map((line) => line.trim().substring(2)) || [];
-
-            allReleases.push({
-              version: data.version,
-              date: data.date,
-              title: data.title,
-              completed,
-              planned,
-            });
-          } catch (error) {
-            console.error(`Failed to load ${version}.md:`, error);
+        const allReleases = await sanityClient.fetch(`
+          *[_type == "release"] | order(order asc){
+            version, date, title,
+            "completed": coalesce(completed, []),
+            "planned": coalesce(planned, [])
           }
-        }
-
-        // Sort by version (newest first)
-        allReleases.sort((a, b) => {
-          const versionA = a.version.replace("v", "").split(".").map(Number);
-          const versionB = b.version.replace("v", "").split(".").map(Number);
-
-          for (let i = 0; i < Math.max(versionA.length, versionB.length); i++) {
-            const numA = versionA[i] || 0;
-            const numB = versionB[i] || 0;
-            if (numA !== numB) return numB - numA; // Descending order
-          }
-          return 0;
-        });
+        `);
 
         setReleaseNotes(allReleases);
 

@@ -5,19 +5,21 @@ import "./themes.css"; // Your CSS variables and theme definitions
 import Portfolio from "./Portfolio.jsx";
 import { ThemeProvider } from "./components/ThemeContext.jsx";
 
-const AdminApp = lazy(() => import("./admin/AdminApp.jsx"));
+const StudioRoute = lazy(() => import("./admin/StudioRoute.jsx"));
 const isAdmin = window.location.pathname.startsWith("/admin");
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <ThemeProvider>
-      {isAdmin ? (
-        <Suspense fallback={null}>
-          <AdminApp />
-        </Suspense>
-      ) : (
+    {isAdmin ? (
+      // Sanity Studio manages its own theming/viewport, so it's rendered
+      // standalone rather than nested inside the portfolio's ThemeProvider.
+      <Suspense fallback={null}>
+        <StudioRoute />
+      </Suspense>
+    ) : (
+      <ThemeProvider>
         <Portfolio />
-      )}
-    </ThemeProvider>
+      </ThemeProvider>
+    )}
   </StrictMode>
 );
