@@ -1,0 +1,1 @@
+import{r as n}from"./index-BAHD_W1V.js";import{c as r,aM as s}from"./StudioRoute-4bT5a5Uk.js";function i(){let e=r.c(1),o=n.useContext(s);if(!o){let t;return e[0]===Symbol.for("react.memo_cache_sentinel")?(t={activeDocument:null,setActiveDocument:a,data:[],isLoading:!1},e[0]=t):t=e[0],t}return o}function a(){return null}export{i as u};
