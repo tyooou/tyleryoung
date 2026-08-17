@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { sanityClient } from "../../lib/sanityClient";
 
 function calculateDateDifference(startDate, endDate) {
   const start = new Date(startDate);
@@ -53,14 +54,9 @@ function BooksCard() {
   useEffect(() => {
     async function loadAllBooks() {
       try {
-        const response = await fetch(
-          import.meta.env.BASE_URL + "books.json"
+        const books = await sanityClient.fetch(
+          `*[_type == "book"]{ title, author, isbn, dateStarted, dateCompleted }`,
         );
-        if (!response.ok) {
-          console.error("Failed to load books.json.");
-          return;
-        }
-        const books = await response.json();
         const yearSet = new Set();
         books.forEach((book) => {
           if (book.dateStarted) {

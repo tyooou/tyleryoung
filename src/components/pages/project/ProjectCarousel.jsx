@@ -1,27 +1,18 @@
 import ProjectImage from "./ProjectImage";
 import ProjectVideo from "./ProjectVideo";
 
-function ProjectCarousel({ folderName, media }) {
+function ProjectCarousel({ media }) {
   return (
     <>
       <div className="sm:h-[calc(100vh-7rem)] sm:overflow-y-auto px-3 sm:px-6">
         <div className="flex flex-col space-y-6">
-          {media.map((filename, index) => {
-            const extension = filename.split(".").pop();
-            const isVideo = ["mp4", "mov", "webm"].includes(extension);
+          {(media || []).map((item) => {
+            const isVideo = item.mimeType?.startsWith("video/");
 
             return isVideo ? (
-              <ProjectVideo
-                key={`projects/${folderName}/${filename}`}
-                src={`projects/${folderName}/${filename}`}
-                type={`video/${extension}`}
-              />
+              <ProjectVideo key={item.url} src={item.url} type={item.mimeType} />
             ) : (
-              <ProjectImage
-                key={`projects/${folderName}/${filename}`}
-                src={`projects/${folderName}/${filename}`}
-                alt={`${filename}`}
-              />
+              <ProjectImage key={item.url} src={item.url} alt={item.filename} />
             );
           })}
         </div>

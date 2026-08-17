@@ -1,9 +1,0 @@
-[
-  { "id": "bibliography", "label": "bibliography", "icon": "user", "enabled": true, "locked": true, "order": 0 },
-  { "id": "experience", "label": "experience", "icon": "briefcase", "enabled": true, "locked": false, "order": 1 },
-  { "id": "books", "label": "books", "icon": "book", "enabled": true, "locked": false, "order": 2 },
-  { "id": "typing", "label": "typing", "icon": "keyboard", "enabled": true, "locked": false, "order": 3 },
-  { "id": "friends", "label": "friends", "icon": "users", "enabled": true, "locked": false, "order": 4 },
-  { "id": "contact", "label": "contact", "icon": "mail", "enabled": true, "locked": false, "order": 5 },
-  { "id": "changelog", "label": "changelog", "icon": "history", "enabled": true, "locked": false, "order": 6 }
-]
