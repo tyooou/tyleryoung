@@ -241,11 +241,11 @@ function TypingCard() {
           <h2 className="font-bold text-6xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl">
             Typing Statistics.
           </h2>
-          <div className="mt-3 ml-2">
-            <p className="text-base mb-4">
-              Since I'm on my computer all day, I might as well be improving my
-              typing skills!
-            </p>
+          <p className="text-base md:text-xl mt-6 ml-2">
+            Since I'm on my computer all day, I might as well be improving my
+            typing skills!
+          </p>
+          <div className="mt-6 ml-2">
             <p>
               <strong>Keyboard:</strong> I use a MonsGeek M1 with KTT Kang
               Whites V3s lubed with Krytox 205g0 and modded with the force break
