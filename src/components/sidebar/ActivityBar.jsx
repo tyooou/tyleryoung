@@ -68,17 +68,14 @@ function ActivityBar({
     <div className="flex flex-col items-center w-12 h-full bg-[var(--bg-secondary)] shrink-0 select-none">
       <div className="flex flex-col items-center w-full py-2 border-b border-[var(--border-secondary)]">
         {github && (
-          <BrowserIcon onClick={() => updatePage(github.name)} label="github">
+          <ExternalIcon href={github.link} label="github">
             <Github className="w-6 sm:w-5" />
-          </BrowserIcon>
+          </ExternalIcon>
         )}
         {linkedin && (
-          <BrowserIcon
-            onClick={() => updatePage(linkedin.name)}
-            label="linkedin"
-          >
+          <ExternalIcon href={linkedin.link} label="linkedin">
             <Linkedin className="w-6 sm:w-5" />
-          </BrowserIcon>
+          </ExternalIcon>
         )}
         <ExternalIcon href="mailto:young.h.tyler@gmail.com" label="e-mail">
           <Mail className="w-6 sm:w-5" />
