@@ -202,6 +202,7 @@ function Portfolio() {
         const data = await sanityClient.fetch(`
           *[_type == "extracurricular"] | order(order asc){
             title, description, link,
+            "graphics": coalesce(graphics[]{ "url": asset->url, alt }, []),
             "photos": coalesce(photos[]{ "url": asset->url, alt }, [])
           }
         `);

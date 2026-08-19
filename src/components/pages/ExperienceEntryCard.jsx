@@ -1,6 +1,6 @@
-import { useState } from "react";
 import ExternalLink from "../ExternalLink";
 import TechStack from "./project/TechStack";
+import MasonryPhoto from "../MasonryPhoto";
 
 function formatMonthYear(dateStr) {
   if (!dateStr) return "";
@@ -9,25 +9,6 @@ function formatMonthYear(dateStr) {
   const month = date.toLocaleString("en-US", { month: "short" });
   const year = String(date.getFullYear()).slice(-2);
   return `${month} '${year}`;
-}
-
-// Deliberately no fixed aspect ratio (unlike ProjectImage) — a masonry
-// layout's whole look depends on tiles keeping their natural, varied
-// heights within a fixed-width column.
-function MasonryPhoto({ src, alt }) {
-  const [loaded, setLoaded] = useState(false);
-  return (
-    <img
-      src={src}
-      alt={alt}
-      loading="lazy"
-      decoding="async"
-      onLoad={() => setLoaded(true)}
-      className={`w-full mb-3 rounded border border-[var(--border-secondary)] break-inside-avoid transition-opacity duration-700 ease-in-out ${
-        loaded ? "opacity-100" : "opacity-0"
-      }`}
-    />
-  );
 }
 
 function ExperienceEntryCard({ experience }) {
