@@ -23,6 +23,12 @@ export default defineType({
       of: [{ type: "string" }],
       description: "Icon slugs, e.g. python, react, typescript",
     }),
+    defineField({
+      name: "photos",
+      title: "Photos",
+      type: "array",
+      of: [{ type: "image", options: { hotspot: true } }],
+    }),
   ],
   preview: {
     select: { title: "role", subtitle: "company" },
