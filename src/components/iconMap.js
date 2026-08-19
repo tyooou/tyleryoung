@@ -7,6 +7,8 @@ import {
   History,
   Keyboard,
   Folder,
+  ListTodo,
+  Library,
 } from "lucide-react";
 
 export const ICON_MAP = {
@@ -18,6 +20,8 @@ export const ICON_MAP = {
   history: History,
   keyboard: Keyboard,
   folder: Folder,
+  "list-todo": ListTodo,
+  library: Library,
 };
 
 export function getIcon(key) {
