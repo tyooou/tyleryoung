@@ -6,10 +6,13 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "postbuild": "cp dist/index.html dist/404.html",
     "lint": "eslint .",
     "preview": "vite preview",
     "deploy": "gh-pages -d dist",
-    "seed:sanity": "node scripts/seed-sanity.mjs"
+    "seed:sanity": "node scripts/seed-sanity.mjs",
+    "sync:leetcode": "node scripts/sync-leetcode.mjs",
+    "sync:leetcode-stats": "node scripts/sync-leetcode-stats.mjs"
   },
   "dependencies": {
     "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
@@ -18,14 +21,18 @@
     "@sanity/vision": "^6.9.2",
     "@tailwindcss/vite": "^4.1.11",
     "buffer": "^6.0.3",
+    "front-matter": "^4.0.2",
     "lucide": "^0.525.0",
     "lucide-react": "^0.525.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-markdown": "^10.1.0",
     "react-textfit": "^1.1.1",
+    "remark-gfm": "^4.0.1",
     "sanity": "^6.9.2",
     "styled-components": "^6.5.3",
-    "tech-stack-icons": "^3.5.8"
+    "tech-stack-icons": "^3.5.8",
+    "unist-util-visit": "^5.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.30.1",
