@@ -31,7 +31,15 @@ function Sidebar({
     .filter((p) => p.enabled)
     .sort((a, b) => a.order - b.order);
 
-  const [activeActivity, setActiveActivity] = useState("experience");
+  const [activeActivity, setActiveActivity] = useState(() => {
+    const saved = localStorage.getItem("sidebarActiveActivity");
+    if (saved === null) return "experience";
+    try {
+      return JSON.parse(saved);
+    } catch {
+      return "experience";
+    }
+  });
   const [panelWidth, setPanelWidth] = useState(() => {
     const saved = Number(localStorage.getItem("sidebarPanelWidth"));
     return saved >= MIN_PANEL_WIDTH && saved <= MAX_PANEL_WIDTH
@@ -65,6 +73,10 @@ function Sidebar({
   useEffect(() => {
     localStorage.setItem("sidebarPanelWidth", String(panelWidth));
   }, [panelWidth]);
+
+  useEffect(() => {
+    localStorage.setItem("sidebarActiveActivity", JSON.stringify(activeActivity));
+  }, [activeActivity]);
 
   const handleSelectActivity = (id) => {
     const next = activeActivity === id ? null : id;
