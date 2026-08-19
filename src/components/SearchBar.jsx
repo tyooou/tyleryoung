@@ -9,6 +9,11 @@ function SearchBar({
   goForward,
   projects,
   pages,
+  releases,
+  friends,
+  leetcodeProblems,
+  experiences = [],
+  quickLinks = [],
 }) {
   const { cycleTheme, setTheme } = useTheme();
   const [expanded, setExpanded] = useState(false);
@@ -20,12 +25,17 @@ function SearchBar({
   const panelRef = useRef(null);
 
   const themes = THEMES.map((t) => ({
-    name: t.replace("theme-", "").replace(/\b\w/g, (c) => c.toUpperCase()),
+    name: t
+      .replace("theme-", "")
+      .replace(/-/g, " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase()),
     value: t,
   }));
 
   const contentLinks = pages
-    .filter((p) => p.enabled)
+    .filter(
+      (p) => p.enabled && p.id !== "changelog" && p.id !== "friends" && p.id !== "experience",
+    )
     .sort((a, b) => a.order - b.order)
     .map((p) => p.id);
 
@@ -41,6 +51,34 @@ function SearchBar({
       label: "Go to Projects",
       action: () => {
         setMenuContext("projects");
+        setSelectedOption(0);
+      },
+    },
+    {
+      label: "Go to Changelog",
+      action: () => {
+        setMenuContext("changelog");
+        setSelectedOption(0);
+      },
+    },
+    {
+      label: "Go to Friends",
+      action: () => {
+        setMenuContext("friends");
+        setSelectedOption(0);
+      },
+    },
+    {
+      label: "Go to Leetcode",
+      action: () => {
+        setMenuContext("leetcode");
+        setSelectedOption(0);
+      },
+    },
+    {
+      label: "Go to Work",
+      action: () => {
+        setMenuContext("work");
         setSelectedOption(0);
       },
     },
@@ -79,6 +117,28 @@ function SearchBar({
     ...projects.map((p) => ({ label: p.title, value: p.name })),
   ];
 
+  const releaseLinks = [
+    ...releases.map((r) => ({ label: r.version, value: r.version })),
+  ];
+
+  const friendLinks = [
+    ...friends.map((f) => ({ label: f.name, value: f.name })),
+  ];
+
+  const leetcodeLinks = [
+    ...leetcodeProblems.map((p) => ({
+      label: `${p.number}. ${p.title}`,
+      value: p.path,
+    })),
+  ];
+
+  const workLinks = [
+    ...experiences.map((exp) => ({
+      label: `${exp.role} @ ${exp.company}`,
+      value: exp.slug,
+    })),
+  ];
+
   const themeOptions = themes.map((t) => ({
     label: t.name,
     action: () => {
@@ -106,30 +166,68 @@ function SearchBar({
     },
   }));
 
+  const releaseOptions = releaseLinks.map((r) => ({
+    label: r.label,
+    action: () => {
+      updatePage(r.value);
+      setExpanded(false);
+      if (window.innerWidth < 768) updateSidebar(false);
+    },
+  }));
+
+  const friendOptions = friendLinks.map((f) => ({
+    label: f.label,
+    action: () => {
+      updatePage(f.value);
+      setExpanded(false);
+      if (window.innerWidth < 768) updateSidebar(false);
+    },
+  }));
+
+  const leetcodeOptions = leetcodeLinks.map((l) => ({
+    label: l.label,
+    action: () => {
+      updatePage(l.value);
+      setExpanded(false);
+      if (window.innerWidth < 768) updateSidebar(false);
+    },
+  }));
+
+  const workOptions = workLinks.map((w) => ({
+    label: w.label,
+    action: () => {
+      updatePage(w.value);
+      setExpanded(false);
+      if (window.innerWidth < 768) updateSidebar(false);
+    },
+  }));
+
+  const quickLinkById = (id) => quickLinks.find((q) => q.id === id);
+
   const commandOptions = [
-    {
-      label: "Document: Open CV",
-      action: () => {
-        window.open(
-          "https://drive.google.com/file/d/14Aru2JXekxazMWw34HCe7SZbIk4kuTkP/view?usp=sharing",
-          "_blank",
-        );
-        setExpanded(false);
-      },
-    },
-    {
-      label: "Document: Download CV",
-      action: () => {
-        const link = document.createElement("a");
-        link.href =
-          "https://drive.google.com/uc?export=download&id=14Aru2JXekxazMWw34HCe7SZbIk4kuTkP";
-        link.download = "TYLER-YOUNG-CV.pdf";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        setExpanded(false);
-      },
-    },
+    ...(quickLinkById("cv")
+      ? [
+          {
+            label: "Document: Open CV",
+            action: () => {
+              updatePage(quickLinkById("cv").name);
+              setExpanded(false);
+            },
+          },
+          {
+            label: "Document: Download CV",
+            action: () => {
+              const link = document.createElement("a");
+              link.href = `${quickLinkById("cv").link}?dl=TYLER-YOUNG-CV.pdf`;
+              link.download = "TYLER-YOUNG-CV.pdf";
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              setExpanded(false);
+            },
+          },
+        ]
+      : []),
     {
       label: "Contact: Send an E-mail",
       action: () => {
@@ -144,20 +242,28 @@ function SearchBar({
         setExpanded(false);
       },
     },
-    {
-      label: "Contact: Open LinkedIn",
-      action: () => {
-        window.open("https://nz.linkedin.com/in/tylerhyoung", "_blank");
-        setExpanded(false);
-      },
-    },
-    {
-      label: "Contact: Open GitHub",
-      action: () => {
-        window.open("https://github.com/tyooou", "_blank");
-        setExpanded(false);
-      },
-    },
+    ...(quickLinkById("linkedin")
+      ? [
+          {
+            label: "Contact: Open LinkedIn",
+            action: () => {
+              updatePage(quickLinkById("linkedin").name);
+              setExpanded(false);
+            },
+          },
+        ]
+      : []),
+    ...(quickLinkById("github")
+      ? [
+          {
+            label: "Contact: Open GitHub",
+            action: () => {
+              updatePage(quickLinkById("github").name);
+              setExpanded(false);
+            },
+          },
+        ]
+      : []),
   ];
 
   const getCurrentOptions = () => {
@@ -166,6 +272,14 @@ function SearchBar({
         return pageOptions;
       case "projects":
         return projectOptions;
+      case "changelog":
+        return releaseOptions;
+      case "friends":
+        return friendOptions;
+      case "leetcode":
+        return leetcodeOptions;
+      case "work":
+        return workOptions;
       case "theme":
         return themeOptions;
       case "commands":
@@ -185,7 +299,14 @@ function SearchBar({
     }
     if (menuContext === "main" && input.trim() !== "") {
       const lower = input.trim().toLowerCase();
-      const allOptions = [...pageOptions, ...projectOptions];
+      const allOptions = [
+        ...pageOptions,
+        ...projectOptions,
+        ...releaseOptions,
+        ...friendOptions,
+        ...leetcodeOptions,
+        ...workOptions,
+      ];
       return allOptions.filter((opt) =>
         opt.label.toLowerCase().includes(lower),
       );
@@ -199,6 +320,30 @@ function SearchBar({
     if (menuContext === "projects" && input.trim() !== "") {
       const lower = input.trim().toLowerCase();
       return projectOptions.filter((opt) =>
+        opt.label.toLowerCase().includes(lower),
+      );
+    }
+    if (menuContext === "changelog" && input.trim() !== "") {
+      const lower = input.trim().toLowerCase();
+      return releaseOptions.filter((opt) =>
+        opt.label.toLowerCase().includes(lower),
+      );
+    }
+    if (menuContext === "friends" && input.trim() !== "") {
+      const lower = input.trim().toLowerCase();
+      return friendOptions.filter((opt) =>
+        opt.label.toLowerCase().includes(lower),
+      );
+    }
+    if (menuContext === "leetcode" && input.trim() !== "") {
+      const lower = input.trim().toLowerCase();
+      return leetcodeOptions.filter((opt) =>
+        opt.label.toLowerCase().includes(lower),
+      );
+    }
+    if (menuContext === "work" && input.trim() !== "") {
+      const lower = input.trim().toLowerCase();
+      return workOptions.filter((opt) =>
         opt.label.toLowerCase().includes(lower),
       );
     }

@@ -5,16 +5,22 @@ const ThemeContext = createContext();
 export const THEMES = [
   "theme-light",
   "theme-dark",
-  "theme-forest",
-  "theme-honeycomb",
-  "theme-rose",
-  "theme-lavender",
-  "theme-clementine",
-  "theme-ice",
+  "theme-one-dark-pro",
+  "theme-dracula",
+  "theme-monokai",
+  "theme-nord",
+  "theme-solarized-light",
+  "theme-gruvbox-dark",
 ];
 
 export const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState(() => localStorage.theme || "theme-light");
+  // A returning visitor may have an old theme slug in localStorage from
+  // before the theme lineup changed (e.g. "theme-forest") — falling back
+  // to light rather than applying a class with no matching CSS avoids
+  // rendering unstyled.
+  const [theme, setTheme] = useState(() =>
+    THEMES.includes(localStorage.theme) ? localStorage.theme : "theme-light",
+  );
 
   useEffect(() => {
     document.documentElement.classList.remove(...THEMES);
