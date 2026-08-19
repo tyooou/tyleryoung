@@ -8,7 +8,7 @@ import Footer from "./components/Footer";
 import ExperienceCard from "./components/pages/ExperienceCard";
 import OpenSourceCard from "./components/pages/OpenSourceCard";
 import LibraryOverviewCard from "./components/pages/LibraryOverviewCard";
-import { useTheme } from "./components/ThemeContext";
+import { useTheme } from "./lib/theme";
 import SearchBar from "./components/SearchBar";
 import TypingCard from "./components/pages/TypingCard";
 import LeetcodeCard from "./components/pages/leetcode/LeetcodeCard";

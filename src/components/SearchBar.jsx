@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { ArrowLeft, ArrowRight, Palette, PanelLeft } from "lucide-react";
-import { useTheme, THEMES } from "./ThemeContext";
+import { useTheme, THEMES } from "../lib/theme";
 
 function SearchBar({
   updateSidebar,

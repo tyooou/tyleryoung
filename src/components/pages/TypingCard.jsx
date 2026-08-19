@@ -65,7 +65,7 @@ function getResponseData(responseJson) {
 
 function MonkeyTypeStats() {
   const [personalBests, setPersonalBests] = useState(null);
-  const [speedHistogram, setSpeedHistogram] = useState(null);
+  const [speedHistogram] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 

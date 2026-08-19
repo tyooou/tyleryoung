@@ -1,4 +1,4 @@
-import { useTheme } from "./ThemeContext";
+import { useTheme } from "../lib/theme";
 import { useEffect, useState } from "react";
 import { sanityClient } from "../lib/sanityClient";
 

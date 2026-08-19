@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 function LeetcodeHeatmap({ submissionCalendar, months = 3 }) {
   const [heatmapData, setHeatmapData] = useState([]);
@@ -9,13 +9,7 @@ function LeetcodeHeatmap({ submissionCalendar, months = 3 }) {
   const monthsBefore = Math.floor((months - 1) / 2);
   const monthsAfter = months - 1 - monthsBefore;
 
-  useEffect(() => {
-    if (Object.keys(submissionCalendar).length > 0) {
-      generateMonthHeatmap(submissionCalendar, currentMonth);
-    }
-  }, [currentMonth, submissionCalendar, months]);
-
-  const generateMonthHeatmap = (submissionCalendar, monthDate) => {
+  const generateMonthHeatmap = useCallback((submissionCalendar, monthDate) => {
     const startMonth = new Date(
       monthDate.getFullYear(),
       monthDate.getMonth() - monthsBefore,
@@ -87,7 +81,13 @@ function LeetcodeHeatmap({ submissionCalendar, months = 3 }) {
     }
 
     setHeatmapData(gridByWeeks);
-  };
+  }, [monthsBefore, monthsAfter]);
+
+  useEffect(() => {
+    if (Object.keys(submissionCalendar).length > 0) {
+      generateMonthHeatmap(submissionCalendar, currentMonth);
+    }
+  }, [currentMonth, submissionCalendar, months, generateMonthHeatmap]);
 
   const getHeatmapStyle = (day) => {
     if (!day) return { backgroundColor: "transparent" };

@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import DecodeText from "../DecodeText";
 import ExternalLink from "../ExternalLink";
-import { useTheme } from "../ThemeContext";
+import { useTheme } from "../../lib/theme";
 
 const HIGHLIGHTS = [
   {

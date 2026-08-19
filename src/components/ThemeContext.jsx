@@ -1,17 +1,5 @@
-import { createContext, useContext, useEffect, useState } from "react";
-
-const ThemeContext = createContext();
-
-export const THEMES = [
-  "theme-light",
-  "theme-dark",
-  "theme-one-dark-pro",
-  "theme-dracula",
-  "theme-monokai",
-  "theme-nord",
-  "theme-solarized-light",
-  "theme-gruvbox-dark",
-];
+import { useEffect, useState } from "react";
+import { ThemeContext, THEMES } from "../lib/theme";
 
 export const ThemeProvider = ({ children }) => {
   // A returning visitor may have an old theme slug in localStorage from
@@ -40,5 +28,3 @@ export const ThemeProvider = ({ children }) => {
     </ThemeContext.Provider>
   );
 };
-
-export const useTheme = () => useContext(ThemeContext);
