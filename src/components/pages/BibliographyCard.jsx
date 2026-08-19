@@ -61,7 +61,7 @@ function BibliographyCard({
       <div className="flex items-center gap-4 ml-2">
         <DecodeText text="Tyler Young" speed={80} />
       </div>
-      <p className="text-lg sm:text-xl mt-3 ml-2 font-bold text-[var(--text-secondary)]">
+      <p className="text-lg sm:text-xl mt-3 ml-2 font-bold text-[var(--text-secondary)] p-6">
         Creative by design. <span className="italic">Technical by habit.</span>
       </p>
 
@@ -105,7 +105,9 @@ function BibliographyCard({
           <h3 className="font-bold text-xl sm:text-2xl mb-3">Recent</h3>
           <div className="flex flex-col">
             {recentProjects.length === 0 ? (
-              <p className="text-sm text-[var(--text-secondary)]">No projects yet.</p>
+              <p className="text-sm text-[var(--text-secondary)]">
+                No projects yet.
+              </p>
             ) : (
               recentProjects.map((project) => (
                 <button
