@@ -1,0 +1,73 @@
+import { useState } from "react";
+import ExternalLink from "../ExternalLink";
+import TechStack from "./project/TechStack";
+
+function formatMonthYear(dateStr) {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  if (isNaN(date)) return dateStr;
+  const month = date.toLocaleString("en-US", { month: "short" });
+  const year = String(date.getFullYear()).slice(-2);
+  return `${month} '${year}`;
+}
+
+// Deliberately no fixed aspect ratio (unlike ProjectImage) — a masonry
+// layout's whole look depends on tiles keeping their natural, varied
+// heights within a fixed-width column.
+function MasonryPhoto({ src, alt }) {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <img
+      src={src}
+      alt={alt}
+      loading="lazy"
+      decoding="async"
+      onLoad={() => setLoaded(true)}
+      className={`w-full mb-3 rounded border border-[var(--border-secondary)] break-inside-avoid transition-opacity duration-700 ease-in-out ${
+        loaded ? "opacity-100" : "opacity-0"
+      }`}
+    />
+  );
+}
+
+function ExperienceEntryCard({ experience }) {
+  if (!experience) return null;
+  const { role, company, location, description, start, end, link, techStack, photos } =
+    experience;
+
+  return (
+    <div className="flex flex-col sm:flex-row w-full h-full font-mono select-none cursor-default sm:overflow-hidden">
+      <div className="flex-1 sm:flex-2 p-3 sm:p-5 sm:overflow-y-auto">
+        <h2 className="font-bold text-4xl sm:text-3xl md:text-4xl lg:text-5xl flex-shrink-0">
+          {role}
+        </h2>
+        <p className="text-xl sm:text-2xl mt-2 ml-2 font-bold text-[var(--text-secondary)]">
+          {link ? <ExternalLink text={company} link={link} /> : company}
+        </p>
+        <div className="ml-2 mt-4 max-w-2xl">
+          <p className="text-base text-[var(--text-secondary)]">
+            {formatMonthYear(start)} to {end ? formatMonthYear(end) : "Present"}
+            {location ? ` — ${location}` : ""}
+          </p>
+          {description && <p className="text-base mt-4">{description}</p>}
+          {techStack?.length > 0 && (
+            <div className="mt-6">
+              <TechStack techStack={techStack} />
+            </div>
+          )}
+        </div>
+      </div>
+      {photos?.length > 0 && (
+        <div className="flex-1 sm:flex-3 p-3 sm:p-5 sm:pt-6 sm:overflow-y-auto">
+          <div className="columns-2 lg:columns-3 gap-3">
+            {photos.map((photo, index) => (
+              <MasonryPhoto key={photo.url || index} src={photo.url} alt={photo.alt || role} />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default ExperienceEntryCard;

@@ -14,8 +14,40 @@ export default defineType({
       type: "date",
       description: "Leave blank if still in progress",
     }),
+    defineField({
+      name: "coverImage",
+      title: "Cover Image",
+      type: "image",
+      options: { hotspot: true },
+    }),
+    defineField({
+      name: "rating",
+      title: "Rating (out of 5)",
+      type: "number",
+      validation: (Rule) => Rule.min(0).max(5),
+    }),
+    defineField({
+      name: "themes",
+      title: "Themes",
+      type: "array",
+      of: [{ type: "string" }],
+      description: "Genres/topics, e.g. productivity, habits, psychology",
+    }),
+    defineField({
+      name: "keyPoints",
+      title: "Key Points / Understanding",
+      type: "text",
+      rows: 6,
+      description: "Personal notes on what the book covers and what stuck with you.",
+    }),
+    defineField({
+      name: "favoriteQuote",
+      title: "Favorite Quote",
+      type: "text",
+      rows: 3,
+    }),
   ],
   preview: {
-    select: { title: "title", subtitle: "author" },
+    select: { title: "title", subtitle: "author", media: "coverImage" },
   },
 });

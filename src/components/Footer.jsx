@@ -1,5 +1,6 @@
-import { useTheme } from "./ThemeContext";
+import { useTheme } from "../lib/theme";
 import { useEffect, useState } from "react";
+import { sanityClient } from "../lib/sanityClient";
 
 function Footer() {
   const { theme } = useTheme();
@@ -15,14 +16,12 @@ function Footer() {
   };
 
   useEffect(() => {
-    fetch("releaseNotes/versions.json")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.versions && data.versions.length > 0) {
-          const last = data.versions[data.versions.length - 1];
-          setVersion(last.replace(/-/g, "."));
-        }
-      });
+    sanityClient
+      .fetch(`*[_type == "release"] | order(order asc)[0]{ version }`)
+      .then((latest) => {
+        if (latest?.version) setVersion(latest.version);
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {

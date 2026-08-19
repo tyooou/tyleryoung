@@ -1,24 +1,23 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
-function LeetcodeHeatmap({ submissionCalendar }) {
+function LeetcodeHeatmap({ submissionCalendar, months = 3 }) {
   const [heatmapData, setHeatmapData] = useState([]);
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  useEffect(() => {
-    if (Object.keys(submissionCalendar).length > 0) {
-      generateMonthHeatmap(submissionCalendar, currentMonth);
-    }
-  }, [currentMonth, submissionCalendar]);
+  // Window is centered on `currentMonth`, split as evenly as possible
+  // before/after it — e.g. 3 months = [-1, 0, +1], 4 months = [-1, 0, +1, +2].
+  const monthsBefore = Math.floor((months - 1) / 2);
+  const monthsAfter = months - 1 - monthsBefore;
 
-  const generateMonthHeatmap = (submissionCalendar, monthDate) => {
+  const generateMonthHeatmap = useCallback((submissionCalendar, monthDate) => {
     const startMonth = new Date(
       monthDate.getFullYear(),
-      monthDate.getMonth() - 1,
+      monthDate.getMonth() - monthsBefore,
       1
     );
     const endMonth = new Date(
       monthDate.getFullYear(),
-      monthDate.getMonth() + 3,
+      monthDate.getMonth() + monthsAfter + 1,
       0
     );
 
@@ -30,8 +29,7 @@ function LeetcodeHeatmap({ submissionCalendar }) {
 
     let totalDays = 0;
     while (currentDate <= endMonth || totalDays % 7 !== 0) {
-      const isInFourMonthRange =
-        currentDate >= startMonth && currentDate <= endMonth;
+      const isInRange = currentDate >= startMonth && currentDate <= endMonth;
 
       const now = new Date();
       const isInFuture = currentDate > now;
@@ -58,7 +56,7 @@ function LeetcodeHeatmap({ submissionCalendar }) {
       heatmapGrid.push({
         date: new Date(currentDate),
         count: submissionCount,
-        isValid: isInFourMonthRange,
+        isValid: isInRange,
         isInFuture: isInFuture,
       });
 
@@ -83,7 +81,13 @@ function LeetcodeHeatmap({ submissionCalendar }) {
     }
 
     setHeatmapData(gridByWeeks);
-  };
+  }, [monthsBefore, monthsAfter]);
+
+  useEffect(() => {
+    if (Object.keys(submissionCalendar).length > 0) {
+      generateMonthHeatmap(submissionCalendar, currentMonth);
+    }
+  }, [currentMonth, submissionCalendar, months, generateMonthHeatmap]);
 
   const getHeatmapStyle = (day) => {
     if (!day) return { backgroundColor: "transparent" };
@@ -98,7 +102,7 @@ function LeetcodeHeatmap({ submissionCalendar }) {
     setCurrentMonth((prev) => {
       const newDate = new Date(prev);
       const proposedDate = new Date(newDate);
-      proposedDate.setMonth(proposedDate.getMonth() + direction * 4);
+      proposedDate.setMonth(proposedDate.getMonth() + direction * months);
 
       const now = new Date();
       if (direction > 0 && proposedDate > now) {
@@ -119,12 +123,16 @@ function LeetcodeHeatmap({ submissionCalendar }) {
   }
 
   return (
-    <div className="mt-6 ml-2">
+    <div>
       <div className="flex items-center gap-3 mb-3">
         <h3 className="text-xl font-bold ml-13 mr-4">
-          {formatMonthYear(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
+          {formatMonthYear(
+            new Date(currentMonth.getFullYear(), currentMonth.getMonth() - monthsBefore),
+          )}
           {" - "}
-          {formatMonthYear(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 2))}
+          {formatMonthYear(
+            new Date(currentMonth.getFullYear(), currentMonth.getMonth() + monthsAfter),
+          )}
           {" Activity"}
         </h3>
           <button

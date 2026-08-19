@@ -1,29 +1,41 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { sanityClient } from "./lib/sanityClient";
-import ProjectCard from "./components/pages/project/ProjectCard";
 import Sidebar from "./components/Sidebar";
 import BibliographyCard from "./components/pages/BibliographyCard";
-import Navigation from "./components/Navigation";
-import VerticalNumbering from "./components/pages/VerticalNumbering";
+import PaneView from "./components/PaneView";
+import ResizeHandle from "./components/ResizeHandle";
 import Footer from "./components/Footer";
-import FriendsCard from "./components/pages/FriendsCard";
-import ContactCard from "./components/pages/ContactCard";
-import ChangelogCard from "./components/pages/ChangelogCard";
 import ExperienceCard from "./components/pages/ExperienceCard";
-import BooksCard from "./components/pages/BooksCard";
-import { useTheme } from "./components/ThemeContext";
+import OpenSourceCard from "./components/pages/OpenSourceCard";
+import LibraryOverviewCard from "./components/pages/LibraryOverviewCard";
+import { useTheme } from "./lib/theme";
 import SearchBar from "./components/SearchBar";
 import TypingCard from "./components/pages/TypingCard";
+import LeetcodeCard from "./components/pages/leetcode/LeetcodeCard";
+import ChangelogOverviewCard from "./components/pages/ChangelogOverviewCard";
+import {
+  MIN_PANEL_WIDTH,
+  MAX_PANEL_WIDTH,
+  DEFAULT_PANEL_WIDTH,
+  ACTIVITY_BAR_WIDTH,
+} from "./lib/sidebarConstants";
 
 const PAGE_COMPONENTS = {
   bibliography: BibliographyCard,
   experience: ExperienceCard,
-  books: BooksCard,
-  friends: FriendsCard,
-  contact: ContactCard,
-  changelog: ChangelogCard,
+  opensource: OpenSourceCard,
+  library: LibraryOverviewCard,
   typing: TypingCard,
+  leetcode: LeetcodeCard,
+  changelog: ChangelogOverviewCard,
 };
+
+const MIN_SPLIT_RATIO = 0.2;
+const MAX_SPLIT_RATIO = 0.8;
+
+function makePane(id, openTabs, page) {
+  return { id, openTabs, page, backTabs: [], forwardTabs: [] };
+}
 
 function Portfolio() {
   const { cycleTheme } = useTheme();
@@ -31,20 +43,46 @@ function Portfolio() {
     return window.innerWidth >= 768;
   });
 
-  const [openTabs, setOpenTabs] = useState(() => {
-    const saved = localStorage.getItem("openTabs");
-    return saved ? JSON.parse(saved) : ["bibliography"];
+  // Up to two panes (left/right, VS Code-style split editor). "left" always
+  // exists and always keeps "bibliography" pinned; "right" is created by
+  // dragging a tab to the edge and disappears once its last tab leaves.
+  const [panes, setPanes] = useState(() => {
+    const savedOpenTabs = localStorage.getItem("openTabs");
+    const savedActive = localStorage.getItem("activeTab");
+    return [
+      makePane(
+        "left",
+        savedOpenTabs ? JSON.parse(savedOpenTabs) : ["bibliography"],
+        savedActive || "bibliography",
+      ),
+    ];
   });
-  const [page, setPage] = useState(() => {
-    const saved = localStorage.getItem("activeTab");
-    return saved ? saved : "bibliography";
-  });
-  const [forwardTabs, setForwardTabs] = useState([]);
-  const [backTabs, setBackTabs] = useState([]);
+  const [activePaneId, setActivePaneId] = useState("left");
+  const [draggedTab, setDraggedTab] = useState(null); // { paneId, tab } | null
+  const [splitRatio, setSplitRatio] = useState(0.5);
+
   const [projects, setProjects] = useState([]);
   const [pages, setPages] = useState([]);
+  const [releases, setReleases] = useState([]);
+  const [experiences, setExperiences] = useState([]);
+  const [extracurriculars, setExtracurriculars] = useState([]);
+  const [books, setBooks] = useState([]);
+  const [blogPosts, setBlogPosts] = useState([]);
+  const [friends, setFriends] = useState([]);
+  const [leetcodeProblems, setLeetcodeProblems] = useState([]);
+  const [cvUrl, setCvUrl] = useState(null);
+  const [sidebarPanelWidth, setSidebarPanelWidth] = useState(() => {
+    const saved = Number(localStorage.getItem("sidebarPanelWidth"));
+    return saved >= MIN_PANEL_WIDTH && saved <= MAX_PANEL_WIDTH ? saved : DEFAULT_PANEL_WIDTH;
+  });
+  const [isSidebarResizing, setIsSidebarResizing] = useState(false);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
+
+  const splitRatioStartRef = useRef(splitRatio);
+  const panesRowRef = useRef(null);
+
+  const activePane = panes.find((p) => p.id === activePaneId) || panes[0];
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -55,8 +93,8 @@ function Portfolio() {
 
       if (event.ctrlKey && event.key === "w") {
         event.preventDefault();
-        if (page !== "bibliography") {
-          deleteTab(page);
+        if (activePane && activePane.page !== "bibliography") {
+          deletePaneTab(activePane.id, activePane.page);
         }
       }
 
@@ -71,7 +109,7 @@ function Portfolio() {
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [page, cycleTheme]);
+  }, [activePane, cycleTheme]);
 
   useEffect(() => {
     async function findPages() {
@@ -95,6 +133,7 @@ function Portfolio() {
             "name": name.current,
             title,
             subtitle,
+            _createdAt,
             "techStack": coalesce(techStack, []),
             code,
             preview,
@@ -113,11 +152,188 @@ function Portfolio() {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("openTabs", JSON.stringify(openTabs));
-  }, [openTabs]);
+    async function loadReleases() {
+      try {
+        const data = await sanityClient.fetch(`
+          *[_type == "release"] | order(order asc){
+            version, date, title,
+            "completed": coalesce(completed, []),
+            "planned": coalesce(planned, [])
+          }
+        `);
+        setReleases(data);
+      } catch {
+        setReleases([]);
+      }
+    }
+    loadReleases();
+  }, []);
+
   useEffect(() => {
-    localStorage.setItem("activeTab", page);
-  }, [page]);
+    async function loadExperiences() {
+      try {
+        const data = await sanityClient.fetch(`
+          *[_type == "experience"] | order(start desc){
+            role, company, location, description, start, end, link, techStack,
+            "photos": coalesce(photos[]{ "url": asset->url, alt }, [])
+          }
+        `);
+        // No CMS slug field for experience entries — derive a stable one
+        // from role+company+start so individual pages/tabs have a page id.
+        setExperiences(
+          data.map((exp) => ({
+            ...exp,
+            slug: `experience-${`${exp.role}-${exp.company}-${exp.start}`
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/^-+|-+$/g, "")}`,
+          })),
+        );
+      } catch {
+        setExperiences([]);
+      }
+    }
+    loadExperiences();
+  }, []);
+
+  useEffect(() => {
+    async function loadExtracurriculars() {
+      try {
+        const data = await sanityClient.fetch(`
+          *[_type == "extracurricular"] | order(order asc){
+            title, description, link,
+            "photos": coalesce(photos[]{ "url": asset->url, alt }, [])
+          }
+        `);
+        // No CMS slug field for extracurriculars — derive a stable one from
+        // the title so individual pages/tabs have a page id.
+        setExtracurriculars(
+          data.map((item) => ({
+            ...item,
+            slug: `extracurricular-${item.title
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/^-+|-+$/g, "")}`,
+          })),
+        );
+      } catch {
+        setExtracurriculars([]);
+      }
+    }
+    loadExtracurriculars();
+  }, []);
+
+  useEffect(() => {
+    async function loadBooks() {
+      try {
+        const data = await sanityClient.fetch(`
+          *[_type == "book"] | order(dateCompleted desc, dateStarted desc){
+            title, author, isbn, dateStarted, dateCompleted,
+            rating, themes, keyPoints, favoriteQuote,
+            "coverImage": coverImage.asset->url
+          }
+        `);
+        // No CMS slug field for books — derive a stable one from title+start
+        // date so individual pages/tabs have a page id.
+        setBooks(
+          data.map((book) => ({
+            ...book,
+            slug: `library-book-${`${book.title}-${book.dateStarted || ""}`
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/^-+|-+$/g, "")}`,
+          })),
+        );
+      } catch {
+        setBooks([]);
+      }
+    }
+    loadBooks();
+  }, []);
+
+  useEffect(() => {
+    async function loadBlogPosts() {
+      try {
+        const data = await sanityClient.fetch(`
+          *[_type == "blogPost"] | order(date desc){
+            title, date, excerpt, body
+          }
+        `);
+        // No CMS slug field for blog posts — derive a stable one from
+        // title+date so individual pages/tabs have a page id.
+        setBlogPosts(
+          data.map((post) => ({
+            ...post,
+            slug: `library-post-${`${post.title}-${post.date}`
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/^-+|-+$/g, "")}`,
+          })),
+        );
+      } catch {
+        setBlogPosts([]);
+      }
+    }
+    loadBlogPosts();
+  }, []);
+
+  useEffect(() => {
+    async function loadFriends() {
+      try {
+        const data = await sanityClient.fetch(`*[_type == "friend"]{ name, link }`);
+        setFriends(data);
+      } catch {
+        setFriends([]);
+      }
+    }
+    loadFriends();
+  }, []);
+
+  useEffect(() => {
+    async function loadLeetcodeProblems() {
+      try {
+        const data = await sanityClient.fetch(`
+          *[_type == "leetcodeProblem"] | order(year desc, month desc, number asc){
+            path, year, month, number, title, date, difficulty
+          }
+        `);
+        setLeetcodeProblems(data);
+      } catch {
+        setLeetcodeProblems([]);
+      }
+    }
+    loadLeetcodeProblems();
+  }, []);
+
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const data = await sanityClient.fetch(
+          `*[_type == "settings"][0]{ "cvUrl": cv.asset->url }`,
+        );
+        setCvUrl(data?.cvUrl || null);
+      } catch {
+        setCvUrl(null);
+      }
+    }
+    loadSettings();
+  }, []);
+
+  useEffect(() => {
+    const left = panes.find((p) => p.id === "left");
+    if (left) {
+      localStorage.setItem("openTabs", JSON.stringify(left.openTabs));
+      localStorage.setItem("activeTab", left.page);
+    }
+  }, [panes]);
+
+  // If the focused pane just closed (its last tab moved/closed elsewhere),
+  // fall back to the pane that's guaranteed to still exist.
+  useEffect(() => {
+    if (!panes.some((p) => p.id === activePaneId)) {
+      setActivePaneId("left");
+    }
+  }, [panes, activePaneId]);
 
   useEffect(() => {
     const isMobile = window.innerWidth < 768;
@@ -139,49 +355,136 @@ function Portfolio() {
     setSidebar(newState);
   };
 
-  const updatePage = (newPage) => {
-    setPage(newPage);
-    setOpenTabs((prevTabs) =>
-      prevTabs.includes(newPage) ? prevTabs : [...prevTabs, newPage],
+  // Opens `tab` in a specific pane, focusing it. Used directly by the tab
+  // bar (switching/opening within a known pane) and wrapped by `updatePage`
+  // below for every other call site, which always targets "whichever pane
+  // is currently focused" rather than naming one explicitly.
+  const openInPane = (paneId, tab) => {
+    setActivePaneId(paneId);
+    setPanes((prev) =>
+      prev.map((p) => {
+        if (p.id !== paneId) return p;
+        if (p.page === tab) return p;
+        return {
+          ...p,
+          page: tab,
+          openTabs: p.openTabs.includes(tab) ? p.openTabs : [...p.openTabs, tab],
+          backTabs: [...p.backTabs, p.page],
+          forwardTabs: [],
+        };
+      }),
     );
-    setBackTabs((prevBack) => [...prevBack, page]);
-    setForwardTabs([]);
   };
 
+  const updatePage = (newPage) => openInPane(activePaneId, newPage);
+
   const goBack = () => {
-    const previous = backTabs.pop();
-    if (previous) {
-      setForwardTabs((prevForward) => [...prevForward, page]);
-      setPage(previous);
-    }
+    setPanes((prev) =>
+      prev.map((p) => {
+        if (p.id !== activePaneId || p.backTabs.length === 0) return p;
+        const previous = p.backTabs[p.backTabs.length - 1];
+        return {
+          ...p,
+          page: previous,
+          backTabs: p.backTabs.slice(0, -1),
+          forwardTabs: [...p.forwardTabs, p.page],
+        };
+      }),
+    );
   };
 
   const goForward = () => {
-    const next = forwardTabs.pop();
-    if (next) {
-      setBackTabs((prevBack) => [...prevBack, page]);
-      setPage(next);
-    }
+    setPanes((prev) =>
+      prev.map((p) => {
+        if (p.id !== activePaneId || p.forwardTabs.length === 0) return p;
+        const next = p.forwardTabs[p.forwardTabs.length - 1];
+        return {
+          ...p,
+          page: next,
+          forwardTabs: p.forwardTabs.slice(0, -1),
+          backTabs: [...p.backTabs, p.page],
+        };
+      }),
+    );
   };
 
-  const deleteTab = (targetTab) => {
-    const newTabs = openTabs.filter((tab) => tab !== targetTab);
-    setOpenTabs(newTabs);
-
-    setBackTabs((prevBack) => prevBack.filter((tab) => tab !== targetTab));
-    setForwardTabs((prevForward) =>
-      prevForward.filter((tab) => tab !== targetTab),
+  // Closing a pane's last tab collapses that pane, except "left" which
+  // always keeps "bibliography" (its close button is hidden, so this only
+  // ever fires defensively).
+  const deletePaneTab = (paneId, targetTab) => {
+    setPanes((prev) =>
+      prev
+        .map((p) => {
+          if (p.id !== paneId) return p;
+          const newTabs = p.openTabs.filter((tab) => tab !== targetTab);
+          let nextPage = p.page;
+          if (p.page === targetTab) {
+            if (newTabs.length > 0) {
+              const deletedIndex = p.openTabs.indexOf(targetTab);
+              const nextIndex = deletedIndex > 0 ? deletedIndex - 1 : 0;
+              nextPage = newTabs[nextIndex];
+            } else {
+              nextPage = "bibliography";
+            }
+          }
+          return {
+            ...p,
+            openTabs: newTabs,
+            page: nextPage,
+            backTabs: p.backTabs.filter((tab) => tab !== targetTab),
+            forwardTabs: p.forwardTabs.filter((tab) => tab !== targetTab),
+          };
+        })
+        .filter((p) => p.id === "left" || p.openTabs.length > 0),
     );
+  };
 
-    if (page === targetTab) {
-      if (newTabs.length > 0) {
-        const deletedIndex = openTabs.indexOf(targetTab);
-        const nextIndex = deletedIndex > 0 ? deletedIndex - 1 : 0;
-        setPage(newTabs[nextIndex]);
+  // Moves `tab` from one pane to another. `createNew` makes a brand-new
+  // pane (the drag-to-split gesture); otherwise it's appended to an
+  // existing pane. The source pane collapses if this was its last tab.
+  const movePaneTab = (fromPaneId, toPaneId, tab, createNew) => {
+    setPanes((prev) => {
+      let next = prev.map((p) => {
+        if (p.id !== fromPaneId) return p;
+        const remaining = p.openTabs.filter((t) => t !== tab);
+        const nextPage =
+          p.page === tab ? remaining[remaining.length - 1] || "bibliography" : p.page;
+        return { ...p, openTabs: remaining, page: nextPage };
+      });
+      next = next.filter((p) => p.id === "left" || p.openTabs.length > 0);
+
+      if (createNew) {
+        next = [...next, makePane(toPaneId, [tab], tab)];
       } else {
-        setPage("bibliography");
+        next = next.map((p) => {
+          if (p.id !== toPaneId) return p;
+          return {
+            ...p,
+            openTabs: p.openTabs.includes(tab) ? p.openTabs : [...p.openTabs, tab],
+            page: tab,
+            backTabs: [...p.backTabs, p.page],
+            forwardTabs: [],
+          };
+        });
       }
-    }
+      return next;
+    });
+    setActivePaneId(toPaneId);
+  };
+
+  const handleTabDragStart = (paneId, tab) => setDraggedTab({ paneId, tab });
+  const handleTabDragEnd = () => setDraggedTab(null);
+
+  const handleDropCreateSplit = () => {
+    if (!draggedTab) return;
+    movePaneTab(draggedTab.paneId, "right", draggedTab.tab, true);
+    setDraggedTab(null);
+  };
+
+  const handleDropIntoPane = (targetPaneId) => {
+    if (!draggedTab || draggedTab.paneId === targetPaneId) return;
+    movePaneTab(draggedTab.paneId, targetPaneId, draggedTab.tab, false);
+    setDraggedTab(null);
   };
 
   const minSwipeDistance = 50;
@@ -208,9 +511,77 @@ function Portfolio() {
     }
   };
 
+  const quickLinks = [
+    { id: "github", name: "GitHub", link: "https://github.com/tyooou" },
+    { id: "linkedin", name: "LinkedIn", link: "https://nz.linkedin.com/in/tylerhyoung" },
+    ...(cvUrl ? [{ id: "cv", name: "Résumé", link: cvUrl }] : []),
+  ];
+
+  const sidebarMargin = ACTIVITY_BAR_WIDTH + sidebarPanelWidth;
+
+  const paneElements = panes.flatMap((pane, index) => {
+    const paneEl = (
+      <PaneView
+        key={pane.id}
+        pane={pane}
+        isPrimary={index === 0}
+        isSolePane={panes.length === 1}
+        isDragActive={draggedTab !== null}
+        onSwitchTab={openInPane}
+        onDeleteTab={deletePaneTab}
+        onTabDragStart={handleTabDragStart}
+        onTabDragEnd={handleTabDragEnd}
+        onFocusPane={setActivePaneId}
+        onDropIntoPane={handleDropIntoPane}
+        onDropCreateSplit={handleDropCreateSplit}
+        updateSidebar={updateSidebar}
+        friends={friends}
+        quickLinks={quickLinks}
+        leetcodeProblems={leetcodeProblems}
+        projects={projects}
+        releases={releases}
+        experiences={experiences}
+        extracurriculars={extracurriculars}
+        books={books}
+        blogPosts={blogPosts}
+        sidebarPanelOpen={sidebarPanelWidth > 0}
+        pageComponents={PAGE_COMPONENTS}
+        style={
+          panes.length === 2 && index === 0
+            ? { flex: `0 0 ${splitRatio * 100}%` }
+            : { flex: "1 1 0%" }
+        }
+      />
+    );
+    if (index === 0 && panes.length === 2) {
+      return [
+        paneEl,
+        <ResizeHandle
+          key="pane-split-handle"
+          className="hidden sm:block absolute top-0 h-full w-2 z-20"
+          style={{ left: `${splitRatio * 100}%`, transform: "translateX(-50%)" }}
+          onDragStart={() => {
+            splitRatioStartRef.current = splitRatio;
+          }}
+          onDrag={(deltaX) => {
+            const total = panesRowRef.current?.offsetWidth || 1;
+            const deltaRatio = deltaX / total;
+            setSplitRatio(
+              Math.min(
+                MAX_SPLIT_RATIO,
+                Math.max(MIN_SPLIT_RATIO, splitRatioStartRef.current + deltaRatio),
+              ),
+            );
+          }}
+        />,
+      ];
+    }
+    return [paneEl];
+  });
+
   return (
     <>
-      <div className="flex flex-col min-h-screen sm:fixed w-full bg-[var(--bg-secondary)]">
+      <div className="flex flex-col min-h-screen sm:h-screen sm:fixed w-full bg-[var(--bg-secondary)]">
         <SearchBar
           updateSidebar={updateSidebar}
           updatePage={updatePage}
@@ -218,6 +589,11 @@ function Portfolio() {
           goForward={goForward}
           projects={projects.map((project) => project.meta)}
           pages={pages}
+          releases={releases}
+          friends={friends}
+          leetcodeProblems={leetcodeProblems}
+          experiences={experiences}
+          quickLinks={quickLinks}
         />
         <div
           className={`flex-1 flex flex-row w-full sm:h-full sm:overflow-hidden pt-[52px] sm:pt-0 ${sidebarState ? "overflow-hidden" : "overflow-y-auto"}`}
@@ -228,44 +604,31 @@ function Portfolio() {
             state={sidebarState}
             projects={projects.map((project) => project.meta)}
             pages={pages}
+            releases={releases}
+            friends={friends}
+            leetcodeProblems={leetcodeProblems}
+            experiences={experiences}
+            extracurriculars={extracurriculars}
+            books={books}
+            blogPosts={blogPosts}
+            quickLinks={quickLinks}
+            onPanelWidthChange={setSidebarPanelWidth}
+            onPanelResizingChange={setIsSidebarResizing}
           />
           <div
-            className={`flex flex-col flex-1 sm:h-full transition-all duration-300 ${
-              sidebarState
-                ? "translate-x-full sm:translate-x-0 sm:ml-64"
-                : "ml-0"
-            }`}
+            style={{ "--panel-margin": `${sidebarMargin}px` }}
+            className={`flex flex-col flex-1 min-h-0 min-w-0 sm:h-full sm:translate-x-0 sm:ml-[var(--panel-margin)] ${
+              isSidebarResizing ? "" : "transition-all duration-300"
+            } ${sidebarState ? "translate-x-full" : "ml-0"}`}
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
           >
-            <Navigation
-              updatePage={updatePage}
-              deleteTab={deleteTab}
-              openTabs={openTabs}
-              page={page}
-            />
-            <div className="flex flex-col sm:flex-row flex-1 sm:overflow-hidden">
-              <div className="hidden sm:block">
-                <VerticalNumbering />
-              </div>
-              <div className="flex-1 bg-[var(--bg)] text-[var(--text)] overflow-y-auto sm:overflow-hidden pb-14 sm:pb-0">
-                {(() => {
-                  const ActivePageComponent = PAGE_COMPONENTS[page];
-                  return (
-                    ActivePageComponent && (
-                      <ActivePageComponent toggleSidebar={updateSidebar} />
-                    )
-                  );
-                })()}
-                {projects.some((project) => project.meta.name === page) && (
-                  <ProjectCard
-                    project={projects.find(
-                      (project) => project.meta.name === page,
-                    )}
-                  />
-                )}
-              </div>
+            <div
+              ref={panesRowRef}
+              className="relative flex flex-col sm:flex-row flex-1 min-h-0 sm:overflow-hidden"
+            >
+              {paneElements}
             </div>
           </div>
         </div>

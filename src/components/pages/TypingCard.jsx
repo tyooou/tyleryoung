@@ -2,6 +2,49 @@ import ExternalLink from "../ExternalLink";
 import BrailleSpinner from "../BrailleSpinner";
 import { useState, useEffect } from "react";
 
+// Alpha keys only (no numbers/modifiers) — enough to see how the two
+// layouts differ. Each row is indented a bit further than the last to
+// mimic a real keyboard's stagger.
+const COLEMAK_ROWS = [
+  ["Q", "W", "F", "P", "G", "J", "L", "U", "Y", ";"],
+  ["A", "R", "S", "T", "D", "H", "N", "E", "I", "O"],
+  ["Z", "X", "C", "V", "B", "K", "M"],
+];
+
+const QWERTY_ROWS = [
+  ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
+  ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
+  ["Z", "X", "C", "V", "B", "N", "M"],
+];
+
+function KeyboardLayout({ label, rows }) {
+  return (
+    <div>
+      <p className="text-sm font-bold mb-2 text-[var(--text-secondary)]">
+        {label}
+      </p>
+      <div className="flex flex-col gap-1">
+        {rows.map((row, i) => (
+          <div
+            key={i}
+            className="flex gap-1"
+            style={{ marginLeft: `${i * 1}rem` }}
+          >
+            {row.map((key) => (
+              <div
+                key={key}
+                className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center border border-[var(--border-secondary)] rounded bg-[var(--bg-tertiary)] text-xs font-bold shrink-0"
+              >
+                {key}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 const API_BASE = "https://api.monkeytype.com";
 const apiKey = import.meta.env.VITE_APE_KEY;
 
@@ -22,7 +65,7 @@ function getResponseData(responseJson) {
 
 function MonkeyTypeStats() {
   const [personalBests, setPersonalBests] = useState(null);
-  const [speedHistogram, setSpeedHistogram] = useState(null);
+  const [speedHistogram] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -203,15 +246,22 @@ function TypingCard() {
               Since I'm on my computer all day, I might as well be improving my
               typing skills!
             </p>
-            <p className="mb-2">
-              <strong>Layout:</strong> I type in
-              <ExternalLink text="Colemak" link={"https://colemak.com/"} />
-            </p>
             <p>
               <strong>Keyboard:</strong> I use a MonsGeek M1 with KTT Kang
               Whites V3s lubed with Krytox 205g0 and modded with the force break
               mod, PE foam mod and polyfill mod.
             </p>
+            <div className="mt-6 mb-2">
+              <p className="font-bold text-lg mb-1">Keyboard Layout</p>
+              <p className="text-sm text-[var(--text-secondary)] mb-3">
+                Colemak (what I actually type on) next to standard QWERTY for
+                comparison.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-8">
+                <KeyboardLayout label="Colemak" rows={COLEMAK_ROWS} />
+                <KeyboardLayout label="QWERTY" rows={QWERTY_ROWS} />
+              </div>
+            </div>
             <MonkeyTypeStats />
             <ExternalLink
               text="monkeytype profile"
