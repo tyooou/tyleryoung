@@ -597,7 +597,7 @@ function Portfolio() {
           quickLinks={quickLinks}
         />
         <div
-          className={`flex-1 flex flex-row w-full sm:h-full sm:overflow-hidden pt-[52px] sm:pt-0 ${sidebarState ? "overflow-hidden" : "overflow-y-auto"}`}
+          className={`flex-1 flex flex-row w-full sm:h-full sm:overflow-hidden pt-[52px] sm:pt-0 pb-[37px] sm:pb-[33px] ${sidebarState ? "overflow-hidden" : "overflow-y-auto"}`}
         >
           <Sidebar
             updatePage={updatePage}
