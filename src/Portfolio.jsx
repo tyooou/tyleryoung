@@ -174,8 +174,8 @@ function Portfolio() {
       try {
         const data = await sanityClient.fetch(`
           *[_type == "experience"] | order(start desc){
-            role, company, location, description, start, end, link, techStack,
-            "photos": coalesce(photos[]{ "url": asset->url, alt }, [])
+            role, company, location, description, start, end, link, techStack, tags,
+            "photos": coalesce(photos[]{ "url": asset->url + "?w=1200&auto=format", alt }, [])
           }
         `);
         // No CMS slug field for experience entries — derive a stable one
@@ -202,8 +202,8 @@ function Portfolio() {
         const data = await sanityClient.fetch(`
           *[_type == "extracurricular"] | order(order asc){
             title, description, link,
-            "graphics": coalesce(graphics[]{ "url": asset->url, alt }, []),
-            "photos": coalesce(photos[]{ "url": asset->url, alt }, [])
+            "graphics": coalesce(graphics[]{ "url": asset->url + "?w=1200&auto=format", alt }, []),
+            "photos": coalesce(photos[]{ "url": asset->url + "?w=1200&auto=format", alt }, [])
           }
         `);
         // No CMS slug field for extracurriculars — derive a stable one from
@@ -231,7 +231,7 @@ function Portfolio() {
           *[_type == "book"] | order(dateCompleted desc, dateStarted desc){
             title, author, isbn, dateStarted, dateCompleted,
             rating, themes, keyPoints, favoriteQuote,
-            "coverImage": coverImage.asset->url
+            "coverImage": coverImage.asset->url + "?w=400&auto=format"
           }
         `);
         // No CMS slug field for books — derive a stable one from title+start

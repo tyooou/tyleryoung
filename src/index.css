@@ -27,6 +27,42 @@
   animation: char-glide 420ms cubic-bezier(0.45, 0, 0.55, 1) 1;
 }
 
+/* Experience page photo wall: each column is a doubled photo list shifted
+   by exactly -50%, so the loop point lines up with the start with no seam.
+   Duration is set inline per column since it scales with photo count. */
+@keyframes photowall-up {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
+@keyframes photowall-down {
+  from {
+    transform: translateY(-50%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+.animate-photowall-up {
+  animation-name: photowall-up;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.animate-photowall-down {
+  animation-name: photowall-down;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-photowall-up,
+  .animate-photowall-down {
+    animation: none;
+  }
+}
+
 /* The tab bar's real scrollbar is hidden — a mock thumb rendered in its own
    reserved row (see Navigation.jsx) replaces it so it's exactly as thin as
    we want and never overlaps tab text the way an overlay scrollbar would. */

@@ -17,6 +17,13 @@ export default defineType({
     }),
     defineField({ name: "link", title: "Link (URL)", type: "url" }),
     defineField({
+      name: "tags",
+      title: "Tags",
+      type: "array",
+      of: [{ type: "string" }],
+      description: "Skills/areas, e.g. ui/ux, backend, robotics",
+    }),
+    defineField({
       name: "techStack",
       title: "Tech stack",
       type: "array",

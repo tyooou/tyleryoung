@@ -1,6 +1,6 @@
 import ExternalLink from "../ExternalLink";
 import TechStack from "./project/TechStack";
-import MasonryPhoto from "../MasonryPhoto";
+import ExperiencePhotoWall from "./ExperiencePhotoWall";
 
 function formatMonthYear(dateStr) {
   if (!dateStr) return "";
@@ -13,7 +13,7 @@ function formatMonthYear(dateStr) {
 
 function ExperienceEntryCard({ experience }) {
   if (!experience) return null;
-  const { role, company, location, description, start, end, link, techStack, photos } =
+  const { role, company, location, description, start, end, link, tags, techStack, photos } =
     experience;
 
   return (
@@ -30,6 +30,18 @@ function ExperienceEntryCard({ experience }) {
             {formatMonthYear(start)} to {end ? formatMonthYear(end) : "Present"}
             {location ? ` — ${location}` : ""}
           </p>
+          {tags?.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-4">
+              {tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="text-xs px-2 py-0.5 rounded bg-[var(--bg-tertiary)] text-[var(--text-secondary)]"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
           {description && <p className="text-base mt-4">{description}</p>}
           {techStack?.length > 0 && (
             <div className="mt-6">
@@ -39,12 +51,8 @@ function ExperienceEntryCard({ experience }) {
         </div>
       </div>
       {photos?.length > 0 && (
-        <div className="flex-1 sm:flex-3 p-3 sm:p-5 sm:pt-6 sm:overflow-y-auto">
-          <div className="columns-2 lg:columns-3 gap-3">
-            {photos.map((photo, index) => (
-              <MasonryPhoto key={photo.url || index} src={photo.url} alt={photo.alt || role} />
-            ))}
-          </div>
+        <div className="flex-1 sm:flex-3 p-3 sm:p-5 sm:pt-6 h-96 sm:h-full overflow-hidden">
+          <ExperiencePhotoWall photos={photos} alt={role} />
         </div>
       )}
     </div>
