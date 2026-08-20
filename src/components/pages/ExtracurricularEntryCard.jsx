@@ -1,3 +1,4 @@
+import { Globe } from "lucide-react";
 import ExternalLink from "../ExternalLink";
 import MasonryPhoto from "../MasonryPhoto";
 
@@ -28,7 +29,11 @@ function ExtracurricularEntryCard({ extracurricular }) {
         </h2>
         {link && (
           <p className="text-xl sm:text-2xl mt-2 ml-2 font-bold text-[var(--text-secondary)]">
-            <ExternalLink text="Visit website" link={link} />
+            <ExternalLink
+              text="Visit website"
+              link={link}
+              icon={<Globe size={18} className="text-[var(--text-secondary)]" />}
+            />
           </p>
         )}
         <div className="ml-2 mt-4 max-w-2xl select-text cursor-text">

@@ -1,6 +1,7 @@
+import { Globe } from "lucide-react";
 import ExternalLink from "../ExternalLink";
 import TechStack from "./project/TechStack";
-import ExperiencePhotoWall from "./ExperiencePhotoWall";
+import ExperiencePhotoGrid from "./ExperiencePhotoGrid";
 
 function formatMonthYear(dateStr) {
   if (!dateStr) return "";
@@ -23,7 +24,7 @@ function ExperienceEntryCard({ experience }) {
           {role}
         </h2>
         <p className="text-xl sm:text-2xl mt-2 ml-2 font-bold text-[var(--text-secondary)]">
-          {link ? <ExternalLink text={company} link={link} /> : company}
+          {company}
         </p>
         <div className="ml-2 mt-4 max-w-2xl">
           <p className="text-base text-[var(--text-secondary)]">
@@ -42,17 +43,28 @@ function ExperienceEntryCard({ experience }) {
               ))}
             </div>
           )}
-          {description && <p className="text-base mt-4">{description}</p>}
+          {description && (
+            <p className="text-base mt-4 whitespace-pre-line leading-relaxed">{description}</p>
+          )}
           {techStack?.length > 0 && (
             <div className="mt-6">
               <TechStack techStack={techStack} />
             </div>
           )}
+          {link && (
+            <p className="mt-6">
+              <ExternalLink
+                text="Visit website"
+                link={link}
+                icon={<Globe size={16} className="text-[var(--text-secondary)]" />}
+              />
+            </p>
+          )}
         </div>
       </div>
       {photos?.length > 0 && (
-        <div className="flex-1 sm:flex-3 p-3 sm:p-5 sm:pt-6 h-96 sm:h-full overflow-hidden">
-          <ExperiencePhotoWall photos={photos} alt={role} />
+        <div className="flex-1 sm:flex-3 p-6 pl-3 sm:pl-6 h-96 sm:h-full overflow-hidden">
+          <ExperiencePhotoGrid photos={photos} alt={role} />
         </div>
       )}
     </div>
