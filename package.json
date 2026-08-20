@@ -27,7 +27,6 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-markdown": "^10.1.0",
-    "react-textfit": "^1.1.1",
     "remark-gfm": "^4.0.1",
     "sanity": "^6.9.2",
     "styled-components": "^6.5.3",
