@@ -1,13 +1,18 @@
+import { useState } from "react";
 import { FileUser, Mail, Linkedin, Github } from "lucide-react";
 import { getIcon } from "../iconMap";
+import ExternalLinkWarningModal from "../ExternalLinkWarningModal";
 
-function ExternalIcon({ href, label, children }) {
+const SKIP_WARNING_KEY = "skipExternalLinkWarning";
+
+function ExternalIcon({ href, label, children, onClick }) {
   return (
     <a
       className="group relative flex items-center justify-center w-full py-2.5 cursor-pointer text-[var(--text-secondary)] hover:text-[var(--text)] hover:bg-[var(--bg-tertiary)]"
       href={href}
       target="_blank"
       rel="noopener noreferrer"
+      onClick={onClick}
     >
       {children}
       <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition pointer-events-none text-md sm:text-xs font-mono py-1 px-2 rounded bg-[var(--bg-tertiary)] border border-[var(--border-secondary)] whitespace-nowrap z-50">
@@ -15,6 +20,33 @@ function ExternalIcon({ href, label, children }) {
       </div>
     </a>
   );
+}
+
+// GitHub/LinkedIn navigate away from the site entirely — VS Code shows a
+// confirmation before opening any external website, so this mirrors that
+// rather than silently leaving the page on a single misclick.
+function useExternalLinkConfirm() {
+  const [pending, setPending] = useState(null);
+
+  const handleClick = (href) => (e) => {
+    if (localStorage.getItem(SKIP_WARNING_KEY) === "true") return;
+    e.preventDefault();
+    setPending(href);
+  };
+
+  const modal = pending && (
+    <ExternalLinkWarningModal
+      url={pending}
+      onCancel={() => setPending(null)}
+      onConfirm={(dontAskAgain) => {
+        if (dontAskAgain) localStorage.setItem(SKIP_WARNING_KEY, "true");
+        window.open(pending, "_blank", "noopener,noreferrer");
+        setPending(null);
+      }}
+    />
+  );
+
+  return { handleClick, modal };
 }
 
 // Same look as ExternalIcon, but opens the target as an in-app Simple
@@ -64,17 +96,19 @@ function ActivityBar({
   const linkedin = quickLinks.find((q) => q.id === "linkedin");
   const cv = quickLinks.find((q) => q.id === "cv");
   const changelogPage = pages.find((page) => page.id === "changelog");
+  const { handleClick, modal } = useExternalLinkConfirm();
 
   return (
     <div className="flex flex-col items-center w-12 h-full bg-[var(--bg-secondary)] shrink-0 select-none">
+      {modal}
       <div className="flex flex-col items-center w-full py-2 border-b border-[var(--border-secondary)]">
         {github && (
-          <ExternalIcon href={github.link} label="github">
+          <ExternalIcon href={github.link} label="github" onClick={handleClick(github.link)}>
             <Github className="w-6 sm:w-5" />
           </ExternalIcon>
         )}
         {linkedin && (
-          <ExternalIcon href={linkedin.link} label="linkedin">
+          <ExternalIcon href={linkedin.link} label="linkedin" onClick={handleClick(linkedin.link)}>
             <Linkedin className="w-6 sm:w-5" />
           </ExternalIcon>
         )}
