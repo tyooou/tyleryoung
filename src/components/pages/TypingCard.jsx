@@ -1,5 +1,7 @@
 import ExternalLink from "../ExternalLink";
 import BrailleSpinner from "../BrailleSpinner";
+import StatTile from "../StatTile";
+import { Keyboard } from "lucide-react";
 import { useState, useEffect } from "react";
 
 // Alpha keys only (no numbers/modifiers) — enough to see how the two
@@ -50,6 +52,7 @@ const apiKey = import.meta.env.VITE_APE_KEY;
 
 const CACHE_KEY = "monkeyTypeStatsCache";
 const CACHE_DURATION = 1000 * 60 * 60; // 1 hour
+const DURATIONS = [15, 30, 60, 120];
 
 function getResponseData(responseJson) {
   if (!responseJson || typeof responseJson !== "object") {
@@ -63,9 +66,43 @@ function getResponseData(responseJson) {
   return null;
 }
 
+const FETCH_TIMEOUT_MS = 10000;
+
+// The typing page mounts alongside a burst of other data fetches (Sanity
+// queries, images), and MonkeyType's API has occasionally just hung under
+// that concurrent load rather than erroring — a bare fetch() with no
+// timeout would leave the whole Promise.all (and the loading spinner)
+// stuck forever, so every request gets its own hard cutoff.
+async function fetchMonkeyType(path) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${API_BASE}${path}`, {
+      headers: { Authorization: `ApeKey ${apiKey}` },
+      signal: controller.signal,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || "Request failed");
+    }
+    return getResponseData(await res.json());
+  } catch (err) {
+    if (err.name === "AbortError") {
+      throw new Error("Request timed out");
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function formatHours(seconds) {
+  return `${(seconds / 3600).toFixed(1)}h`;
+}
+
 function MonkeyTypeStats() {
-  const [personalBests, setPersonalBests] = useState(null);
-  const [speedHistogram] = useState(null);
+  const [stats, setStats] = useState(null);
+  const [bestsByDuration, setBestsByDuration] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -74,101 +111,66 @@ function MonkeyTypeStats() {
     if (cached) {
       const { data, timestamp } = JSON.parse(cached);
       if (Date.now() - timestamp < CACHE_DURATION) {
-        setPersonalBests(data);
+        setStats(data.stats);
+        setBestsByDuration(data.bestsByDuration);
         return;
       }
     }
 
-    // Fetch new data if no cache or cache is expired
-    fetchPersonalBests();
-    //fetchSpeedHistogram();
+    // Dev-mode StrictMode mounts this twice; ignoring the stale run's
+    // result once cancelled keeps it from clobbering the live one.
+    let cancelled = false;
+    fetchAll(() => cancelled);
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  async function fetchPersonalBests() {
+  async function fetchAll(isCancelled) {
     setLoading(true);
     setError(null);
-    // Don't reset personalBests here since we might have cached data
 
     try {
-      const personalBestsRes = await fetch(
-        `${API_BASE}/users/personalBests?mode=time&mode2=60`,
-        {
-          headers: {
-            Authorization: `ApeKey ${apiKey}`,
-          },
-        },
-      );
+      const [statsData, ...bestsResults] = await Promise.all([
+        fetchMonkeyType("/users/stats"),
+        ...DURATIONS.map((d) =>
+          fetchMonkeyType(`/users/personalBests?mode=time&mode2=${d}`),
+        ),
+      ]);
+      if (isCancelled()) return;
 
-      if (!personalBestsRes.ok) {
-        const err = await personalBestsRes.json();
-        throw new Error(err.message || "Request failed");
-      }
+      const bestsData = {};
+      DURATIONS.forEach((d, i) => {
+        const entries = bestsResults[i];
+        bestsData[d] =
+          Array.isArray(entries) && entries.length > 0
+            ? entries.reduce((best, e) => (e.wpm > best.wpm ? e : best))
+            : null;
+      });
 
-      const personalBestsJson = await personalBestsRes.json();
-      const responseData = getResponseData(personalBestsJson);
+      setStats(statsData);
+      setBestsByDuration(bestsData);
 
-      if (!Array.isArray(responseData)) {
-        throw new Error("Unexpected personal bests response format");
-      }
-
-      setPersonalBests(responseData);
-
-      // Cache the data with timestamp
       localStorage.setItem(
         CACHE_KEY,
         JSON.stringify({
-          data: responseData,
+          data: { stats: statsData, bestsByDuration: bestsData },
           timestamp: Date.now(),
         }),
       );
     } catch (err) {
-      setError(err.message);
+      if (!isCancelled()) setError(err.message);
     } finally {
-      setLoading(false);
+      if (!isCancelled()) setLoading(false);
     }
   }
 
-  //   async function fetchSpeedHistogram() {
-  //     setLoading(true);
-  //     setError(null);
-  //     setSpeedHistogram(null);
-
-  //     try {
-  //       const response = await fetch(
-  //         `${API_BASE}/public/speedHistogram?language=english_5k&mode=time&mode2=60`,
-  //         {
-  //           headers: {
-  //             Authorization: `ApeKey ${apiKey}`,
-  //           },
-  //         },
-  //       );
-
-  //       if (!response.ok) {
-  //         const err = await response.json();
-  //         throw new Error(err.message || "Request failed");
-  //       }
-
-  //       const histogramJson = await response.json();
-  //       const responseData = getResponseData(histogramJson);
-
-  //       if (Array.isArray(responseData)) {
-  //         setSpeedHistogram(responseData);
-  //       } else if (responseData && typeof responseData === "object") {
-  //         setSpeedHistogram(
-  //           Object.entries(responseData).map(([wpm, count]) => ({
-  //             wpm: Number(wpm),
-  //             count: Number(count),
-  //           })),
-  //         );
-  //       } else {
-  //         throw new Error("Unexpected speed histogram response format");
-  //       }
-  //     } catch (err) {
-  //       setError(err.message);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   }
+  const bestOverall = bestsByDuration
+    ? Object.values(bestsByDuration).reduce(
+        (best, e) => (e && (!best || e.wpm > best.wpm) ? e : best),
+        null,
+      )
+    : null;
 
   return (
     <div className="mt-6 mb-6 font-mono max-w-[600px]">
@@ -176,59 +178,57 @@ function MonkeyTypeStats() {
 
       {error && <p className="text-red-500">Error: {error}</p>}
 
-      {personalBests && (
+      {stats && (
+        <ul className="flex flex-wrap gap-6 mb-6">
+          <StatTile
+            label="Best WPM"
+            value={bestOverall ? bestOverall.wpm.toFixed(0) : "—"}
+          />
+          <StatTile label="Tests Completed" value={stats.completedTests} />
+          <StatTile label="Tests Started" value={stats.startedTests} />
+          <StatTile label="Time Typing" value={formatHours(stats.timeTyping)} />
+        </ul>
+      )}
+
+      {bestsByDuration && (
         <table className="w-full border-collapse">
           <thead>
             <tr className="border-b border-[var(--border-secondary)]">
-              <th className="text-left p-1.5">Date</th>
+              <th className="text-left p-1.5">Duration</th>
               <th className="text-left p-1.5">WPM</th>
               <th className="text-left p-1.5">Accuracy</th>
               <th className="text-left p-1.5">Raw</th>
+              <th className="text-left p-1.5">Date</th>
             </tr>
           </thead>
           <tbody>
-            {personalBests.map((pb, i) => (
-              <tr key={i} className="border-b border-[var(--border-secondary)]">
-                <td className="">
-                  {new Date(pb.timestamp).toLocaleDateString()}
-                </td>
-                <td className="p-1.5">{pb.wpm.toFixed(1)}</td>
-                <td className="p-1.5">{pb.acc.toFixed(1)}%</td>
-                <td className="p-1.5">{pb.raw.toFixed(1)}</td>
-              </tr>
-            ))}
+            {DURATIONS.map((d) => {
+              const pb = bestsByDuration[d];
+              return (
+                <tr key={d} className="border-b border-[var(--border-secondary)]">
+                  <td className="p-1.5">{d}s</td>
+                  {pb ? (
+                    <>
+                      <td className="p-1.5">{pb.wpm.toFixed(1)}</td>
+                      <td className="p-1.5">{pb.acc.toFixed(1)}%</td>
+                      <td className="p-1.5">{pb.raw.toFixed(1)}</td>
+                      <td className="p-1.5 text-[var(--text-secondary)]">
+                        {new Date(pb.timestamp).toLocaleDateString()}
+                      </td>
+                    </>
+                  ) : (
+                    <td className="p-1.5 text-[var(--text-secondary)]" colSpan={4}>
+                      No data
+                    </td>
+                  )}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}
 
-      {/* {speedHistogram && speedHistogram.length !== 0 && (
-        <div className="mt-4">
-          <h3 className="font-bold text-lg">Speed Histogram</h3>
-          <p className="text-sm text-[var(--text-secondary)]">
-            Distribution of my typing speeds across all tests.
-          </p>
-          <div className="flex items-end gap-1 mt-2 h-48">
-            {speedHistogram.map((entry, i) => (
-              <div
-                key={i}
-                className="bg-[var(--accent)]"
-                style={{
-                  height: `${(entry.count / speedHistogram.reduce((max, e) => Math.max(max, e.count), 0)) * 100}%`,
-                }}
-                title={`${entry.wpm} WPM: ${entry.count} tests`}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {speedHistogram && speedHistogram.length === 0 && (
-        <p>No speed histogram data available.</p>
-      )} */}
-
-      {!loading && !error && !personalBests && !speedHistogram && (
-        <p>No typing data available.</p>
-      )}
+      {!loading && !error && !stats && <p>No typing data available.</p>}
     </div>
   );
 }
@@ -266,6 +266,7 @@ function TypingCard() {
             <ExternalLink
               text="monkeytype profile"
               link={"https://monkeytype.com/profile/tyooou"}
+              icon={<Keyboard size={16} className="text-[var(--text-secondary)]" />}
             />
           </div>
         </div>
