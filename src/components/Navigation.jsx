@@ -20,7 +20,8 @@ function TabLabel({
   blogPosts,
 }) {
   const browserLink =
-    friends.find((f) => f.name === tab) || quickLinks.find((q) => q.name === tab);
+    friends.find((f) => f.name === tab) ||
+    quickLinks.find((q) => q.name === tab);
   if (browserLink) {
     const favicon = faviconUrl(browserLink.link);
     return (
@@ -38,7 +39,12 @@ function TabLabel({
   }
   const experience = experiences.find((exp) => exp.slug === tab);
   if (experience) {
-    return <>{`${experience.role}-@-${experience.company}`.replace(/ /g, "-") + ".txt"}</>;
+    return (
+      <>
+        {`${experience.role}-@-${experience.company}`.replace(/ /g, "-") +
+          ".txt"}
+      </>
+    );
   }
   const extracurricular = extracurriculars.find((item) => item.slug === tab);
   if (extracurricular) {
@@ -76,7 +82,11 @@ function Navigation({
   // this mock thumb tracks scroll position instead. It's absolutely
   // positioned just below the tab row, floating over the content card
   // rather than reserving its own layout space (so nothing shifts).
-  const [scrollbar, setScrollbar] = useState({ visible: false, leftPercent: 0, widthPercent: 1 });
+  const [scrollbar, setScrollbar] = useState({
+    visible: false,
+    leftPercent: 0,
+    widthPercent: 1,
+  });
 
   const updateScrollbar = () => {
     const el = tabsRef.current;
@@ -98,13 +108,22 @@ function Navigation({
 
   return (
     <>
-      <nav className="hidden md:flex justify-between min-w-0 bg-[var(--bg-quaternary)] text-[var(--text)] select-none border-b border-[var(--border-secondary)]">
+      <nav className="hidden md:flex justify-between min-w-0 bg-[var(--bg-quaternary)] text-[var(--text)] select-none">
         <div className="sm:hidden flex items-center space-x-2 px-4 py-3 border-r border-[var(--border-secondary)] bg-[var(--bg)] -mb-5 border-b-0">
           <button
             className="font-mono text-lg truncate overflow-hidden whitespace-nowrap max-w-[200px]"
             onClick={() => onSwitchTab(paneId, page)}
           >
-            <TabLabel tab={page} friends={friends} quickLinks={quickLinks} leetcodeProblems={leetcodeProblems} experiences={experiences} extracurriculars={extracurriculars} books={books} blogPosts={blogPosts} />
+            <TabLabel
+              tab={page}
+              friends={friends}
+              quickLinks={quickLinks}
+              leetcodeProblems={leetcodeProblems}
+              experiences={experiences}
+              extracurriculars={extracurriculars}
+              books={books}
+              blogPosts={blogPosts}
+            />
           </button>
         </div>
 
@@ -112,7 +131,7 @@ function Navigation({
           <div
             ref={tabsRef}
             onScroll={updateScrollbar}
-            className="tabs-scroll flex min-w-0 overflow-x-auto overflow-y-hidden"
+            className="tabs-scroll flex items-start min-w-0 overflow-x-auto overflow-y-hidden"
           >
             {openTabs.map((tab, index) => (
               <div
@@ -125,7 +144,7 @@ function Navigation({
                 onDragEnd={onTabDragEnd}
                 className={`flex items-center space-x-2 px-2 pt-2 pb-[9px] border-r border-[var(--border-secondary)] shrink-0 ${
                   tab === page
-                    ? "bg-[var(--bg)] -mb-px border-b-0"
+                    ? "bg-[var(--bg)] border-b border-b-[var(--bg)]"
                     : "bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)]"
                 }`}
               >
@@ -135,7 +154,16 @@ function Navigation({
                   }`}
                   onClick={() => onSwitchTab(paneId, tab)}
                 >
-                  <TabLabel tab={tab} friends={friends} quickLinks={quickLinks} leetcodeProblems={leetcodeProblems} experiences={experiences} extracurriculars={extracurriculars} books={books} blogPosts={blogPosts} />
+                  <TabLabel
+                    tab={tab}
+                    friends={friends}
+                    quickLinks={quickLinks}
+                    leetcodeProblems={leetcodeProblems}
+                    experiences={experiences}
+                    extracurriculars={extracurriculars}
+                    books={books}
+                    blogPosts={blogPosts}
+                  />
                 </button>
                 {tab != "bibliography" && (
                   <span
