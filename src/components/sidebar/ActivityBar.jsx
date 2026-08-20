@@ -57,6 +57,7 @@ function ActivityBar({
   activeActivity,
   onSelectActivity,
   updatePage,
+  updateSidebar,
   quickLinks = [],
 }) {
   const github = quickLinks.find((q) => q.id === "github");
@@ -81,7 +82,13 @@ function ActivityBar({
           <Mail className="w-6 sm:w-5" />
         </ExternalIcon>
         {cv && (
-          <BrowserIcon onClick={() => updatePage(cv.name)} label="cv">
+          <BrowserIcon
+            onClick={() => {
+              updatePage(cv.name);
+              if (window.innerWidth < 768) updateSidebar(false);
+            }}
+            label="cv"
+          >
             <FileUser className="w-6 sm:w-5" />
           </BrowserIcon>
         )}

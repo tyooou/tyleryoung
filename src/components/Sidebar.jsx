@@ -46,6 +46,17 @@ function Sidebar({
       ? saved
       : DEFAULT_PANEL_WIDTH;
   });
+  // Below this, the sidebar becomes a full-screen overlay (see the
+  // container's mobile translate classes below) — the panel should fill
+  // whatever's left of that overlay rather than use the desktop draggable
+  // width, or content peeks through on the right on narrow screens.
+  const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth);
+  useEffect(() => {
+    const handleResize = () => setViewportWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+  const isMobile = viewportWidth < 768;
   const [isDragging, setIsDragging] = useState(false);
   const startWidthRef = useRef(panelWidth);
   const liveWidthRef = useRef(panelWidth);
@@ -64,7 +75,11 @@ function Sidebar({
   // container's translate classes below), so this same effective width
   // correctly zeroes out either way.
   const panelOpen = state && activeActivity !== null;
-  const effectiveWidth = panelOpen ? panelWidth : 0;
+  const effectiveWidth = panelOpen
+    ? isMobile
+      ? viewportWidth - ACTIVITY_BAR_WIDTH
+      : panelWidth
+    : 0;
 
   useEffect(() => {
     onPanelWidthChange?.(effectiveWidth);
@@ -99,6 +114,7 @@ function Sidebar({
         activeActivity={activeActivity}
         onSelectActivity={handleSelectActivity}
         updatePage={updatePage}
+        updateSidebar={updateSidebar}
         quickLinks={quickLinks}
       />
       <ActivityPanel
