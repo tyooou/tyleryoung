@@ -130,9 +130,12 @@ body {
 
 /* forwards — holds the fully-faded end state instead of snapping back to
    opacity 1 the instant the animation finishes, in case that lands a frame
-   or two before the JS timeout below actually unmounts it. */
+   or two before the JS timeout below actually unmounts it. ease-out (not
+   the ease-in ["4,0,1,1"] this started as) — ease-in crowds nearly all of
+   the opacity change into the animation's last ~40ms, which reads as an
+   instant pop rather than a fade for something this short. */
 .animate-modal-out {
-  animation: modal-out 150ms cubic-bezier(0.4, 0, 1, 1) forwards;
+  animation: modal-out 150ms ease-out forwards;
 }
 
 @keyframes modal-backdrop-out {
@@ -145,7 +148,7 @@ body {
 }
 
 .animate-modal-backdrop-out {
-  animation: modal-backdrop-out 150ms ease-in forwards;
+  animation: modal-backdrop-out 150ms ease-out forwards;
 }
 
 /* New tab entrance — a fade+scale pop. Closing is handled separately, in
