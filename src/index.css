@@ -43,6 +43,48 @@ body {
   animation: char-glide 420ms cubic-bezier(0.45, 0, 0.55, 1) 1;
 }
 
+/* Tour's "drag me" hint on the resize-panel step — a dot sliding back and
+   forth past the panel's edge to suggest dragging it. */
+@keyframes tour-drag {
+  0%,
+  100% {
+    transform: translate(0, -50%);
+  }
+  50% {
+    transform: translate(-24px, -50%);
+  }
+}
+
+.animate-tour-drag {
+  animation: tour-drag 1.4s ease-in-out infinite;
+}
+
+/* Tour's split-view step — a dot traveling from the dragged tab to the
+   preview pane. Distance varies per render (real tab/pane positions), so
+   the offset is set per-instance via --drag-dx/--drag-dy custom properties
+   rather than baked into the keyframes themselves. */
+@keyframes tour-drag-path {
+  0%,
+  15% {
+    transform: translate(0, 0);
+    opacity: 0.9;
+  }
+  50%,
+  70% {
+    transform: translate(var(--drag-dx, 0px), var(--drag-dy, 0px));
+    opacity: 0.9;
+  }
+  85%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+}
+
+.animate-tour-drag-path {
+  animation: tour-drag-path 2.2s ease-in-out infinite;
+}
+
 /* The tab bar's real scrollbar is hidden — a mock thumb rendered in its own
    reserved row (see Navigation.jsx) replaces it so it's exactly as thin as
    we want and never overlaps tab text the way an overlay scrollbar would. */

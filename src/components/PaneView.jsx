@@ -35,6 +35,7 @@ function PaneView({
   blogPosts,
   sidebarPanelOpen,
   pageComponents,
+  startTour,
   style,
 }) {
   const [edgeDragOver, setEdgeDragOver] = useState(false);
@@ -78,6 +79,7 @@ function PaneView({
         blogPosts={blogPosts}
       />
       <div
+        data-tour="pane-content"
         className="relative flex flex-col sm:flex-row flex-1 min-h-0 sm:overflow-hidden"
         onDragOver={(e) => {
           if (!acceptsCrossPaneDrop) return;
@@ -116,6 +118,7 @@ function PaneView({
               books={books}
               blogPosts={blogPosts}
               sidebarPanelOpen={sidebarPanelOpen}
+              startTour={startTour}
             />
           )}
           {activeProject && <ProjectCard project={activeProject} />}

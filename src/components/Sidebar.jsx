@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import ActivityBar from "./sidebar/ActivityBar";
 import ActivityPanel from "./sidebar/ActivityPanel";
 import ResizeHandle from "./ResizeHandle";
@@ -10,34 +10,37 @@ import {
   ACTIVITY_BAR_WIDTH,
 } from "../lib/sidebarConstants";
 
-function Sidebar({
-  updatePage,
-  updateSidebar,
-  state,
-  projects,
-  pages,
-  releases,
-  friends,
-  leetcodeProblems,
-  experiences,
-  extracurriculars,
-  books,
-  blogPosts,
-  quickLinks,
-  onPanelWidthChange,
-  onPanelResizingChange,
-}) {
+const Sidebar = forwardRef(function Sidebar(
+  {
+    updatePage,
+    updateSidebar,
+    state,
+    projects,
+    pages,
+    releases,
+    friends,
+    leetcodeProblems,
+    experiences,
+    extracurriculars,
+    books,
+    blogPosts,
+    quickLinks,
+    onPanelWidthChange,
+    onPanelResizingChange,
+  },
+  ref,
+) {
   const visiblePages = pages
     .filter((p) => p.enabled)
     .sort((a, b) => a.order - b.order);
 
   const [activeActivity, setActiveActivity] = useState(() => {
     const saved = localStorage.getItem("sidebarActiveActivity");
-    if (saved === null) return "experience";
+    if (saved === null) return "bibliography";
     try {
       return JSON.parse(saved);
     } catch {
-      return "experience";
+      return "bibliography";
     }
   });
   const [panelWidth, setPanelWidth] = useState(() => {
@@ -104,6 +107,30 @@ function Sidebar({
     // would never actually reopen.
     if (next !== null) updateSidebar(true);
   };
+
+  // Lets callers outside this component (the header's toggle button, the
+  // tour) open/toggle the panel without knowing about activeActivity —
+  // `updateSidebar` alone only flips the outer `state` prop, which does
+  // nothing if activeActivity is null (panel already collapsed via an
+  // activity bar icon click), leaving the panel stuck closed.
+  useImperativeHandle(
+    ref,
+    () => ({
+      open: () => {
+        if (activeActivity === null) setActiveActivity(lastActivityRef.current);
+        updateSidebar(true);
+      },
+      toggle: () => {
+        if (panelOpen) {
+          updateSidebar(false);
+        } else {
+          if (activeActivity === null) setActiveActivity(lastActivityRef.current);
+          updateSidebar(true);
+        }
+      },
+    }),
+    [panelOpen, activeActivity, updateSidebar],
+  );
 
   return (
     <div
@@ -194,6 +221,6 @@ function Sidebar({
       />
     </div>
   );
-}
+});
 
 export default Sidebar;

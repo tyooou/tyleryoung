@@ -13,6 +13,8 @@ import SearchBar from "./components/SearchBar";
 import TypingCard from "./components/pages/TypingCard";
 import LeetcodeCard from "./components/pages/leetcode/LeetcodeCard";
 import ChangelogOverviewCard from "./components/pages/ChangelogOverviewCard";
+import TourOverlay from "./components/TourOverlay";
+import { TOUR_STEPS } from "./lib/tourSteps";
 import {
   MIN_PANEL_WIDTH,
   MAX_PANEL_WIDTH,
@@ -52,7 +54,10 @@ function Portfolio() {
     return [
       makePane(
         "left",
-        savedOpenTabs ? JSON.parse(savedOpenTabs) : ["bibliography"],
+        // A first-ever visit (nothing saved yet) opens with the Experience
+        // Overview already available as a tab — not focused, bibliography
+        // stays the active one — rather than making visitors dig for it.
+        savedOpenTabs ? JSON.parse(savedOpenTabs) : ["bibliography", "experience"],
         savedActive || "bibliography",
       ),
     ];
@@ -73,14 +78,18 @@ function Portfolio() {
   const [cvUrl, setCvUrl] = useState(null);
   const [sidebarPanelWidth, setSidebarPanelWidth] = useState(() => {
     const saved = Number(localStorage.getItem("sidebarPanelWidth"));
-    return saved >= MIN_PANEL_WIDTH && saved <= MAX_PANEL_WIDTH ? saved : DEFAULT_PANEL_WIDTH;
+    return saved >= MIN_PANEL_WIDTH && saved <= MAX_PANEL_WIDTH
+      ? saved
+      : DEFAULT_PANEL_WIDTH;
   });
   const [isSidebarResizing, setIsSidebarResizing] = useState(false);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
+  const [tourStep, setTourStep] = useState(null); // null = inactive, else 0-based step index
 
   const splitRatioStartRef = useRef(splitRatio);
   const panesRowRef = useRef(null);
+  const sidebarRef = useRef(null);
 
   const activePane = panes.find((p) => p.id === activePaneId) || panes[0];
 
@@ -88,7 +97,7 @@ function Portfolio() {
     const handleKeyDown = (event) => {
       if (event.ctrlKey && event.key === "b") {
         event.preventDefault();
-        setSidebar((prev) => !prev);
+        sidebarRef.current?.toggle();
       }
 
       if (event.ctrlKey && event.key === "w") {
@@ -142,7 +151,11 @@ function Portfolio() {
           }
         `);
         setProjects(
-          data.map((meta) => ({ project: meta.name, meta, content: meta.content })),
+          data.map((meta) => ({
+            project: meta.name,
+            meta,
+            content: meta.content,
+          })),
         );
       } catch {
         setProjects([]);
@@ -281,7 +294,9 @@ function Portfolio() {
   useEffect(() => {
     async function loadFriends() {
       try {
-        const data = await sanityClient.fetch(`*[_type == "friend"]{ name, link }`);
+        const data = await sanityClient.fetch(
+          `*[_type == "friend"]{ name, link }`,
+        );
         setFriends(data);
       } catch {
         setFriends([]);
@@ -356,6 +371,29 @@ function Portfolio() {
     setSidebar(newState);
   };
 
+  const startTour = () => {
+    sidebarRef.current?.open();
+    // The "Tabs" and "Split view" steps need a real, non-pinned tab to
+    // point at — bibliography alone has no draggable tab (see Navigation's
+    // data-tour on the tab bar), so without this those steps would just
+    // auto-skip. Only adds one if nothing else is already open, and never
+    // switches focus to it — the tour should start on whatever page the
+    // visitor was already looking at.
+    setPanes((prev) =>
+      prev.map((p) => {
+        if (p.id !== "left") return p;
+        const hasOtherTab = p.openTabs.some((tab) => tab !== "bibliography");
+        if (hasOtherTab || p.openTabs.includes("experience")) return p;
+        return { ...p, openTabs: [...p.openTabs, "experience"] };
+      }),
+    );
+    setTourStep(0);
+  };
+  const nextTourStep = () =>
+    setTourStep((step) => Math.min(step + 1, TOUR_STEPS.length - 1));
+  const prevTourStep = () => setTourStep((step) => Math.max(step - 1, 0));
+  const closeTour = () => setTourStep(null);
+
   // Opens `tab` in a specific pane, focusing it. Used directly by the tab
   // bar (switching/opening within a known pane) and wrapped by `updatePage`
   // below for every other call site, which always targets "whichever pane
@@ -369,7 +407,9 @@ function Portfolio() {
         return {
           ...p,
           page: tab,
-          openTabs: p.openTabs.includes(tab) ? p.openTabs : [...p.openTabs, tab],
+          openTabs: p.openTabs.includes(tab)
+            ? p.openTabs
+            : [...p.openTabs, tab],
           backTabs: [...p.backTabs, p.page],
           forwardTabs: [],
         };
@@ -449,7 +489,9 @@ function Portfolio() {
         if (p.id !== fromPaneId) return p;
         const remaining = p.openTabs.filter((t) => t !== tab);
         const nextPage =
-          p.page === tab ? remaining[remaining.length - 1] || "bibliography" : p.page;
+          p.page === tab
+            ? remaining[remaining.length - 1] || "bibliography"
+            : p.page;
         return { ...p, openTabs: remaining, page: nextPage };
       });
       next = next.filter((p) => p.id === "left" || p.openTabs.length > 0);
@@ -461,7 +503,9 @@ function Portfolio() {
           if (p.id !== toPaneId) return p;
           return {
             ...p,
-            openTabs: p.openTabs.includes(tab) ? p.openTabs : [...p.openTabs, tab],
+            openTabs: p.openTabs.includes(tab)
+              ? p.openTabs
+              : [...p.openTabs, tab],
             page: tab,
             backTabs: [...p.backTabs, p.page],
             forwardTabs: [],
@@ -478,6 +522,10 @@ function Portfolio() {
 
   const handleDropCreateSplit = () => {
     if (!draggedTab) return;
+    // A new split should always start even — splitRatio otherwise carries
+    // over whatever ratio was left from a previous split that's since been
+    // closed (it's only ever changed by manually dragging the divider).
+    setSplitRatio(0.5);
     movePaneTab(draggedTab.paneId, "right", draggedTab.tab, true);
     setDraggedTab(null);
   };
@@ -505,7 +553,7 @@ function Portfolio() {
 
     if (window.innerWidth < 768) {
       if (isRightSwipe && !sidebarState) {
-        setSidebar(true);
+        sidebarRef.current?.open();
       } else if (isLeftSwipe && sidebarState) {
         setSidebar(false);
       }
@@ -514,7 +562,11 @@ function Portfolio() {
 
   const quickLinks = [
     { id: "github", name: "GitHub", link: "https://github.com/tyooou" },
-    { id: "linkedin", name: "LinkedIn", link: "https://nz.linkedin.com/in/tylerhyoung" },
+    {
+      id: "linkedin",
+      name: "LinkedIn",
+      link: "https://nz.linkedin.com/in/tylerhyoung",
+    },
     ...(cvUrl ? [{ id: "cv", name: "Résumé", link: cvUrl }] : []),
   ];
 
@@ -547,6 +599,7 @@ function Portfolio() {
         blogPosts={blogPosts}
         sidebarPanelOpen={sidebarPanelWidth > 0}
         pageComponents={PAGE_COMPONENTS}
+        startTour={startTour}
         style={
           panes.length === 2 && index === 0
             ? { flex: `0 0 ${splitRatio * 100}%` }
@@ -560,7 +613,10 @@ function Portfolio() {
         <ResizeHandle
           key="pane-split-handle"
           className="hidden sm:block absolute top-0 h-full w-2 z-20"
-          style={{ left: `${splitRatio * 100}%`, transform: "translateX(-50%)" }}
+          style={{
+            left: `${splitRatio * 100}%`,
+            transform: "translateX(-50%)",
+          }}
           onDragStart={() => {
             splitRatioStartRef.current = splitRatio;
           }}
@@ -570,7 +626,10 @@ function Portfolio() {
             setSplitRatio(
               Math.min(
                 MAX_SPLIT_RATIO,
-                Math.max(MIN_SPLIT_RATIO, splitRatioStartRef.current + deltaRatio),
+                Math.max(
+                  MIN_SPLIT_RATIO,
+                  splitRatioStartRef.current + deltaRatio,
+                ),
               ),
             );
           }}
@@ -585,6 +644,7 @@ function Portfolio() {
       <div className="flex flex-col min-h-full sm:h-full sm:fixed w-full bg-[var(--bg-secondary)]">
         <SearchBar
           updateSidebar={updateSidebar}
+          toggleSidebar={() => sidebarRef.current?.toggle()}
           updatePage={updatePage}
           goBack={goBack}
           goForward={goForward}
@@ -600,6 +660,7 @@ function Portfolio() {
           className={`flex-1 flex flex-row w-full sm:h-full sm:overflow-hidden pt-[52px] sm:pt-0 pb-[37px] sm:pb-[33px] ${sidebarState ? "overflow-hidden" : "overflow-y-auto"}`}
         >
           <Sidebar
+            ref={sidebarRef}
             updatePage={updatePage}
             updateSidebar={updateSidebar}
             state={sidebarState}
@@ -635,6 +696,14 @@ function Portfolio() {
         </div>
         <Footer />
       </div>
+      {tourStep !== null && (
+        <TourOverlay
+          stepIndex={tourStep}
+          onNext={nextTourStep}
+          onPrev={prevTourStep}
+          onClose={closeTour}
+        />
+      )}
     </>
   );
 }

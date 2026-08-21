@@ -595,6 +595,7 @@ function FriendLink({ friend, updatePage, updateSidebar }) {
 function Panel({ title, children, width, animateWidth }) {
   return (
     <div
+      data-tour="sidebar-panel"
       className={`flex flex-col h-full bg-[var(--bg-secondary)] overflow-y-auto pb-10 shrink-0 overflow-x-hidden border-l border-[var(--border-secondary)] ${animateWidth ? "transition-[width] duration-300 ease-out" : ""}`}
       style={{ width: `${width}px` }}
     >

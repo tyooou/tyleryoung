@@ -4,6 +4,7 @@ import {
   Briefcase,
   Code2,
   Compass,
+  Sparkles,
   Folder,
   Github,
   Linkedin,
@@ -49,6 +50,7 @@ function BibliographyCard({
   updatePage = () => {},
   quickLinks = [],
   projects = [],
+  startTour = () => {},
 }) {
   const { cycleTheme } = useTheme();
   const cv = quickLinks.find((q) => q.id === "cv");
@@ -69,6 +71,11 @@ function BibliographyCard({
         <div>
           <h3 className="font-bold text-xl sm:text-2xl mb-3">Start</h3>
           <div className="flex flex-col">
+            <StartLink
+              icon={Sparkles}
+              text="Take a Tour"
+              onClick={startTour}
+            />
             {cv && (
               <StartLink
                 icon={FileUser}

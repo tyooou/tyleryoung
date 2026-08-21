@@ -99,20 +99,35 @@ function ActivityBar({
   const { handleClick, modal } = useExternalLinkConfirm();
 
   return (
-    <div className="flex flex-col items-center w-12 h-full bg-[var(--bg-secondary)] shrink-0 select-none">
+    <div
+      data-tour="activity-bar"
+      className="flex flex-col items-center w-12 h-full bg-[var(--bg-secondary)] shrink-0 select-none"
+    >
       {modal}
       <div className="flex flex-col items-center w-full py-2 border-b border-[var(--border-secondary)]">
         {github && (
-          <ExternalIcon href={github.link} label="github" onClick={handleClick(github.link)}>
+          <ExternalIcon
+            href={github.link}
+            label="github"
+            onClick={handleClick(github.link)}
+          >
             <Github className="w-6 sm:w-5" />
           </ExternalIcon>
         )}
         {linkedin && (
-          <ExternalIcon href={linkedin.link} label="linkedin" onClick={handleClick(linkedin.link)}>
+          <ExternalIcon
+            href={linkedin.link}
+            label="linkedin"
+            onClick={handleClick(linkedin.link)}
+          >
             <Linkedin className="w-6 sm:w-5" />
           </ExternalIcon>
         )}
-        <ExternalIcon href="mailto:young.h.tyler@gmail.com" label="e-mail">
+        <ExternalIcon
+          href="mailto:young.h.tyler@gmail.com"
+          label="email"
+          onClick={handleClick("mailto:young.h.tyler@gmail.com")}
+        >
           <Mail className="w-6 sm:w-5" />
         </ExternalIcon>
         {cv && (
