@@ -148,6 +148,29 @@ body {
   animation: modal-backdrop-out 150ms ease-in forwards;
 }
 
+/* New tab entrance — a fade+scale pop. Closing is handled separately, in
+   Navigation.jsx, via an inline-style width transition (needs a measured
+   pixel width to animate from, which a static keyframe can't do) — that's
+   also what makes the tabs after a closed one slide left as it collapses,
+   instead of jumping the instant it's removed from openTabs. */
+@keyframes tab-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Only fires on a genuinely new DOM node (a tab that wasn't in the previous
+   render's keyed list) — an already-mounted tab keeps this class across
+   re-renders without the animation restarting. */
+.animate-tab-in {
+  animation: tab-in 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 /* The tab bar's real scrollbar is hidden — a mock thumb rendered in its own
    reserved row (see Navigation.jsx) replaces it so it's exactly as thin as
    we want and never overlaps tab text the way an overlay scrollbar would. */
