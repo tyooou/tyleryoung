@@ -2,8 +2,14 @@ import { useState, useRef, useEffect } from "react";
 import { ArrowLeft, ArrowRight, Palette, PanelLeft } from "lucide-react";
 import { useTheme, THEMES } from "../lib/theme";
 
+// Matches the CSS animation-out duration in index.css — the panel has to
+// stay mounted this long after `expanded` goes false so the exit animation
+// can actually play, instead of the dropdown just vanishing instantly.
+const CLOSE_ANIMATION_MS = 150;
+
 function SearchBar({
   updateSidebar,
+  toggleSidebar,
   updatePage,
   goBack,
   goForward,
@@ -17,6 +23,8 @@ function SearchBar({
 }) {
   const { cycleTheme, setTheme } = useTheme();
   const [expanded, setExpanded] = useState(false);
+  const [panelRendered, setPanelRendered] = useState(false);
+  const [panelClosing, setPanelClosing] = useState(false);
   const [input, setInput] = useState("");
   const [isCmd, setIsCmd] = useState(false);
   const [menuContext, setMenuContext] = useState("main");
@@ -34,7 +42,11 @@ function SearchBar({
 
   const contentLinks = pages
     .filter(
-      (p) => p.enabled && p.id !== "changelog" && p.id !== "friends" && p.id !== "experience",
+      (p) =>
+        p.enabled &&
+        p.id !== "changelog" &&
+        p.id !== "friends" &&
+        p.id !== "experience",
     )
     .sort((a, b) => a.order - b.order)
     .map((p) => p.id);
@@ -93,7 +105,7 @@ function SearchBar({
     {
       label: "Toggle Sidebar",
       action: () => {
-        updateSidebar((prev) => !prev);
+        toggleSidebar();
       },
     },
     {
@@ -229,14 +241,14 @@ function SearchBar({
         ]
       : []),
     {
-      label: "Contact: Send an E-mail",
+      label: "Contact: Send an Email",
       action: () => {
         window.open("mailto:young.h.tyler@gmail.com", "_blank");
         setExpanded(false);
       },
     },
     {
-      label: "Contact: Copy E-mail to Clipboard",
+      label: "Contact: Copy Email to Clipboard",
       action: () => {
         navigator.clipboard.writeText("young.h.tyler@gmail.com");
         setExpanded(false);
@@ -408,6 +420,25 @@ function SearchBar({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [expanded, filteredOptions, selectedOption, menuContext, isCmd]);
 
+  // Keeps the dropdown mounted for one extra beat after `expanded` goes
+  // false so animate-modal-out actually gets to play, instead of the panel
+  // just disappearing the instant any of the many close call sites
+  // (Escape, click-outside, every option's action) flips `expanded`.
+  useEffect(() => {
+    if (expanded) {
+      setPanelRendered(true);
+      setPanelClosing(false);
+      return;
+    }
+    if (!panelRendered) return;
+    setPanelClosing(true);
+    const timeout = setTimeout(() => {
+      setPanelRendered(false);
+      setPanelClosing(false);
+    }, CLOSE_ANIMATION_MS);
+    return () => clearTimeout(timeout);
+  }, [expanded, panelRendered]);
+
   useEffect(() => {
     if (!expanded) return;
     function handleClickOutside(e) {
@@ -427,9 +458,9 @@ function SearchBar({
   return (
     <>
       <div className="cursor-default select-none fixed sm:sticky top-0 w-full z-50 flex items-center justify-center bg-[var(--bg-secondary)] border-b border-[var(--border-secondary)] py-2 px-1 sm:py-1 font-mono text-xs">
-        {expanded && (
+        {panelRendered && (
           <div
-            className="absolute z-100 border border-[var(--border-secondary)] bg-[var(--bg-tertiary)] flex flex-col items-center max-w-lg w-full p-1 top-1 rounded gap-2"
+            className={`absolute z-100 border border-[var(--border-secondary)] bg-[var(--bg-tertiary)] flex flex-col items-center max-w-lg w-full p-1 top-1 rounded gap-2 ${panelClosing ? "animate-modal-out" : "animate-modal-in"}`}
             ref={panelRef}
           >
             <input
@@ -457,7 +488,7 @@ function SearchBar({
         )}
         <div className="flex items-center w-full transition-all duration-300 gap-2">
           <div
-            className={`flex sm:flex-1 items-center text-[var(--text)] justify-end ${expanded ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"}`}
+            className={`flex sm:flex-1 items-center text-[var(--text)] justify-end transition-opacity duration-300 ${expanded ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"}`}
           >
             <button
               className="hover:bg-[var(--bg-tertiary)] py-2 px-2 sm:py-[0.5px] sm:px-1 rounded cursor-pointer"
@@ -474,7 +505,7 @@ function SearchBar({
           </div>
 
           <div
-            className={`hidden sm:flex flex-1 justify-center ${expanded ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"}`}
+            className={`hidden sm:flex flex-1 justify-center transition-opacity duration-300 ${expanded ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"}`}
           >
             <button
               type="button"
@@ -487,6 +518,7 @@ function SearchBar({
 
           <div className="flex flex-1 items-center justify-end text-[var(--text)] gap-1">
             <button
+              data-tour="theme-toggle"
               className="hover:bg-[var(--bg-tertiary)] py-2 px-2 sm:py-[0.5px] sm:px-1 rounded cursor-pointer"
               onClick={cycleTheme}
             >
@@ -494,7 +526,7 @@ function SearchBar({
             </button>
             <button
               className="hover:bg-[var(--bg-tertiary)] py-2 px-2 sm:py-[0.5px] sm:px-1 rounded cursor-pointer"
-              onClick={() => updateSidebar((prev) => !prev)}
+              onClick={toggleSidebar}
             >
               <PanelLeft className="w-6 sm:w-4" />
             </button>

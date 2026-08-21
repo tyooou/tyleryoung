@@ -85,6 +85,69 @@ body {
   animation: tour-drag-path 2.2s ease-in-out infinite;
 }
 
+/* Shared modal/panel entrance — used by the external-link confirmation
+   modal and the command palette/search panel, so both pop in with the
+   same feel instead of the instant, jarring appearance a plain
+   conditional render gives. */
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-modal-in {
+  animation: modal-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modal-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-modal-backdrop-in {
+  animation: modal-backdrop-in 150ms ease-out;
+}
+
+@keyframes modal-out {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.96) translateY(-4px);
+  }
+}
+
+/* forwards — holds the fully-faded end state instead of snapping back to
+   opacity 1 the instant the animation finishes, in case that lands a frame
+   or two before the JS timeout below actually unmounts it. */
+.animate-modal-out {
+  animation: modal-out 150ms cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+@keyframes modal-backdrop-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.animate-modal-backdrop-out {
+  animation: modal-backdrop-out 150ms ease-in forwards;
+}
+
 /* The tab bar's real scrollbar is hidden — a mock thumb rendered in its own
    reserved row (see Navigation.jsx) replaces it so it's exactly as thin as
    we want and never overlaps tab text the way an overlay scrollbar would. */
