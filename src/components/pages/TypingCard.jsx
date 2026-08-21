@@ -173,7 +173,7 @@ function MonkeyTypeStats() {
     : null;
 
   return (
-    <div className="mt-6 mb-6 font-mono max-w-[600px]">
+    <div className="mt-6 mb-6 font-mono">
       {loading && <BrailleSpinner />}
 
       {error && <p className="text-red-500">Error: {error}</p>}
@@ -191,7 +191,7 @@ function MonkeyTypeStats() {
       )}
 
       {bestsByDuration && (
-        <table className="w-full border-collapse">
+        <table className="w-full max-w-[600px] border-collapse">
           <thead>
             <tr className="border-b border-[var(--border-secondary)]">
               <th className="text-left p-1.5">Duration</th>
