@@ -13,6 +13,7 @@ import {
 import DecodeText from "../DecodeText";
 import ExternalLink from "../ExternalLink";
 import { useTheme } from "../../lib/theme";
+import { useExternalLinkConfirm } from "../../lib/useExternalLinkConfirm";
 
 const HIGHLIGHTS = [
   {
@@ -53,6 +54,8 @@ function BibliographyCard({
   startTour = () => {},
 }) {
   const { cycleTheme } = useTheme();
+  const { handleClick: handleExternalClick, modal: externalLinkModal } =
+    useExternalLinkConfirm();
   const cv = quickLinks.find((q) => q.id === "cv");
   const recentProjects = [...projects]
     .sort((a, b) => new Date(b.meta._createdAt) - new Date(a.meta._createdAt))
@@ -60,6 +63,7 @@ function BibliographyCard({
 
   return (
     <div className="w-full h-full p-3 sm:p-6 font-mono select-none cursor-default overflow-y-auto">
+      {externalLinkModal}
       <div className="flex items-center gap-4 ml-2">
         <DecodeText text="Tyler Young" speed={80} />
       </div>
@@ -172,6 +176,7 @@ function BibliographyCard({
               text="GitHub"
               link="https://github.com/tyooou"
               hover={false}
+              onClick={handleExternalClick("https://github.com/tyooou")}
             />
           </span>
           <span className="flex items-center gap-2 px-2 py-1">
@@ -180,6 +185,9 @@ function BibliographyCard({
               text="LinkedIn"
               link="https://nz.linkedin.com/in/tylerhyoung"
               hover={false}
+              onClick={handleExternalClick(
+                "https://nz.linkedin.com/in/tylerhyoung",
+              )}
             />
           </span>
           <span className="flex items-center gap-2 px-2 py-1">
@@ -188,6 +196,7 @@ function BibliographyCard({
               text="Email"
               link="mailto:young.h.tyler@gmail.com"
               hover={false}
+              onClick={handleExternalClick("mailto:young.h.tyler@gmail.com")}
             />
           </span>
         </div>

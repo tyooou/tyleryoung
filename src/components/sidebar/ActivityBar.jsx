@@ -1,9 +1,6 @@
-import { useState } from "react";
 import { FileUser, Mail, Linkedin, Github } from "lucide-react";
 import { getIcon } from "../iconMap";
-import ExternalLinkWarningModal from "../ExternalLinkWarningModal";
-
-const SKIP_WARNING_KEY = "skipExternalLinkWarning";
+import { useExternalLinkConfirm } from "../../lib/useExternalLinkConfirm";
 
 function ExternalIcon({ href, label, children, onClick }) {
   return (
@@ -20,33 +17,6 @@ function ExternalIcon({ href, label, children, onClick }) {
       </div>
     </a>
   );
-}
-
-// GitHub/LinkedIn navigate away from the site entirely — VS Code shows a
-// confirmation before opening any external website, so this mirrors that
-// rather than silently leaving the page on a single misclick.
-function useExternalLinkConfirm() {
-  const [pending, setPending] = useState(null);
-
-  const handleClick = (href) => (e) => {
-    if (localStorage.getItem(SKIP_WARNING_KEY) === "true") return;
-    e.preventDefault();
-    setPending(href);
-  };
-
-  const modal = pending && (
-    <ExternalLinkWarningModal
-      url={pending}
-      onCancel={() => setPending(null)}
-      onConfirm={(dontAskAgain) => {
-        if (dontAskAgain) localStorage.setItem(SKIP_WARNING_KEY, "true");
-        window.open(pending, "_blank", "noopener,noreferrer");
-        setPending(null);
-      }}
-    />
-  );
-
-  return { handleClick, modal };
 }
 
 // Same look as ExternalIcon, but opens the target as an in-app Simple
