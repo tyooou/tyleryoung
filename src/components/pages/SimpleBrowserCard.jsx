@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, RotateCw, ExternalLink as ExternalLinkIcon } from "lucide-react";
+import ZoomedIframe from "../ZoomedIframe";
 
 function normalizeUrl(raw) {
   const trimmed = raw.trim();
@@ -114,11 +115,11 @@ function SimpleBrowserCard({ url, title }) {
         </a>
       </form>
       <div className="relative flex-1 min-h-0">
-        <iframe
+        <ZoomedIframe
           key={`${currentUrl}-${reloadCount}`}
           src={currentUrl}
           title={title || currentUrl}
-          className="w-full h-full border-0 bg-white"
+          className="w-full h-full bg-white overflow-hidden"
           sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
           referrerPolicy="no-referrer"
           onLoad={() => {

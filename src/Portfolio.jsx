@@ -582,7 +582,7 @@ function Portfolio() {
 
   return (
     <>
-      <div className="flex flex-col min-h-screen sm:h-screen sm:fixed w-full bg-[var(--bg-secondary)]">
+      <div className="flex flex-col min-h-full sm:h-full sm:fixed w-full bg-[var(--bg-secondary)]">
         <SearchBar
           updateSidebar={updateSidebar}
           updatePage={updatePage}

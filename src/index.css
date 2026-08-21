@@ -1,10 +1,26 @@
 @import "tailwindcss";
 
+/* Site-wide zoom-out. Applied to <html> (not a nested element) so layout
+   actually recomputes against the resulting larger effective viewport —
+   the same way real browser zoom-out works — instead of just shrinking a
+   box that still only has the original viewport's width to lay out
+   against, which would leave blank space around it. */
+html {
+  zoom: 0.85;
+}
+
+/* Percentage-height chain down to #root, rather than vh/dvh units — those
+   don't rescale with the zoom above, so content sized against them would
+   stay pinned to the physical viewport height while width-based sizing
+   (which does respond to zoom) grows, leaving a blank gap below. */
+html,
+body {
+  height: 100%;
+}
+
 /* Sanity Studio (mounted at /admin) needs its root to fill the viewport. */
 #root {
   height: 100%;
-  min-height: 100vh;
-  max-height: 100dvh;
 }
 
 /* Per-letter reveal bounce used by DecodeText. A single self-contained

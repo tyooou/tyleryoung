@@ -1,4 +1,5 @@
 import { Download, ExternalLink as ExternalLinkIcon } from "lucide-react";
+import ZoomedIframe from "../ZoomedIframe";
 
 // A static document, not a navigable site — no back/forward/URL bar like
 // SimpleBrowserCard. The iframe itself renders the file through the
@@ -38,7 +39,7 @@ function PdfViewerCard({ url, title = "Document" }) {
           </a>
         </div>
       </div>
-      <iframe src={url} title={title} className="w-full h-full border-0 bg-white flex-1 min-h-0" />
+      <ZoomedIframe src={url} title={title} className="w-full flex-1 min-h-0 bg-white overflow-hidden" />
     </div>
   );
 }
