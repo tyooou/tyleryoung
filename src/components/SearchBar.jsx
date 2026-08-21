@@ -505,11 +505,11 @@ function SearchBar({
           </div>
 
           <div
-            className={`hidden sm:flex flex-1 justify-center transition-opacity duration-300 ${expanded ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"}`}
+            className={`hidden sm:flex flex-1 justify-center transition-opacity duration-300  ${expanded ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"}`}
           >
             <button
               type="button"
-              className="text-xs outline-none border border-[var(--border-secondary)] bg-[var(--bg)] text-[var(--border-secondary)] px-2 py-1 rounded focus:border-[var(--text-secondary)] text-center w-full"
+              className="text-xs outline-none border border-[var(--border-secondary)] bg-[var(--bg)] text-[var(--border-secondary)] px-2 py-1 rounded focus:border-[var(--text-secondary)] text-center w-full cursor-pointer"
               onClick={() => setExpanded(true)}
             >
               tyou.dev
