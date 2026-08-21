@@ -504,12 +504,19 @@ function SearchBar({
             </button>
           </div>
 
-          <div
-            className={`hidden sm:flex flex-1 justify-center transition-opacity duration-300  ${expanded ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"}`}
-          >
+          <div className="hidden sm:flex flex-1 justify-center">
+            {/* width (not opacity) — collapses to a point rather than
+                fading in place, so it reads as the search bar itself
+                shrinking away instead of a cross-fade against the panel
+                opening on top of it. w-full/w-0 are both concrete values
+                that interpolate cleanly, unlike an intrinsic "auto" width. */}
             <button
               type="button"
-              className="text-xs outline-none border border-[var(--border-secondary)] bg-[var(--bg)] text-[var(--border-secondary)] px-2 py-1 rounded focus:border-[var(--text-secondary)] text-center w-full cursor-pointer"
+              className={`text-xs outline-none border border-[var(--border-secondary)] bg-[var(--bg)] text-[var(--border-secondary)] py-1 rounded focus:border-[var(--text-secondary)] text-center cursor-pointer overflow-hidden whitespace-nowrap transition-all duration-300 ${
+                expanded
+                  ? "w-0 px-0 border-0 opacity-0 pointer-events-none"
+                  : "w-full px-2 opacity-100 pointer-events-auto"
+              }`}
               onClick={() => setExpanded(true)}
             >
               tyou.dev
