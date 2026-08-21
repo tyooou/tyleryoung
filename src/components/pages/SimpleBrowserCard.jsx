@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, ArrowRight, RotateCw, ExternalLink as ExternalLinkIcon } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  RotateCw,
+  ExternalLink as ExternalLinkIcon,
+} from "lucide-react";
 import ZoomedIframe from "../ZoomedIframe";
 
 function normalizeUrl(raw) {
@@ -70,7 +75,7 @@ function SimpleBrowserCard({ url, title }) {
     <div className="w-full h-full flex flex-col select-none">
       <form
         onSubmit={handleSubmit}
-        className="flex items-center gap-1 px-1 py-1 border-b border-[var(--border-secondary)] bg-[var(--bg-secondary)] shrink-0"
+        className="flex items-center gap-1 px-1 py-1 border-b border-[var(--border-secondary)] bg-[var(--bg)] shrink-0"
       >
         <button
           type="button"
