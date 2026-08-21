@@ -1,10 +1,15 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { TOUR_STEPS } from "../lib/tourSteps";
 
 const CALLOUT_WIDTH = 288;
 const CALLOUT_GAP = 16;
+// Matches the CSS animation-out duration in index.css — closing has to
+// wait this long before actually calling the real onClose (which unmounts
+// this component from Portfolio.jsx), or the overlay would just vanish
+// mid-animation instead of fading out.
+const CLOSE_ANIMATION_MS = 150;
 
 // Polls every frame instead of a one-shot delayed re-measure — the sidebar
 // and its panel animate open/resize with real CSS transitions, and two
@@ -92,6 +97,14 @@ function splitPreviewRect(paneContentRect) {
 }
 
 function TourOverlay({ stepIndex, onNext, onPrev, onClose }) {
+  const [closing, setClosing] = useState(false);
+  const handleClose = useCallback(() => {
+    setClosing((already) => {
+      if (!already) setTimeout(onClose, CLOSE_ANIMATION_MS);
+      return true;
+    });
+  }, [onClose]);
+
   const step = TOUR_STEPS[stepIndex];
   const rect = useTargetRect(step.target, stepIndex);
   const paneContentRect = useTargetRect(
@@ -109,23 +122,23 @@ function TourOverlay({ stepIndex, onNext, onPrev, onClose }) {
   useEffect(() => {
     if (rect) return;
     const timeout = setTimeout(() => {
-      if (stepIndex === TOUR_STEPS.length - 1) onClose();
+      if (stepIndex === TOUR_STEPS.length - 1) handleClose();
       else onNext();
     }, 400);
     return () => clearTimeout(timeout);
-  }, [rect, stepIndex, onNext, onClose]);
+  }, [rect, stepIndex, onNext, handleClose]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "ArrowRight") {
-        if (stepIndex === TOUR_STEPS.length - 1) onClose();
+        if (stepIndex === TOUR_STEPS.length - 1) handleClose();
         else onNext();
       } else if (e.key === "ArrowLeft") onPrev();
-      else if (e.key === "Escape") onClose();
+      else if (e.key === "Escape") handleClose();
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [stepIndex, onNext, onPrev, onClose]);
+  }, [stepIndex, onNext, onPrev, handleClose]);
 
   // A dot traveling from the tab's right edge to just inside the preview
   // pane, illustrating the actual drag gesture rather than just showing
@@ -151,7 +164,10 @@ function TourOverlay({ stepIndex, onNext, onPrev, onClose }) {
   const pageZoom = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] font-mono" style={{ zoom: 1 / pageZoom }}>
+    <div
+      className={`fixed inset-0 z-[100] font-mono ${closing ? "animate-modal-backdrop-out pointer-events-none" : ""}`}
+      style={{ zoom: 1 / pageZoom }}
+    >
       {rect ? (
         <div
           className="absolute rounded pointer-events-none transition-all duration-300 ease-out"
@@ -205,7 +221,7 @@ function TourOverlay({ stepIndex, onNext, onPrev, onClose }) {
           <div className="flex items-start justify-between gap-2">
             <p className="font-bold text-[var(--text)]">{step.title}</p>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="shrink-0 text-[var(--text-secondary)] hover:text-[var(--text)] cursor-pointer"
               aria-label="Close tour"
             >
@@ -227,7 +243,7 @@ function TourOverlay({ stepIndex, onNext, onPrev, onClose }) {
                 <ChevronLeft size={16} />
               </button>
               <button
-                onClick={stepIndex === TOUR_STEPS.length - 1 ? onClose : onNext}
+                onClick={stepIndex === TOUR_STEPS.length - 1 ? handleClose : onNext}
                 className="px-3 py-1.5 text-sm rounded bg-[var(--text)] text-[var(--bg)] hover:opacity-90 cursor-pointer"
               >
                 {stepIndex === TOUR_STEPS.length - 1 ? "Done" : "Next"}
