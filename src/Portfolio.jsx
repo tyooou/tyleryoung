@@ -214,17 +214,17 @@ function Portfolio() {
       try {
         const data = await sanityClient.fetch(`
           *[_type == "extracurricular"] | order(order asc){
-            title, description, link,
+            organisation, role, position, description, link, tags,
             "graphics": coalesce(graphics[]{ "url": asset->url + "?w=1200&auto=format", alt }, []),
             "photos": coalesce(photos[]{ "url": asset->url + "?w=1200&auto=format", alt }, [])
           }
         `);
         // No CMS slug field for extracurriculars — derive a stable one from
-        // the title so individual pages/tabs have a page id.
+        // the organisation so individual pages/tabs have a page id.
         setExtracurriculars(
           data.map((item) => ({
             ...item,
-            slug: `extracurricular-${item.title
+            slug: `extracurricular-${item.organisation
               .toLowerCase()
               .replace(/[^a-z0-9]+/g, "-")
               .replace(/^-+|-+$/g, "")}`,

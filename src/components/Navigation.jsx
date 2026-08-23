@@ -53,7 +53,14 @@ function TabLabel({
   }
   const extracurricular = extracurriculars.find((item) => item.slug === tab);
   if (extracurricular) {
-    return <>{`${extracurricular.title.replace(/ /g, "-")}.txt`}</>;
+    return (
+      <>
+        {`${extracurricular.role}-@-${extracurricular.organisation}`.replace(
+          / /g,
+          "-",
+        ) + ".txt"}
+      </>
+    );
   }
   const book = books.find((b) => b.slug === tab);
   if (book) {

@@ -18,36 +18,51 @@ function MasonryGallery({ title, photos, altFallback }) {
 
 function ExtracurricularEntryCard({ extracurricular }) {
   if (!extracurricular) return null;
-  const { title, description, link, graphics, photos } = extracurricular;
+  const { role, organisation, position, description, link, tags, graphics, photos } =
+    extracurricular;
   const hasGallery = graphics?.length > 0 || photos?.length > 0;
 
   return (
-    <div className="flex flex-col sm:flex-row w-full h-full font-mono select-none cursor-default sm:overflow-hidden">
-      <div className="flex-1 sm:flex-2 p-3 sm:p-5 sm:overflow-y-auto">
-        <h2 className="font-bold text-4xl sm:text-3xl md:text-4xl lg:text-5xl flex-shrink-0">
-          {title}
-        </h2>
-        <div className="ml-2 mt-4 max-w-2xl select-text cursor-text">
-          {description ? (
-            <p className="text-base whitespace-pre-line leading-relaxed">{description}</p>
-          ) : (
-            <p className="text-base text-[var(--text-secondary)]">(fill in)</p>
-          )}
-        </div>
+    <div className="w-full h-full font-mono select-none cursor-default overflow-y-auto p-3 sm:p-5">
+      <h2 className="font-bold text-4xl sm:text-3xl md:text-4xl lg:text-5xl flex-shrink-0">
+        {role}
+      </h2>
+      <p className="text-xl sm:text-2xl mt-2 ml-2 font-bold text-[var(--text-secondary)]">
+        {organisation}
+      </p>
+      <div className="ml-2 mt-4 max-w-2xl select-text cursor-text">
+        {position && <p className="text-base text-[var(--text-secondary)]">{position}</p>}
+        {tags?.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-4">
+            {tags.map((tag) => (
+              <span
+                key={tag}
+                className="text-xs px-2 py-0.5 rounded bg-[var(--bg-tertiary)] text-[var(--text-secondary)]"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+        {description ? (
+          <p className="text-base whitespace-pre-line leading-relaxed mt-4">{description}</p>
+        ) : (
+          <p className="text-base text-[var(--text-secondary)] mt-4">(fill in)</p>
+        )}
         {link && (
-          <p className="text-xl sm:text-2xl mt-4 ml-2 font-bold text-[var(--text-secondary)]">
+          <p className="mt-6">
             <ExternalLink
               text="Visit website"
               link={link}
-              icon={<Globe size={18} className="text-[var(--text-secondary)]" />}
+              icon={<Globe size={16} className="text-[var(--text-secondary)]" />}
             />
           </p>
         )}
       </div>
       {hasGallery && (
-        <div className="flex-1 sm:flex-3 p-3 sm:p-5 sm:pt-6 sm:overflow-y-auto flex flex-col gap-8">
-          <MasonryGallery title="Graphics" photos={graphics} altFallback={`${title} graphic`} />
-          <MasonryGallery title="Photos" photos={photos} altFallback={title} />
+        <div className="mt-8 flex flex-col gap-8">
+          <MasonryGallery title="Graphics" photos={graphics} altFallback={`${organisation} graphic`} />
+          <MasonryGallery title="Photos" photos={photos} altFallback={organisation} />
         </div>
       )}
     </div>

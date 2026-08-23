@@ -412,7 +412,8 @@ function ExtracurricularsTree({
           extracurriculars.map((item) => (
             <SidebarLink
               key={item.slug}
-              text={item.title}
+              text={item.role}
+              subtitle={item.organisation}
               updatePage={updatePage}
               updateSidebar={updateSidebar}
               projectName={item.slug}
