@@ -14,7 +14,7 @@ import TypingCard from "./components/pages/TypingCard";
 import LeetcodeCard from "./components/pages/leetcode/LeetcodeCard";
 import ChangelogOverviewCard from "./components/pages/ChangelogOverviewCard";
 import TourOverlay from "./components/TourOverlay";
-import { TOUR_STEPS } from "./lib/tourSteps";
+import { TOUR_STEPS, getTourSteps } from "./lib/tourSteps";
 import {
   MIN_PANEL_WIDTH,
   MAX_PANEL_WIDTH,
@@ -45,8 +45,8 @@ function Portfolio() {
     return window.innerWidth >= 768;
   });
 
-  // Up to two panes (left/right, VS Code-style split editor). "left" always
-  // exists and always keeps "bibliography" pinned; "right" is created by
+  // Up to two panes (left/right, code-editor-style split view). "left"
+  // always exists and always keeps "bibliography" pinned; "right" is created by
   // dragging a tab to the edge and disappears once its last tab leaves.
   const [panes, setPanes] = useState(() => {
     const savedOpenTabs = localStorage.getItem("openTabs");
@@ -86,6 +86,7 @@ function Portfolio() {
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
   const [tourStep, setTourStep] = useState(null); // null = inactive, else 0-based step index
+  const [tourSteps, setTourSteps] = useState(TOUR_STEPS); // filtered per-viewport at tour start
 
   const splitRatioStartRef = useRef(splitRatio);
   const panesRowRef = useRef(null);
@@ -373,24 +374,30 @@ function Portfolio() {
 
   const startTour = () => {
     sidebarRef.current?.open();
+    const isMobile = window.innerWidth < 768;
+    const steps = getTourSteps(isMobile);
+    setTourSteps(steps);
     // The "Tabs" and "Split view" steps need a real, non-pinned tab to
     // point at — bibliography alone has no draggable tab (see Navigation's
     // data-tour on the tab bar), so without this those steps would just
-    // auto-skip. Only adds one if nothing else is already open, and never
-    // switches focus to it — the tour should start on whatever page the
-    // visitor was already looking at.
-    setPanes((prev) =>
-      prev.map((p) => {
-        if (p.id !== "left") return p;
-        const hasOtherTab = p.openTabs.some((tab) => tab !== "bibliography");
-        if (hasOtherTab || p.openTabs.includes("experience")) return p;
-        return { ...p, openTabs: [...p.openTabs, "experience"] };
-      }),
-    );
+    // auto-skip. Only relevant on desktop, since those steps are dropped
+    // entirely on mobile. Only adds one if nothing else is already open,
+    // and never switches focus to it — the tour should start on whatever
+    // page the visitor was already looking at.
+    if (!isMobile) {
+      setPanes((prev) =>
+        prev.map((p) => {
+          if (p.id !== "left") return p;
+          const hasOtherTab = p.openTabs.some((tab) => tab !== "bibliography");
+          if (hasOtherTab || p.openTabs.includes("experience")) return p;
+          return { ...p, openTabs: [...p.openTabs, "experience"] };
+        }),
+      );
+    }
     setTourStep(0);
   };
   const nextTourStep = () =>
-    setTourStep((step) => Math.min(step + 1, TOUR_STEPS.length - 1));
+    setTourStep((step) => Math.min(step + 1, tourSteps.length - 1));
   const prevTourStep = () => setTourStep((step) => Math.max(step - 1, 0));
   const closeTour = () => setTourStep(null);
 
@@ -698,6 +705,7 @@ function Portfolio() {
       </div>
       {tourStep !== null && (
         <TourOverlay
+          steps={tourSteps}
           stepIndex={tourStep}
           onNext={nextTourStep}
           onPrev={prevTourStep}

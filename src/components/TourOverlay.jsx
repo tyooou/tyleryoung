@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import { TOUR_STEPS } from "../lib/tourSteps";
 
 const CALLOUT_WIDTH = 288;
 const CALLOUT_GAP = 16;
@@ -96,7 +95,7 @@ function splitPreviewRect(paneContentRect) {
   };
 }
 
-function TourOverlay({ stepIndex, onNext, onPrev, onClose }) {
+function TourOverlay({ steps, stepIndex, onNext, onPrev, onClose }) {
   const [closing, setClosing] = useState(false);
   const handleClose = useCallback(() => {
     setClosing((already) => {
@@ -105,7 +104,7 @@ function TourOverlay({ stepIndex, onNext, onPrev, onClose }) {
     });
   }, [onClose]);
 
-  const step = TOUR_STEPS[stepIndex];
+  const step = steps[stepIndex];
   const rect = useTargetRect(step.target, stepIndex);
   const paneContentRect = useTargetRect(
     step.showSplitPreview ? '[data-tour="pane-content"]' : null,
@@ -122,23 +121,23 @@ function TourOverlay({ stepIndex, onNext, onPrev, onClose }) {
   useEffect(() => {
     if (rect) return;
     const timeout = setTimeout(() => {
-      if (stepIndex === TOUR_STEPS.length - 1) handleClose();
+      if (stepIndex === steps.length - 1) handleClose();
       else onNext();
     }, 400);
     return () => clearTimeout(timeout);
-  }, [rect, stepIndex, onNext, handleClose]);
+  }, [rect, stepIndex, steps, onNext, handleClose]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "ArrowRight") {
-        if (stepIndex === TOUR_STEPS.length - 1) handleClose();
+        if (stepIndex === steps.length - 1) handleClose();
         else onNext();
       } else if (e.key === "ArrowLeft") onPrev();
       else if (e.key === "Escape") handleClose();
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [stepIndex, onNext, onPrev, handleClose]);
+  }, [stepIndex, steps, onNext, onPrev, handleClose]);
 
   // A dot traveling from the tab's right edge to just inside the preview
   // pane, illustrating the actual drag gesture rather than just showing
@@ -231,7 +230,7 @@ function TourOverlay({ stepIndex, onNext, onPrev, onClose }) {
           <p className="mt-2 text-sm text-[var(--text-secondary)]">{step.body}</p>
           <div className="mt-4 flex items-center justify-between">
             <span className="text-xs text-[var(--text-secondary)]">
-              {stepIndex + 1} of {TOUR_STEPS.length}
+              {stepIndex + 1} of {steps.length}
             </span>
             <div className="flex items-center gap-1">
               <button
@@ -243,12 +242,12 @@ function TourOverlay({ stepIndex, onNext, onPrev, onClose }) {
                 <ChevronLeft size={16} />
               </button>
               <button
-                onClick={stepIndex === TOUR_STEPS.length - 1 ? handleClose : onNext}
+                onClick={stepIndex === steps.length - 1 ? handleClose : onNext}
                 className="px-3 py-1.5 text-sm rounded bg-[var(--text)] text-[var(--bg)] hover:opacity-90 cursor-pointer"
               >
-                {stepIndex === TOUR_STEPS.length - 1 ? "Done" : "Next"}
+                {stepIndex === steps.length - 1 ? "Done" : "Next"}
               </button>
-              {stepIndex < TOUR_STEPS.length - 1 && (
+              {stepIndex < steps.length - 1 && (
                 <button
                   onClick={onNext}
                   className="p-1.5 rounded text-[var(--text-secondary)] hover:text-[var(--text)] hover:bg-[var(--bg-tertiary)] cursor-pointer"
