@@ -30,7 +30,7 @@ const HIGHLIGHTS = [
   },
 ];
 
-// A single "Start"-section row: icon + label, VS Code welcome-page style.
+// A single "Start"-section row: icon + label, code-editor welcome-page style.
 function StartLink({ icon, text, onClick }) {
   const Icon = icon;
   return (
