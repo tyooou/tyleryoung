@@ -8,7 +8,7 @@ export default defineType({
   title: "Settings",
   type: "document",
   fields: [
-    defineField({ name: "cv", title: "CV / Résumé (PDF)", type: "file" }),
+    defineField({ name: "cv", title: "Résumé (PDF)", type: "file" }),
   ],
   preview: {
     prepare() {

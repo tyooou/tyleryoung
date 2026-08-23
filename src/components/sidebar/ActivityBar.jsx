@@ -106,7 +106,7 @@ function ActivityBar({
               updatePage(cv.name);
               if (window.innerWidth < 768) updateSidebar(false);
             }}
-            label="cv"
+            label="resume"
           >
             <FileUser className="w-6 sm:w-5" />
           </BrowserIcon>

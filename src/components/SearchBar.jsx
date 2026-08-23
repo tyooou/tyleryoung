@@ -220,18 +220,18 @@ function SearchBar({
     ...(quickLinkById("cv")
       ? [
           {
-            label: "Document: Open CV",
+            label: "Document: Open Résumé",
             action: () => {
               updatePage(quickLinkById("cv").name);
               setExpanded(false);
             },
           },
           {
-            label: "Document: Download CV",
+            label: "Document: Download Résumé",
             action: () => {
               const link = document.createElement("a");
-              link.href = `${quickLinkById("cv").link}?dl=TYLER-YOUNG-CV.pdf`;
-              link.download = "TYLER-YOUNG-CV.pdf";
+              link.href = `${quickLinkById("cv").link}?dl=TYLER-YOUNG-RESUME.pdf`;
+              link.download = "TYLER-YOUNG-RESUME.pdf";
               document.body.appendChild(link);
               link.click();
               document.body.removeChild(link);
