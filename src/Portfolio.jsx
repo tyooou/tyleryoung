@@ -143,6 +143,7 @@ function Portfolio() {
             "name": name.current,
             title,
             subtitle,
+            year,
             _createdAt,
             "techStack": coalesce(techStack, []),
             code,

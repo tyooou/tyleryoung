@@ -336,7 +336,7 @@ function ExperienceTree({ projects, experiences, updatePage, updateSidebar }) {
           <SidebarLink
             key={exp.slug}
             text={exp.role}
-            subtitle={exp.company}
+            subtitle={`@ ${exp.company}`}
             updatePage={updatePage}
             updateSidebar={updateSidebar}
             projectName={exp.slug}
@@ -376,6 +376,7 @@ function ExperienceTree({ projects, experiences, updatePage, updateSidebar }) {
             <SidebarLink
               key={project.name}
               text={project.title}
+              subtitle={project.year ? String(project.year) : undefined}
               updatePage={updatePage}
               updateSidebar={updateSidebar}
               projectName={project.name}
@@ -413,7 +414,7 @@ function ExtracurricularsTree({
             <SidebarLink
               key={item.slug}
               text={item.role}
-              subtitle={item.organisation}
+              subtitle={`@ ${item.organisation}`}
               updatePage={updatePage}
               updateSidebar={updateSidebar}
               projectName={item.slug}

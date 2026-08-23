@@ -5,13 +5,43 @@ import { useEffect, useRef, useState } from "react";
 // can actually play, before it's really removed from openTabs.
 const TAB_CLOSE_ANIMATION_MS = 160;
 
+// Falls back to the site's own "ty." favicon when a link's site icon
+// can't be resolved, instead of a generic placeholder.
+const FALLBACK_FAVICON = "/favicon.svg";
+
+// Capitalizes the first letter of each word only, leaving the rest of the
+// word untouched so acronyms/brand casing (e.g. "IBM", "GitHub") survive.
+// Uses \p{L} (Unicode letters) rather than \w so accented word starts
+// (e.g. "Résumé") aren't misread as a new word at the accented letter.
+function titleCase(str) {
+  return str.replace(
+    /(^|[^\p{L}\p{N}])(\p{L})/gu,
+    (_, sep, letter) => sep + letter.toUpperCase(),
+  );
+}
+
 function faviconUrl(link) {
   try {
     const { hostname } = new URL(link);
-    return `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`;
+    // DuckDuckGo's icon service always resolves with a generic fallback
+    // icon instead of 404ing, unlike Google's s2/favicons endpoint.
+    return `https://icons.duckduckgo.com/ip3/${hostname}.ico`;
   } catch {
     return null;
   }
+}
+
+function Favicon({ link, className }) {
+  const [failed, setFailed] = useState(false);
+  const url = failed ? FALLBACK_FAVICON : faviconUrl(link) || FALLBACK_FAVICON;
+  return (
+    <img
+      src={url}
+      alt=""
+      className={`${className} object-contain`}
+      onError={() => setFailed(true)}
+    />
+  );
 }
 
 function TabLabel({
@@ -24,53 +54,54 @@ function TabLabel({
   books,
   blogPosts,
 }) {
+  if (tab === "bibliography") {
+    return (
+      <span className="flex items-center gap-2.5 min-w-0 pl-1 pr-1">
+        <img
+          src={FALLBACK_FAVICON}
+          alt=""
+          className="w-3.5 h-3.5 shrink-0 object-contain"
+        />
+        <span className="truncate font-bold">Welcome</span>
+      </span>
+    );
+  }
   const browserLink =
     friends.find((f) => f.name === tab) ||
     quickLinks.find((q) => q.name === tab);
   if (browserLink) {
-    const favicon = faviconUrl(browserLink.link);
     return (
       <span className="flex items-center gap-1.5 min-w-0">
-        {favicon && (
-          <img src={favicon} alt="" className="w-3.5 h-3.5 shrink-0" />
-        )}
-        <span className="truncate">{browserLink.name}</span>
+        <Favicon link={browserLink.link} className="w-3.5 h-3.5 shrink-0" />
+        <span className="truncate">{titleCase(browserLink.name)}</span>
       </span>
     );
   }
   const problem = leetcodeProblems.find((p) => p.path === tab);
   if (problem) {
-    return <>{`${problem.number}. ${problem.title.replace(/ /g, "-")}.txt`}</>;
+    return <>{`LC${problem.number}.md`}</>;
   }
   const experience = experiences.find((exp) => exp.slug === tab);
   if (experience) {
-    return (
-      <>
-        {`${experience.role}-@-${experience.company}`.replace(/ /g, "-") +
-          ".txt"}
-      </>
-    );
+    return <>{`${titleCase(experience.company).replace(/ /g, "-")}.txt`}</>;
   }
   const extracurricular = extracurriculars.find((item) => item.slug === tab);
   if (extracurricular) {
     return (
       <>
-        {`${extracurricular.role}-@-${extracurricular.organisation}`.replace(
-          / /g,
-          "-",
-        ) + ".txt"}
+        {`${titleCase(extracurricular.organisation).replace(/ /g, "-")}.txt`}
       </>
     );
   }
   const book = books.find((b) => b.slug === tab);
   if (book) {
-    return <>{`${book.title.replace(/ /g, "-")}.txt`}</>;
+    return <>{`${titleCase(book.title).replace(/ /g, "-")}.txt`}</>;
   }
   const post = blogPosts.find((p) => p.slug === tab);
   if (post) {
-    return <>{`${post.title.replace(/ /g, "-")}.txt`}</>;
+    return <>{`${titleCase(post.title).replace(/ /g, "-")}.txt`}</>;
   }
-  return <>{`${tab.replace(/ /g, "-")}.txt`}</>;
+  return <>{`${titleCase(tab).replace(/ /g, "-")}.txt`}</>;
 }
 
 function Navigation({
@@ -241,7 +272,7 @@ function Navigation({
                   isClosing ? "" : "animate-tab-in"
                 } ${
                   tab === page
-                    ? "bg-[var(--bg)] border-b border-b-[var(--bg)]"
+                    ? "bg-[var(--bg)] border-b-2 border-b-[var(--bg)]"
                     : "bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)]"
                 }`}
               >

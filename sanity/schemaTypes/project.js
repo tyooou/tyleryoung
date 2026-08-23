@@ -14,6 +14,12 @@ export default defineType({
     }),
     defineField({ name: "title", type: "string", validation: (Rule) => Rule.required() }),
     defineField({ name: "subtitle", type: "string" }),
+    defineField({
+      name: "year",
+      type: "number",
+      description: "e.g. 2024",
+      validation: (Rule) => Rule.integer().min(1900).max(2200),
+    }),
     defineField({ name: "body", title: "Description", type: "text", rows: 6 }),
     defineField({
       name: "techStack",
@@ -38,9 +44,12 @@ export default defineType({
     }),
   ],
   preview: {
-    select: { title: "title", subtitle: "subtitle", active: "active" },
-    prepare({ title, subtitle, active }) {
-      return { title, subtitle: `${active ? "active" : "hidden"} — ${subtitle || ""}` };
+    select: { title: "title", subtitle: "subtitle", year: "year", active: "active" },
+    prepare({ title, subtitle, year, active }) {
+      return {
+        title,
+        subtitle: `${active ? "active" : "hidden"}${year ? ` — ${year}` : ""} — ${subtitle || ""}`,
+      };
     },
   },
 });
