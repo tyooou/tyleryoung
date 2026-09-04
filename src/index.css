@@ -1,5 +1,27 @@
 @import "tailwindcss";
 
+/* Makes theme switches instant rather than fading — animating color
+   across elements with very different color *distances* (e.g. a tab
+   going white->near-black vs a border going light-gray->dark-gray) reads
+   as staggered even when perfectly synced, since the small-distance one
+   looks "done" long before the large-distance one. ThemeContext toggles
+   this class on <html> for exactly one frame around the class swap; it
+   must live here (not the separately-imported themes.css) — Vite's dev
+   CSS-injection path for that file silently drops @layer blocks even
+   though the served text has them, while this file goes through the same
+   Tailwind transform that handles @layer correctly. !important so it
+   overrides every element's own transition-colors/-all utility for that
+   one frame, without touching those utilities the rest of the time (so
+   hover fades, sidebar slides, etc. are unaffected). */
+@layer base {
+  .theme-switching,
+  .theme-switching *,
+  .theme-switching *::before,
+  .theme-switching *::after {
+    transition: none !important;
+  }
+}
+
 /* Site-wide zoom-out. Applied to <html> (not a nested element) so layout
    actually recomputes against the resulting larger effective viewport —
    the same way real browser zoom-out works — instead of just shrinking a
@@ -151,6 +173,65 @@ body {
   animation: modal-backdrop-out 150ms ease-out forwards;
 }
 
+/* Content arriving after a Scribble finishes — stats, a problem write-up,
+   the changelog. Without this the spinner vanishes and a whole screen of
+   content lands in a single frame, which reads as a jolt rather than as
+   loading finishing. A short rise, not a long fade: it should feel like
+   the content settling into place, not like waiting a second time. */
+@keyframes content-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-content-in {
+  animation: content-in 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* tyouAI's model picker. Its own pair rather than the modal-in/out above:
+   that one drops in from *above* its anchor, which reads backwards for a
+   menu that opens upward out of the composer. This rises out of its bottom
+   edge instead (transform-origin bottom), so it looks attached to the
+   button that opened it. */
+@keyframes menu-up-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-menu-up-in {
+  transform-origin: bottom center;
+  animation: menu-up-in 140ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes menu-up-out {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.97) translateY(4px);
+  }
+}
+
+/* forwards — holds the faded-out end state in case the animation finishes a
+   frame before the JS timeout unmounts it, so it can't flash back. */
+.animate-menu-up-out {
+  transform-origin: bottom center;
+  animation: menu-up-out 120ms ease-out forwards;
+}
+
 /* New tab entrance — a fade+scale pop. Closing is handled separately, in
    Navigation.jsx, via an inline-style width transition (needs a measured
    pixel width to animate from, which a static keyframe can't do) — that's
@@ -174,6 +255,71 @@ body {
   animation: tab-in 160ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Syntax colouring for code blocks in tyouAI's replies (rehype-highlight
+   emits highlight.js class names). Mapped onto the theme's own tokens
+   rather than shipping a fixed highlight.js stylesheet, so code follows
+   whichever theme is active instead of clashing with it. */
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal,
+.hljs-section,
+.hljs-doctag,
+.hljs-name {
+  color: var(--accent-secondary);
+}
+.hljs-string,
+.hljs-regexp,
+.hljs-addition,
+.hljs-attribute,
+.hljs-meta .hljs-string {
+  color: var(--difficulty-easy);
+}
+.hljs-number,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-link,
+.hljs-selector-attr,
+.hljs-selector-pseudo,
+.hljs-template-variable,
+.hljs-variable {
+  color: var(--difficulty-medium);
+}
+.hljs-title,
+.hljs-title.class_,
+.hljs-title.function_,
+.hljs-built_in,
+.hljs-type {
+  color: var(--accent);
+}
+.hljs-comment,
+.hljs-quote,
+.hljs-deletion {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+.hljs-attr,
+.hljs-property,
+.hljs-params {
+  color: var(--text);
+}
+
+/* "tyouAI is thinking..." — the dots reveal via a widening overflow-hidden
+   box (steps() rather than animating opacity per-dot) so it's the classic,
+   reliably-supported "loading…" cycle rather than depending on animating
+   the CSS `content` property. */
+@keyframes thinking-ellipsis {
+  to {
+    width: 1.2em;
+  }
+}
+.animate-thinking-ellipsis {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  width: 0;
+  animation: thinking-ellipsis 1.2s steps(4, end) infinite;
+}
+
 /* The tab bar's real scrollbar is hidden — a mock thumb rendered in its own
    reserved row (see Navigation.jsx) replaces it so it's exactly as thin as
    we want and never overlaps tab text the way an overlay scrollbar would. */
@@ -182,4 +328,47 @@ body {
 }
 .tabs-scroll::-webkit-scrollbar {
   display: none;
+}
+
+/* Every other scrollbar on the site — sidebar, page content, the chat
+   transcript — styled to match that mock tab-bar thumb: hairline-thin,
+   rounded, --border-secondary, on an invisible track, and revealed only
+   while you're actually in the thing that scrolls.
+   Everything is wrapped in :where() so the whole rule has zero
+   specificity: .tabs-scroll above (and any future opt-out) still wins on a
+   plain class selector rather than needing an !important.
+   Scoped to a themed <html> so it can't reach Sanity Studio at /admin,
+   which is rendered outside ThemeProvider and does its own theming. */
+@supports (scrollbar-width: thin) {
+  :where(html[class*="theme-"], html[class*="theme-"] *) {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+  :where(html[class*="theme-"]:hover, html[class*="theme-"] *:hover) {
+    scrollbar-color: var(--border-secondary) transparent;
+  }
+}
+
+/* Safari < 18.2 and Chrome < 121 don't have the standard properties. Note
+   the two can't be combined: browsers that support both ignore
+   ::-webkit-scrollbar entirely once scrollbar-width is set. */
+@supports not (scrollbar-width: thin) {
+  :where(html[class*="theme-"], html[class*="theme-"] *)::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+  }
+  :where(html[class*="theme-"], html[class*="theme-"] *)::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  /* A transparent border + content-box clip is what makes the visible
+     thumb thinner than the track it needs for a usable hit area. */
+  :where(html[class*="theme-"], html[class*="theme-"] *)::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    background-clip: content-box;
+    border: 2px solid transparent;
+    border-radius: 999px;
+  }
+  :where(html[class*="theme-"], html[class*="theme-"] *):hover::-webkit-scrollbar-thumb {
+    background-color: var(--border-secondary);
+  }
 }

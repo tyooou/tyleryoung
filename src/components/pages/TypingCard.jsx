@@ -1,5 +1,5 @@
 import ExternalLink from "../ExternalLink";
-import BrailleSpinner from "../BrailleSpinner";
+import Scribble from "../Scribble";
 import StatTile from "../StatTile";
 import { Keyboard } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -174,12 +174,12 @@ function MonkeyTypeStats() {
 
   return (
     <div className="mt-6 mb-6 font-mono">
-      {loading && <BrailleSpinner />}
+      {loading && <Scribble />}
 
       {error && <p className="text-red-500">Error: {error}</p>}
 
       {stats && (
-        <ul className="flex flex-wrap gap-6 mb-6">
+        <ul className="animate-content-in flex flex-wrap gap-6 mb-6">
           <StatTile
             label="Best WPM"
             value={bestOverall ? bestOverall.wpm.toFixed(0) : "—"}

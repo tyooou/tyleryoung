@@ -1,8 +1,3 @@
-body,
-.app-container {
-  transition: background-color 1s ease, color 1s ease;
-}
-
 /* Refined default light — softer near-white surfaces and a richer accent
    than a flat #fff/#3b82f6 pairing, heatmap ramp tied to the accent hue. */
 html.theme-light {

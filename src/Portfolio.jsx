@@ -10,6 +10,12 @@ import OpenSourceCard from "./components/pages/OpenSourceCard";
 import LibraryOverviewCard from "./components/pages/LibraryOverviewCard";
 import { useTheme } from "./lib/theme";
 import SearchBar from "./components/SearchBar";
+import AiChatPanel from "./components/AiChatPanel";
+import TerminalPanel from "./components/TerminalPanel";
+import { describeActiveTab } from "./lib/activeTabContext";
+// Cheap capability check only — web-llm itself is dynamically imported
+// inside this module, so pulling it in here costs nothing up front.
+import { isWebGpuSupported } from "./lib/aiChatEngine";
 import TypingCard from "./components/pages/TypingCard";
 import LeetcodeCard from "./components/pages/leetcode/LeetcodeCard";
 import ChangelogOverviewCard from "./components/pages/ChangelogOverviewCard";
@@ -44,6 +50,68 @@ function Portfolio() {
   const [sidebarState, setSidebar] = useState(() => {
     return window.innerWidth >= 768;
   });
+  // tyouAI is desktop-only: the panel takes over the whole screen on a
+  // phone, and the model is a multi-hundred-megabyte download to run on the
+  // device — not something to put in front of someone on mobile data.
+  // Gated in JS rather than with `hidden md:block` so the panel genuinely
+  // isn't mounted, which is what stops the engine from ever spinning up.
+  // Tracked live so resizing (or rotating a tablet) across the breakpoint
+  // doesn't leave it half-wired.
+  const [aiEnabled, setAiEnabled] = useState(
+    () => window.matchMedia("(min-width: 768px)").matches,
+  );
+  useEffect(() => {
+    const query = window.matchMedia("(min-width: 768px)");
+    const onChange = (e) => setAiEnabled(e.matches);
+    query.addEventListener("change", onChange);
+    return () => query.removeEventListener("change", onChange);
+  }, []);
+
+  // Reopens in whichever state the visitor last left it in. First-ever
+  // visit (nothing saved yet) instead opens with tyouAI already showing,
+  // so it's discovered rather than hidden behind an unlabelled icon — same
+  // "nothing saved yet" signal the initial tab set uses below. Held back
+  // on browsers without WebGPU, where all it could greet you with is an
+  // apology.
+  const [aiChatOpen, setAiChatOpen] = useState(() => {
+    const saved = localStorage.getItem("aiChatOpen");
+    if (saved !== null) return saved === "true";
+    return (
+      !localStorage.getItem("openTabs") &&
+      window.matchMedia("(min-width: 768px)").matches &&
+      isWebGpuSupported()
+    );
+  });
+  useEffect(() => {
+    localStorage.setItem("aiChatOpen", String(aiChatOpen));
+  }, [aiChatOpen]);
+
+  // The terminal is desktop-only — there's no room for a shell panel on a
+  // phone screen and no keyboard to type into it. Gated the same way as
+  // tyouAI: tracked live via matchMedia so it unmounts/remounts correctly if
+  // the viewport crosses the breakpoint (e.g. rotating a tablet).
+  const [terminalEnabled, setTerminalEnabled] = useState(
+    () => window.matchMedia("(min-width: 768px)").matches,
+  );
+  useEffect(() => {
+    const query = window.matchMedia("(min-width: 768px)");
+    const onChange = (e) => setTerminalEnabled(e.matches);
+    query.addEventListener("change", onChange);
+    return () => query.removeEventListener("change", onChange);
+  }, []);
+
+  // Reopens in whichever state the visitor last left it in — including
+  // whatever terminals (and split arrangement) were open, restored by
+  // TerminalPanel itself from its own storage keys.
+  const [terminalOpen, setTerminalOpen] = useState(
+    () => terminalEnabled && localStorage.getItem("terminalOpen") === "true",
+  );
+  useEffect(() => {
+    localStorage.setItem("terminalOpen", String(terminalOpen));
+  }, [terminalOpen]);
+  useEffect(() => {
+    if (!terminalEnabled) setTerminalOpen(false);
+  }, [terminalEnabled]);
 
   // Up to two panes (left/right, code-editor-style split view). "left"
   // always exists and always keeps "bibliography" pinned; "right" is created by
@@ -83,6 +151,8 @@ function Portfolio() {
       : DEFAULT_PANEL_WIDTH;
   });
   const [isSidebarResizing, setIsSidebarResizing] = useState(false);
+  const [terminalReservedHeight, setTerminalReservedHeight] = useState(0);
+  const [isTerminalResizing, setIsTerminalResizing] = useState(false);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
   const [tourStep, setTourStep] = useState(null); // null = inactive, else 0-based step index
@@ -112,6 +182,11 @@ function Portfolio() {
         event.preventDefault();
         cycleTheme();
       }
+
+      if (event.ctrlKey && event.key === "`" && terminalEnabled) {
+        event.preventDefault();
+        setTerminalOpen((open) => !open);
+      }
     };
 
     document.addEventListener("keydown", handleKeyDown);
@@ -119,7 +194,7 @@ function Portfolio() {
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [activePane, cycleTheme]);
+  }, [activePane, cycleTheme, terminalEnabled]);
 
   useEffect(() => {
     async function findPages() {
@@ -385,6 +460,12 @@ function Portfolio() {
     // entirely on mobile. Only adds one if nothing else is already open,
     // and never switches focus to it — the tour should start on whatever
     // page the visitor was already looking at.
+    // The "Ask tyouAI" and "Terminal" steps need their panel actually open
+    // to point at — both collapse/translate away when closed, which the
+    // tour reads as "not here" and skips. Desktop only: both steps are
+    // dropped on mobile, where tyouAI and the terminal are disabled anyway.
+    if (!isMobile) setAiChatOpen(true);
+    if (!isMobile) setTerminalOpen(true);
     if (!isMobile) {
       setPanes((prev) =>
         prev.map((p) => {
@@ -578,6 +659,37 @@ function Portfolio() {
     ...(cvUrl ? [{ id: "cv", name: "Résumé", link: cvUrl }] : []),
   ];
 
+  // Whatever tab is focused right now, resolved into a label + content
+  // summary so the AI panel can show it as file context and answer
+  // questions about the page actually on screen.
+  const tabContextData = {
+    leetcodeProblems,
+    experiences,
+    extracurriculars,
+    projects: projects.map((project) => project.meta),
+    books,
+    blogPosts,
+    quickLinks,
+    friends,
+  };
+  const activeTabContext = describeActiveTab(activePane?.page, tabContextData);
+
+  // Same resolver, reused for the header's back/forward tooltips — the
+  // tab a click would land on, named the way its own tab reads (e.g.
+  // "LC345.md"), not the raw page id.
+  const backTabLabel = activePane?.backTabs.length
+    ? describeActiveTab(
+        activePane.backTabs[activePane.backTabs.length - 1],
+        tabContextData,
+      )?.label
+    : null;
+  const forwardTabLabel = activePane?.forwardTabs.length
+    ? describeActiveTab(
+        activePane.forwardTabs[activePane.forwardTabs.length - 1],
+        tabContextData,
+      )?.label
+    : null;
+
   const sidebarMargin = ACTIVITY_BAR_WIDTH + sidebarPanelWidth;
 
   const paneElements = panes.flatMap((pane, index) => {
@@ -653,9 +765,21 @@ function Portfolio() {
         <SearchBar
           updateSidebar={updateSidebar}
           toggleSidebar={() => sidebarRef.current?.toggle()}
+          toggleAiChat={
+            aiEnabled ? () => setAiChatOpen((open) => !open) : null
+          }
+          sidebarOpen={sidebarState}
+          aiChatOpen={aiChatOpen}
+          toggleTerminal={
+            terminalEnabled ? () => setTerminalOpen((open) => !open) : null
+          }
+          terminalOpen={terminalOpen}
+          startTour={startTour}
           updatePage={updatePage}
           goBack={goBack}
           goForward={goForward}
+          backTabLabel={backTabLabel}
+          forwardTabLabel={forwardTabLabel}
           projects={projects.map((project) => project.meta)}
           pages={pages}
           releases={releases}
@@ -665,7 +789,10 @@ function Portfolio() {
           quickLinks={quickLinks}
         />
         <div
-          className={`flex-1 flex flex-row w-full sm:h-full sm:overflow-hidden pt-[52px] sm:pt-0 pb-[37px] sm:pb-[33px] ${sidebarState ? "overflow-hidden" : "overflow-y-auto"}`}
+          style={{ "--terminal-reserved": `${terminalReservedHeight}px` }}
+          className={`flex-1 flex flex-row w-full sm:h-full sm:overflow-hidden pt-[52px] sm:pt-0 pb-[37px] sm:pb-[33px] sm:pb-[calc(33px+var(--terminal-reserved))] ${
+            isTerminalResizing ? "" : "transition-[padding-bottom] duration-300 ease-in-out"
+          } ${sidebarState ? "overflow-hidden" : "overflow-y-auto"}`}
         >
           <Sidebar
             ref={sidebarRef}
@@ -701,7 +828,36 @@ function Portfolio() {
               {paneElements}
             </div>
           </div>
+          {aiEnabled && (
+          <AiChatPanel
+            isOpen={aiChatOpen}
+            onOpen={() => setAiChatOpen(true)}
+            onClose={() => setAiChatOpen(false)}
+            activeTab={activeTabContext}
+            onOpenTab={updatePage}
+            experiences={experiences}
+            extracurriculars={extracurriculars}
+            projects={projects.map((project) => project.meta)}
+            books={books}
+            blogPosts={blogPosts}
+            leetcodeProblems={leetcodeProblems}
+          />
+          )}
         </div>
+        {terminalEnabled && (
+          <TerminalPanel
+            isOpen={terminalOpen}
+            onOpen={() => setTerminalOpen(true)}
+            onClose={() => setTerminalOpen(false)}
+            activeTabId={activePane?.page}
+            data={tabContextData}
+            releases={releases}
+            onOpenTab={updatePage}
+            leftInset={sidebarMargin}
+            onReservedHeightChange={setTerminalReservedHeight}
+            onResizingChange={setIsTerminalResizing}
+          />
+        )}
         <Footer />
       </div>
       {tourStep !== null && (

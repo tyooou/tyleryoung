@@ -2,6 +2,7 @@ import { Children, useEffect, useMemo, useState } from "react";
 import fm from "front-matter";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import rehypeHighlight from "rehype-highlight";
 import {
   Pencil,
   Info,
@@ -16,9 +17,10 @@ import {
   Bug,
   List,
   Quote,
+  Code2,
 } from "lucide-react";
 import ExternalLink from "../../ExternalLink";
-import BrailleSpinner from "../../BrailleSpinner";
+import Scribble from "../../Scribble";
 import { fetchProblemMarkdown, DIFFICULTY_COLOR } from "../../../lib/leetcode";
 import remarkObsidian from "../../../lib/remarkObsidian";
 
@@ -215,14 +217,14 @@ function LeetcodeEntryCard({ path, title, leetcodeProblems = [], updatePage }) {
 
       {loading && (
         <div className="mt-6">
-          <BrailleSpinner />
+          <Scribble />
         </div>
       )}
 
       {!loading && error && <p className="text-sm mt-4">Failed to load this problem :(</p>}
 
       {!loading && !error && (
-        <div className="mt-4 ml-2 mr-2 max-w-4xl select-text cursor-text">
+        <div className="animate-content-in mt-4 ml-2 mr-2 max-w-4xl select-text cursor-text">
           <div className="flex flex-wrap items-center gap-3 mb-4 text-sm">
             {frontmatter.difficulty &&
               (() => {
@@ -247,7 +249,13 @@ function LeetcodeEntryCard({ path, title, leetcodeProblems = [], updatePage }) {
             {frontmatter.date && (
               <span className="text-[var(--text-secondary)]">{formatDate(frontmatter.date)}</span>
             )}
-            {frontmatter.link && <ExternalLink text="View on LeetCode" link={frontmatter.link} />}
+            {frontmatter.link && (
+              <ExternalLink
+                text="View on LeetCode"
+                link={frontmatter.link}
+                icon={<Code2 size={14} />}
+              />
+            )}
           </div>
 
           {frontmatter.tags?.length > 0 && (
@@ -263,8 +271,19 @@ function LeetcodeEntryCard({ path, title, leetcodeProblems = [], updatePage }) {
             </div>
           )}
 
+          {/* Same highlighter tyouAI's replies use. It only emits
+              highlight.js class names — the colours themselves come from
+              the hljs-* rules in index.css, which are mapped onto the
+              theme's tokens, so code follows the active theme rather than
+              carrying its own palette.
+              No `detect`: these write-ups use unlabelled fences for prose
+              asides as well as code, and auto-detection reads those as
+              markdown and starts colouring the bullets and bold markers.
+              Labelled fences only; an unlabelled one stays plain text.
+              ignoreMissing keeps an unknown language from throwing. */}
           <ReactMarkdown
             remarkPlugins={[remarkGfm, remarkObsidian]}
+            rehypePlugins={[[rehypeHighlight, { ignoreMissing: true }]]}
             components={markdownComponents}
           >
             {body}

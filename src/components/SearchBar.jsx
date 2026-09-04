@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect } from "react";
-import { ArrowLeft, ArrowRight, Palette, PanelLeft } from "lucide-react";
+import { ArrowLeft, ArrowRight, Palette, Brain } from "lucide-react";
 import { useTheme, THEMES } from "../lib/theme";
+import VisitorCounter from "./VisitorCounter";
+import PanelIcon from "./PanelIcon";
+import HeaderTooltip from "./HeaderTooltip";
 
 // Matches the CSS animation-out duration in index.css — the panel has to
 // stay mounted this long after `expanded` goes false so the exit animation
@@ -10,9 +13,17 @@ const CLOSE_ANIMATION_MS = 150;
 function SearchBar({
   updateSidebar,
   toggleSidebar,
+  toggleAiChat,
+  toggleTerminal,
+  sidebarOpen,
+  aiChatOpen,
+  terminalOpen,
+  startTour,
   updatePage,
   goBack,
   goForward,
+  backTabLabel,
+  forwardTabLabel,
   projects,
   pages,
   releases,
@@ -21,7 +32,7 @@ function SearchBar({
   experiences = [],
   quickLinks = [],
 }) {
-  const { cycleTheme, setTheme } = useTheme();
+  const { theme, cycleTheme, setTheme } = useTheme();
   const [expanded, setExpanded] = useState(false);
   const [panelRendered, setPanelRendered] = useState(false);
   const [panelClosing, setPanelClosing] = useState(false);
@@ -39,6 +50,13 @@ function SearchBar({
       .replace(/\b\w/g, (c) => c.toUpperCase()),
     value: t,
   }));
+
+  // `themes` keeps THEMES' order, so this is the one cycleTheme will land
+  // on — named in the tooltip so the button says where it's going rather
+  // than just that it cycles. An unknown stored slug indexes to -1, which
+  // lands on the first theme, matching ThemeProvider's own fallback.
+  const nextThemeName =
+    themes[(THEMES.indexOf(theme) + 1) % THEMES.length].name;
 
   const contentLinks = pages
     .filter(
@@ -106,6 +124,50 @@ function SearchBar({
       label: "Toggle Sidebar",
       action: () => {
         toggleSidebar();
+      },
+    },
+    // Unlike Toggle Sidebar / Cycle Theme above, these close the palette —
+    // both take over the screen, and leaving a command list floating on top
+    // of the tour (or over the panel you just asked for) makes no sense.
+    {
+      label: "Take a Tour",
+      action: () => {
+        setExpanded(false);
+        startTour?.();
+      },
+    },
+    // Absent entirely when tyouAI is off (mobile) rather than listed and
+    // inert — Portfolio passes a null toggle in that case.
+    ...(toggleAiChat
+      ? [
+          {
+            label: "Toggle AI Chat",
+            action: () => {
+              setExpanded(false);
+              toggleAiChat();
+            },
+          },
+        ]
+      : []),
+    {
+      label: "Toggle Terminal",
+      action: () => {
+        setExpanded(false);
+        toggleTerminal?.();
+      },
+    },
+    {
+      label: "Go Back",
+      action: () => {
+        setExpanded(false);
+        goBack();
+      },
+    },
+    {
+      label: "Go Forward",
+      action: () => {
+        setExpanded(false);
+        goForward();
       },
     },
     {
@@ -468,7 +530,9 @@ function SearchBar({
               type="text"
               value={input}
               onChange={handleInputChange}
-              className="text-xs w-full outline-none border border-[var(--border-secondary)] bg-[var(--bg)] text-[var(--text)] px-2 py-1 rounded"
+              // placeholder:text-* — without it the browser falls back to
+              // its own fixed grey, which ignores the theme entirely.
+              className="text-xs w-full outline-none border border-[var(--border-secondary)] bg-[var(--bg)] text-[var(--text)] placeholder:text-[var(--text-secondary)] px-2 py-1 rounded"
               placeholder="Search pages by name (append '>' for commands)..."
               autoFocus
             />
@@ -487,56 +551,162 @@ function SearchBar({
           </div>
         )}
         <div className="flex items-center w-full transition-all duration-300 gap-2">
+          <VisitorCounter />
           <div
-            className={`flex sm:flex-1 items-center text-[var(--text)] justify-end transition-opacity duration-300 ${expanded ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"}`}
+            className={`flex sm:flex-1 items-center text-[var(--text-secondary)] justify-end transition-opacity duration-300 ${expanded ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"}`}
           >
-            <button
-              className="hover:bg-[var(--bg-tertiary)] py-2 px-2 sm:py-[0.5px] sm:px-1 rounded cursor-pointer"
-              onClick={goBack}
-            >
-              <ArrowLeft className="w-6 sm:w-4" />
-            </button>
-            <button
-              className="hover:bg-[var(--bg-tertiary)] py-2 px-2 sm:py-[0.5px] sm:px-1 rounded cursor-pointer"
-              onClick={goForward}
-            >
-              <ArrowRight className="w-6 sm:w-4" />
-            </button>
+            {/* relative lives on this tight inner wrapper, not the flex-1
+                box above — that box spans the whole gap back to the eye
+                icon and only right-aligns its content, so anchoring there
+                put the tooltip off the *box's* left edge, way out past the
+                actual buttons (and off-screen for "Go forward to…"). This
+                wrapper shrinks to the two buttons themselves, the same
+                pattern the theme/sidebar/AI group uses on the other end of
+                the header — so both tooltips open flush against the back
+                button, not off in empty space. */}
+            <div className="relative flex items-center gap-1">
+              <button
+                className="group hover:text-[var(--text)] hover:bg-[var(--bg-tertiary)] disabled:opacity-40 disabled:hover:bg-transparent py-2 px-2 sm:p-1 rounded cursor-pointer disabled:cursor-default"
+                onClick={goBack}
+                disabled={!backTabLabel}
+                aria-label={
+                  backTabLabel ? `Go back to ${backTabLabel}` : "Go back"
+                }
+              >
+                <ArrowLeft className="w-6 h-6 sm:w-4 sm:h-4" />
+                {backTabLabel && (
+                  <HeaderTooltip>Go back to {backTabLabel}</HeaderTooltip>
+                )}
+              </button>
+              <button
+                className="group hover:text-[var(--text)] hover:bg-[var(--bg-tertiary)] disabled:opacity-40 disabled:hover:bg-transparent py-2 px-2 sm:p-1 rounded cursor-pointer disabled:cursor-default"
+                onClick={goForward}
+                disabled={!forwardTabLabel}
+                aria-label={
+                  forwardTabLabel
+                    ? `Go forward to ${forwardTabLabel}`
+                    : "Go forward"
+                }
+              >
+                <ArrowRight className="w-6 h-6 sm:w-4 sm:h-4" />
+                {forwardTabLabel && (
+                  <HeaderTooltip>Go forward to {forwardTabLabel}</HeaderTooltip>
+                )}
+              </button>
+            </div>
           </div>
 
-          <div className="hidden sm:flex flex-1 justify-center">
-            {/* width (not opacity) — collapses to a point rather than
-                fading in place, so it reads as the search bar itself
-                shrinking away instead of a cross-fade against the panel
-                opening on top of it. w-full/w-0 are both concrete values
-                that interpolate cleanly, unlike an intrinsic "auto" width. */}
-            <button
-              type="button"
-              className={`text-xs outline-none border border-[var(--border-secondary)] bg-[var(--bg)] text-[var(--border-secondary)] py-1 rounded focus:border-[var(--text-secondary)] text-center cursor-pointer overflow-hidden whitespace-nowrap transition-all duration-300 ${
-                expanded
-                  ? "w-0 px-0 border-0 opacity-0 pointer-events-none"
-                  : "w-full px-2 opacity-100 pointer-events-auto"
-              }`}
-              onClick={() => setExpanded(true)}
-            >
-              tyou.dev
-            </button>
+          <div className="hidden sm:flex flex-1 items-center justify-center gap-2">
+            {/* The collapsing button gets its own flex-1 wrapper, whose
+                width stays constant whatever the button inside is doing.
+                Without it the brain is a flex sibling of a box animating
+                from w-full to w-0, so justify-center drags the brain across
+                the header as the search bar grows back. */}
+            <div className="flex-1 flex justify-center min-w-0">
+              {/* width (not opacity) — collapses to a point rather than
+                  fading in place, so it reads as the search bar itself
+                  shrinking away instead of a cross-fade against the panel
+                  opening on top of it. w-full/w-0 are both concrete values
+                  that interpolate cleanly, unlike an intrinsic "auto" width. */}
+              <button
+                type="button"
+                className={`text-xs outline-none border border-[var(--border-secondary)] bg-[var(--bg)] text-[var(--border-secondary)] py-1 rounded focus:border-[var(--text-secondary)] text-center cursor-pointer overflow-hidden whitespace-nowrap transition-all duration-300 ${
+                  expanded
+                    ? "w-0 px-0 border-0 opacity-0 pointer-events-none"
+                    : "w-full px-2 opacity-100 pointer-events-auto"
+                }`}
+                onClick={() => setExpanded(true)}
+              >
+                tyou.dev
+              </button>
+            </div>
+            {toggleAiChat && (
+              <button
+                // Fades in place, the same way the back/forward arrows do,
+                // rather than travelling with the search bar.
+                className={`group relative hover:text-[var(--text)] hover:bg-[var(--bg-tertiary)] text-[var(--text-secondary)] p-1 rounded cursor-pointer shrink-0 transition-opacity duration-300 ${
+                  expanded
+                    ? "opacity-0 pointer-events-none"
+                    : "opacity-100 pointer-events-auto"
+                }`}
+                onClick={toggleAiChat}
+                aria-label={aiChatOpen ? "Close tyouAI" : "Open tyouAI"}
+              >
+                <Brain className="w-4 h-4" />
+                <HeaderTooltip side="right">
+                  {aiChatOpen ? "Close tyouAI" : "Open tyouAI"}
+                </HeaderTooltip>
+              </button>
+            )}
           </div>
 
-          <div className="flex flex-1 items-center justify-end text-[var(--text)] gap-1">
-            <button
-              data-tour="theme-toggle"
-              className="hover:bg-[var(--bg-tertiary)] py-2 px-2 sm:py-[0.5px] sm:px-1 rounded cursor-pointer"
-              onClick={cycleTheme}
-            >
-              <Palette className="w-6 sm:w-4" />
-            </button>
-            <button
-              className="hover:bg-[var(--bg-tertiary)] py-2 px-2 sm:py-[0.5px] sm:px-1 rounded cursor-pointer"
-              onClick={toggleSidebar}
-            >
-              <PanelLeft className="w-6 sm:w-4" />
-            </button>
+          <div className="flex flex-1 items-center justify-end text-[var(--text-secondary)]">
+            {/* The tooltips anchor to this tight wrapper rather than the
+                flex-1 box around it — right-full on the outer one would
+                measure from the far side of the header and land the tooltip
+                somewhere near the search bar. */}
+            <div className="relative flex items-center gap-1">
+              <button
+                data-tour="theme-toggle"
+                className="group hover:text-[var(--text)] hover:bg-[var(--bg-tertiary)] py-2 px-2 sm:p-1 rounded cursor-pointer"
+                onClick={cycleTheme}
+                aria-label={`Cycle to ${nextThemeName}`}
+              >
+                <Palette className="w-6 h-6 sm:w-4 sm:h-4" />
+                <HeaderTooltip>Cycle to {nextThemeName}</HeaderTooltip>
+              </button>
+              {/* Both toggles swap glyph with their panel's state, the way
+                  VS Code's do — the icon shows what the click will do rather
+                  than staying static. */}
+              <button
+                className="group hover:text-[var(--text)] hover:bg-[var(--bg-tertiary)] py-2 px-2 sm:p-1 rounded cursor-pointer"
+                onClick={toggleSidebar}
+                aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
+              >
+                <PanelIcon
+                  side="left"
+                  filled={sidebarOpen}
+                  className="w-6 h-6 sm:w-4 sm:h-4"
+                />
+                <HeaderTooltip>
+                  {sidebarOpen ? "Close sidebar" : "Open sidebar"}
+                </HeaderTooltip>
+              </button>
+              {toggleTerminal && (
+                <button
+                  className="group hover:text-[var(--text)] hover:bg-[var(--bg-tertiary)] py-2 px-2 sm:p-1 rounded cursor-pointer"
+                  onClick={toggleTerminal}
+                  aria-label={terminalOpen ? "Close terminal" : "Open terminal"}
+                >
+                  <PanelIcon
+                    side="bottom"
+                    filled={terminalOpen}
+                    className="w-6 h-6 sm:w-4 sm:h-4"
+                  />
+                  <HeaderTooltip>
+                    {terminalOpen ? "Close terminal" : "Open terminal"}
+                  </HeaderTooltip>
+                </button>
+              )}
+              {/* Absent entirely when tyouAI is off (mobile), matching the
+                  brain button next to the search field. */}
+              {toggleAiChat && (
+                <button
+                  className="group hover:text-[var(--text)] hover:bg-[var(--bg-tertiary)] py-2 px-2 sm:p-1 rounded cursor-pointer"
+                  onClick={toggleAiChat}
+                  aria-label={aiChatOpen ? "Close AI chat" : "Open AI chat"}
+                >
+                  <PanelIcon
+                    side="right"
+                    filled={aiChatOpen}
+                    className="w-6 h-6 sm:w-4 sm:h-4"
+                  />
+                  <HeaderTooltip>
+                    {aiChatOpen ? "Close tyouAI" : "Open tyouAI"}
+                  </HeaderTooltip>
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

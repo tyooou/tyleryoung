@@ -11,9 +11,17 @@ export const ThemeProvider = ({ children }) => {
   );
 
   useEffect(() => {
-    document.documentElement.classList.remove(...THEMES);
-    document.documentElement.classList.add(theme);
+    const root = document.documentElement;
+    // Suppress transitions for the swap itself (see the .theme-switching
+    // rule in index.css), then release them a frame later — otherwise
+    // every element's own color transition would still animate, just
+    // starting from whatever the *previous* theme's colors were.
+    root.classList.add("theme-switching");
+    root.classList.remove(...THEMES);
+    root.classList.add(theme);
     localStorage.theme = theme;
+    void root.offsetHeight; // force layout so the "no transition" state commits
+    requestAnimationFrame(() => root.classList.remove("theme-switching"));
   }, [theme]);
 
   const cycleTheme = () => {

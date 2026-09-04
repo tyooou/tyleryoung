@@ -154,7 +154,7 @@ function BibliographyCard({
           {HIGHLIGHTS.map((card) => (
             <div
               key={card.title}
-              className="border border-[var(--border-secondary)] rounded p-4 bg-[var(--bg-secondary)]"
+              className="border border-[var(--border-secondary)] rounded p-4 bg-[var(--bg-secondary)] hover:border-[var(--accent)] transition-colors duration-200"
             >
               <p className="font-bold text-sm sm:text-base mb-1">
                 {card.title}

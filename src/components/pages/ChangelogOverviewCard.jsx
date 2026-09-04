@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Github, Tag } from "lucide-react";
-import BrailleSpinner from "../BrailleSpinner";
+import Scribble from "../Scribble";
 import StatTile from "../StatTile";
 import {
   fetchContributorStats,
@@ -109,12 +109,12 @@ function ChangelogOverviewCard({ releases = [], updatePage = () => {} }) {
 
       <div className="ml-2 mt-6">
         {yearStats === null ? (
-          <BrailleSpinner />
+          <Scribble />
         ) : yearStats.length === 0 ? (
           <p className="text-sm text-[var(--text-secondary)]">No stats available :(</p>
         ) : (
           <>
-            <ul className="flex flex-wrap gap-8 mb-8">
+            <ul className="animate-content-in flex flex-wrap gap-8 mb-8">
               <StatTile label="Commits" value={totals.commits} />
               <StatTile label="Lines Added" value={totals.additions} />
               <StatTile label="Lines Removed" value={totals.deletions} />
@@ -155,7 +155,7 @@ function ChangelogOverviewCard({ releases = [], updatePage = () => {} }) {
                 <p className="font-bold text-lg mb-3">Latest Commits</p>
                 <div className="flex flex-col gap-2 h-64 sm:h-72 overflow-y-auto pr-1">
                   {latestCommits === null ? (
-                    <BrailleSpinner />
+                    <Scribble />
                   ) : latestCommits.length === 0 ? (
                     <p className="text-sm text-[var(--text-secondary)]">
                       No commit data available.

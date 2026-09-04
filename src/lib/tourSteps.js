@@ -30,6 +30,22 @@ export const TOUR_STEPS = [
     desktopOnly: true,
   },
   {
+    target: '[data-tour="terminal-panel"]',
+    title: "Terminal",
+    body: "A real integrated terminal — browse the same content as the sidebar with commands like ls and cd.",
+    // Desktop-only: the terminal itself is disabled on mobile, so there's
+    // nothing here for the step to point at.
+    desktopOnly: true,
+  },
+  {
+    target: '[data-tour="ai-panel"]',
+    title: "Ask tyouAI",
+    body: "tyouAI runs entirely in your browser and knows this portfolio. Ask it about a role, a project, or whatever page you have open.",
+    // The panel is full-screen on mobile, so highlighting it there would
+    // just black out the whole viewport with nowhere left for the callout.
+    desktopOnly: true,
+  },
+  {
     target: '[data-tour="theme-toggle"]',
     title: "Themes",
     body: "Cycle through the available themes here, or press Ctrl/Cmd+C anytime.",

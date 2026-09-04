@@ -17,8 +17,24 @@ const CLOSE_ANIMATION_MS = 150;
 // tracking keeps the highlight from drifting off a stale pre-transition
 // position. Only calls setState when the rect actually changed, so a static
 // target doesn't cause a re-render every frame.
+function measureTarget(selector) {
+  if (!selector) return null;
+  const el = document.querySelector(selector);
+  const rect = el ? el.getBoundingClientRect() : null;
+  // A selector can resolve to an element that exists in the DOM but isn't
+  // actually rendered here (e.g. the desktop tab bar is `hidden md:flex` —
+  // gone below that breakpoint, not just styled small) — that reports a
+  // real zero-size rect, not null, so it has to be treated as "not found"
+  // explicitly.
+  return rect && rect.width > 0 && rect.height > 0 ? rect : null;
+}
+
 function useTargetRect(selector, stepIndex) {
-  const [rect, setRect] = useState(null);
+  // Measured synchronously on mount rather than starting null and waiting
+  // for the first animation frame. That one null render painted the
+  // no-target fallback — a full-screen black wash — for a frame before the
+  // spotlight appeared, which is the flash you saw on opening the tour.
+  const [rect, setRect] = useState(() => measureTarget(selector));
 
   useEffect(() => {
     if (!selector) {
@@ -29,14 +45,7 @@ function useTargetRect(selector, stepIndex) {
     let last = null;
 
     const tick = () => {
-      const el = document.querySelector(selector);
-      const rawRect = el ? el.getBoundingClientRect() : null;
-      // A selector can resolve to an element that exists in the DOM but
-      // isn't actually rendered here (e.g. the desktop tab bar is
-      // `hidden md:flex` — gone below that breakpoint, not just styled
-      // small) — that reports a real zero-size rect, not null, so it has
-      // to be treated as "not found" explicitly.
-      const next = rawRect && rawRect.width > 0 && rawRect.height > 0 ? rawRect : null;
+      const next = measureTarget(selector);
       const changed =
         (!last) !== (!next) ||
         (last &&

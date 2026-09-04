@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import TyGlyph from "./TyGlyph";
 
 // Matches the CSS animation-out duration in index.css — a closing tab has
 // to stay in the DOM this long after its × is clicked so animate-tab-out
@@ -57,11 +58,7 @@ function TabLabel({
   if (tab === "bibliography") {
     return (
       <span className="flex items-center gap-2.5 min-w-0 pl-1 pr-1">
-        <img
-          src={FALLBACK_FAVICON}
-          alt=""
-          className="w-3.5 h-3.5 shrink-0 object-contain"
-        />
+        <TyGlyph />
         <span className="truncate font-bold">Welcome</span>
       </span>
     );
@@ -179,10 +176,23 @@ function Navigation({
     setScrollbar({ visible: scrollable, leftPercent, widthPercent });
   };
 
+  // A ResizeObserver on the row itself, not a window resize listener: most
+  // of what changes this row's width never resizes the window at all — the
+  // AI panel opening or closing, the sidebar toggling or being dragged, the
+  // split-view ratio moving. With only the window listener the thumb kept
+  // whatever width it had when the tabs last changed, so it stayed visible
+  // (and the wrong size) after the panel gave the row its space back. The
+  // observer also covers real window resizes, since those change this
+  // element's width too — and it fires throughout the panel's open/close
+  // transition, so the thumb tracks the animation rather than snapping at
+  // the end.
   useEffect(() => {
+    const el = tabsRef.current;
+    if (!el) return;
     updateScrollbar();
-    window.addEventListener("resize", updateScrollbar);
-    return () => window.removeEventListener("resize", updateScrollbar);
+    const observer = new ResizeObserver(updateScrollbar);
+    observer.observe(el);
+    return () => observer.disconnect();
   }, [openTabs]);
 
   // Keeps the active tab in view — switching to (or opening) a tab that's
@@ -232,7 +242,7 @@ function Navigation({
           </button>
         </div>
 
-        <div className="group relative flex flex-col min-w-0">
+        <div className="group relative flex flex-1 flex-col min-w-0">
           <div
             ref={tabsRef}
             onScroll={updateScrollbar}
@@ -273,7 +283,7 @@ function Navigation({
                 } ${
                   tab === page
                     ? "bg-[var(--bg)] border-b-2 border-b-[var(--bg)]"
-                    : "bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)]"
+                    : "bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)] border-b border-b-[var(--border-secondary)]"
                 }`}
               >
                 <button
@@ -310,6 +320,10 @@ function Navigation({
               </div>
               );
             })}
+            <div
+              aria-hidden="true"
+              className="flex-1 min-w-0 self-stretch border-b border-[var(--border-secondary)]"
+            />
           </div>
           <div className="absolute top-full left-0 right-0 h-[3px] z-20 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             {scrollbar.visible && (
