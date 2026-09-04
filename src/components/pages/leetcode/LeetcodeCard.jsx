@@ -6,9 +6,6 @@ import { sanityClient } from "../../../lib/sanityClient";
 import { PROFILE_URL, DIFFICULTY_COLOR, computeStreaks } from "../../../lib/leetcode";
 import LeetcodeHeatmap from "./LeetcodeHeatmap";
 
-const CACHE_KEY = "leetcodeStatsCache";
-const CACHE_DURATION = 1000 * 60 * 60; // 1 hour
-
 function formatDate(dateStr) {
   if (!dateStr) return "";
   const date = new Date(dateStr);
@@ -27,15 +24,6 @@ function LeetcodeCard({ leetcodeProblems = [], updatePage = () => {}, sidebarPan
   const [submissionCalendar, setSubmissionCalendar] = useState({});
 
   useEffect(() => {
-    const cached = localStorage.getItem(CACHE_KEY);
-    if (cached) {
-      const { data, timestamp } = JSON.parse(cached);
-      if (Date.now() - timestamp < CACHE_DURATION) {
-        setStats(data);
-        setSubmissionCalendar(data.submissionCalendar || {});
-        return;
-      }
-    }
     sanityClient
       .fetch(
         `*[_type == "leetcodeStats"][0]{ totalSolved, easySolved, mediumSolved, hardSolved, submissionCalendar }`,
@@ -46,7 +34,6 @@ function LeetcodeCard({ leetcodeProblems = [], updatePage = () => {}, sidebarPan
         const data = { ...doc, submissionCalendar: calendar };
         setStats(data);
         setSubmissionCalendar(calendar);
-        localStorage.setItem(CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
       })
       .catch((err) => {
         setStats(false);

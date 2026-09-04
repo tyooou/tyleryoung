@@ -1,0 +1,30 @@
+name: Sync LeetCode
+
+on:
+  schedule:
+    # Every 30 minutes — the check step below skips the actual sync unless
+    # it's been more than 24h since the last one.
+    - cron: "*/30 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Check if a sync is due
+        id: check
+        run: node scripts/check-leetcode-sync-age.mjs
+      - name: Sync problems + stats
+        if: steps.check.outputs.needed == 'true'
+        env:
+          SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
+        run: |
+          npm run sync:leetcode
+          npm run sync:leetcode-stats
