@@ -51,10 +51,31 @@ export async function fetchLeetcodeProblemsFromGitHub(token) {
   return problems;
 }
 
+// Obsidian shows a tab-indented "- item" as an ordinary bullet, but
+// CommonMark counts a leading tab as four columns of indentation and reads
+// the line as an *indented code block* — which is why those bullets were
+// rendering as literal source, backticks and `**bold**` markers and all,
+// inside a grey code box. The vault writes them this way throughout (94
+// across 37 of the 40 files checked, always exactly one tab, in callouts
+// after the "> " marker as well).
+//
+// The tab is decorative, not structural: no line in the vault uses two, so
+// there is no real hierarchy to preserve, and the Constraints callouts mix
+// an untabbed first bullet with tabbed siblings that mean the same level.
+// Dropping the indentation entirely is what keeps those siblings level —
+// converting to two spaces instead put them at the first bullet's content
+// column, which CommonMark reads as a nested list under it.
+function normaliseTabIndentedLists(markdown) {
+  return markdown.replace(
+    /^((?:> ?)*)\t+(?=(?:[-*+]|\d+[.)])\s)/gm,
+    (_, quoteMarkers) => quoteMarkers,
+  );
+}
+
 export async function fetchProblemMarkdown(path) {
   const res = await fetch(rawUrl(path));
   if (!res.ok) throw new Error(`Failed to load ${path}`);
-  return res.text();
+  return normaliseTabIndentedLists(await res.text());
 }
 
 // LeetCode's submissionCalendar keys are unix-second timestamps, one per

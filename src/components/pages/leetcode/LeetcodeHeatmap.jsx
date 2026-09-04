@@ -58,6 +58,10 @@ function LeetcodeHeatmap({ submissionCalendar, months = 3 }) {
         count: submissionCount,
         isValid: isInRange,
         isInFuture: isInFuture,
+        // Compared by calendar date, not timestamp — every cell here is at
+        // local midnight while `now` is the actual current time, so a
+        // direct equality check would never match.
+        isToday: currentDate.toDateString() === now.toDateString(),
       });
 
       currentDate.setDate(currentDate.getDate() + 1);
@@ -180,7 +184,10 @@ function LeetcodeHeatmap({ submissionCalendar, months = 3 }) {
                   );
                 }
 
-                if (!day.isValid || day.isInFuture) {
+                // Outside the displayed months entirely — the padding days
+                // that align the first and last weeks to Sun-Sat. Those
+                // belong to another window, so they stay blank.
+                if (!day.isValid) {
                   return (
                     <div
                       key={`${weekIndex}-${dayIndex}`}
@@ -190,10 +197,36 @@ function LeetcodeHeatmap({ submissionCalendar, months = 3 }) {
                   );
                 }
 
+                // Inside the window but not here yet. Drawn as an empty
+                // dashed outline rather than left blank, so the grid keeps
+                // its full shape and a pending day reads differently from
+                // a day that genuinely had no submissions.
+                if (day.isInFuture) {
+                  return (
+                    <div
+                      key={`${weekIndex}-${dayIndex}`}
+                      className="w-10 h-10 rounded border border-dashed border-[var(--border-secondary)] opacity-50 pointer-events-none"
+                      title={`${day.date.toLocaleDateString("en-US", {
+                        weekday: "long",
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}: upcoming`}
+                    />
+                  );
+                }
+
                 return (
                   <div
                     key={`${weekIndex}-${dayIndex}`}
-                    className="w-10 h-10 rounded border border-[var(--border)] relative group cursor-pointer"
+                    // Today gets an accent-coloured outer ring rather than a
+                    // different fill, so it stands out without lying about
+                    // how many submissions the day actually has.
+                    className={`w-10 h-10 rounded border border-[var(--border)] relative group cursor-pointer ${
+                      day.isToday
+                        ? "ring-2 ring-[var(--accent)] ring-offset-1 ring-offset-[var(--bg)]"
+                        : ""
+                    }`}
                     style={{
                       ...getHeatmapStyle(day),
                     }}
@@ -202,7 +235,7 @@ function LeetcodeHeatmap({ submissionCalendar, months = 3 }) {
                       year: "numeric",
                       month: "long",
                       day: "numeric",
-                    })}: ${day.count} submissions`}
+                    })}: ${day.count} submissions${day.isToday ? " (today)" : ""}`}
                   >
                     <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-[var(--bg-quaternary)] text-[var(--text)] text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10 flex flex-col justify-center items-center text-center">
                       {day.date.toLocaleDateString("en-US", {

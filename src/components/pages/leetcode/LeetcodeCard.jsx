@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Code2 } from "lucide-react";
-import BrailleSpinner from "../../BrailleSpinner";
+import Scribble from "../../Scribble";
+import ExternalLink from "../../ExternalLink";
 import StatTile from "../../StatTile";
 import { sanityClient } from "../../../lib/sanityClient";
 import { PROFILE_URL, DIFFICULTY_COLOR, computeStreaks } from "../../../lib/leetcode";
@@ -57,27 +58,24 @@ function LeetcodeCard({ leetcodeProblems = [], updatePage = () => {}, sidebarPan
         My journey to get better everyday — my LeetCode progress at a glance.
       </p>
 
+      {/* Same ExternalLink the per-problem pages use, rather than a
+          hand-rolled anchor — so both "View on LeetCode" links share one
+          look and one behaviour. */}
       <div className="ml-2 mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
-        <a
-          href={PROFILE_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="group flex items-center gap-1.5 text-[var(--text-secondary)] hover:text-[var(--text)]"
-        >
-          <Code2 size={14} />
-          <span className="underline decoration-transparent group-hover:decoration-current transition-colors">
-            View on LeetCode
-          </span>
-        </a>
+        <ExternalLink
+          text="View on LeetCode"
+          link={PROFILE_URL}
+          icon={<Code2 size={14} />}
+        />
       </div>
 
       <div className="ml-2 mt-6">
         {stats === null ? (
-          <BrailleSpinner />
+          <Scribble />
         ) : stats === false ? (
           <p className="text-sm text-[var(--text-secondary)]">No stats available :(</p>
         ) : (
-          <>
+          <div className="animate-content-in">
             <ul className="flex flex-wrap gap-8 mb-10">
               <StatTile label="Total Solved" value={stats.totalSolved} />
               <StatTile label="Easy" value={stats.easySolved} />
@@ -138,7 +136,7 @@ function LeetcodeCard({ leetcodeProblems = [], updatePage = () => {}, sidebarPan
                 </div>
               </div>
             </div>
-          </>
+          </div>
         )}
       </div>
     </div>
