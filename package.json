@@ -17,6 +17,7 @@
   "dependencies": {
     "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
     "@fortawesome/react-fontawesome": "^0.2.3",
+    "@mlc-ai/web-llm": "^0.2.84",
     "@sanity/client": "^8.0.0",
     "@sanity/vision": "^6.9.2",
     "@tailwindcss/vite": "^4.1.11",
@@ -27,6 +28,7 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-markdown": "^10.1.0",
+    "rehype-highlight": "^7.0.2",
     "remark-gfm": "^4.0.1",
     "sanity": "^6.9.2",
     "styled-components": "^6.5.3",
