@@ -3,12 +3,12 @@ import {
   Folder,
   FolderOpen,
   ChevronRight,
-  ChevronDown,
   Globe,
   ListTodo,
   BarChart3,
   Briefcase,
   Library,
+  Images,
 } from "lucide-react";
 import { getIcon } from "../iconMap";
 import SidebarLink from "./SidebarLink";
@@ -43,6 +43,7 @@ function ActivityPanel({
   updateSidebar,
   width,
   animateWidth,
+  activePage,
 }) {
   // Keep rendering the last-open activity's content while the panel
   // animates its width down to 0 on close, instead of unmounting instantly
@@ -73,6 +74,7 @@ function ActivityPanel({
           updateSidebar={updateSidebar}
           projectName="bibliography"
           icon={<BioIcon size={15} />}
+          isActive={activePage === "bibliography"}
         />
         {typingPage && (
           <SidebarLink
@@ -81,12 +83,14 @@ function ActivityPanel({
             updateSidebar={updateSidebar}
             projectName="typing"
             icon={<TypingIcon size={15} />}
+            isActive={activePage === "typing"}
           />
         )}
         <ExtracurricularsTree
           extracurriculars={extracurriculars}
           updatePage={updatePage}
           updateSidebar={updateSidebar}
+          activePage={activePage}
         />
       </Panel>
     );
@@ -100,6 +104,7 @@ function ActivityPanel({
           experiences={experiences}
           updatePage={updatePage}
           updateSidebar={updateSidebar}
+          activePage={activePage}
         />
       </Panel>
     );
@@ -114,11 +119,13 @@ function ActivityPanel({
           updateSidebar={updateSidebar}
           projectName="changelog"
           icon={<BarChart3 size={15} />}
+          isActive={activePage === "changelog"}
         />
         <ChangelogTree
           releases={releases}
           updatePage={updatePage}
           updateSidebar={updateSidebar}
+          activePage={activePage}
         />
       </Panel>
     );
@@ -133,6 +140,7 @@ function ActivityPanel({
             friend={friend}
             updatePage={updatePage}
             updateSidebar={updateSidebar}
+            isActive={activePage === friend.name}
           />
         ))}
       </Panel>
@@ -148,11 +156,13 @@ function ActivityPanel({
           updateSidebar={updateSidebar}
           projectName="leetcode"
           icon={<ListTodo size={15} />}
+          isActive={activePage === "leetcode"}
         />
         <LeetcodeTree
           problems={leetcodeProblems}
           updatePage={updatePage}
           updateSidebar={updateSidebar}
+          activePage={activePage}
         />
       </Panel>
     );
@@ -167,12 +177,14 @@ function ActivityPanel({
           updateSidebar={updateSidebar}
           projectName="library"
           icon={<Library size={15} />}
+          isActive={activePage === "library"}
         />
         <LibraryTree
           books={books}
           blogPosts={blogPosts}
           updatePage={updatePage}
           updateSidebar={updateSidebar}
+          activePage={activePage}
         />
       </Panel>
     );
@@ -190,6 +202,7 @@ function ActivityPanel({
         updateSidebar={updateSidebar}
         projectName={page.id}
         icon={<Icon size={15} />}
+        isActive={activePage === page.id}
       />
     </Panel>
   );
@@ -215,7 +228,7 @@ function buildLeetcodeTree(problems) {
   return years;
 }
 
-function LeetcodeTree({ problems, updatePage, updateSidebar }) {
+function LeetcodeTree({ problems, updatePage, updateSidebar, activePage }) {
   const tree = buildLeetcodeTree(problems);
 
   const [expandedYears, setExpandedYears] = useState(
@@ -264,8 +277,8 @@ function LeetcodeTree({ problems, updatePage, updateSidebar }) {
               open={yearOpen}
               onClick={() => toggleYear(yearNode.year)}
             />
-            {yearOpen &&
-              yearNode.months.map((monthNode) => {
+            <Collapsible open={yearOpen}>
+              {yearNode.months.map((monthNode) => {
                 const monthKey = `${yearNode.year}-${monthNode.month}`;
                 const monthOpen = expandedMonths.has(monthKey);
                 return (
@@ -276,8 +289,8 @@ function LeetcodeTree({ problems, updatePage, updateSidebar }) {
                       onClick={() => toggleMonth(monthKey)}
                       indent={1}
                     />
-                    {monthOpen &&
-                      monthNode.problems.map((problem) => (
+                    <Collapsible open={monthOpen}>
+                      {monthNode.problems.map((problem) => (
                         <SidebarLink
                           key={problem.path}
                           text={`${problem.number}. ${problem.title}`}
@@ -285,11 +298,14 @@ function LeetcodeTree({ problems, updatePage, updateSidebar }) {
                           updateSidebar={updateSidebar}
                           projectName={problem.path}
                           indent={2}
+                          isActive={activePage === problem.path}
                         />
                       ))}
+                    </Collapsible>
                   </div>
                 );
               })}
+            </Collapsible>
           </div>
         );
       })}
@@ -302,16 +318,48 @@ function LeetcodeTree({ problems, updatePage, updateSidebar }) {
 // it. Work lists each role; Projects lists every project underneath its own
 // folder. Contributions (open source) is disabled for now — see the
 // commented-out block below to bring it back.
-function ExperienceTree({ projects, experiences, updatePage, updateSidebar }) {
+function ExperienceTree({
+  projects,
+  experiences,
+  updatePage,
+  updateSidebar,
+  activePage,
+}) {
   const [expanded, setExpanded] = useState(
     () => new Set(["professional", "projects"]),
   );
+  // Which individual experience rows have their "Photos" sub-item revealed
+  // — separate from `expanded` (that Set tracks the Work/Projects section
+  // folders, not per-entry state) and starts empty so every entry loads
+  // collapsed, except whichever one's photos tab is already active (e.g.
+  // opened via the inline "View photos" link rather than this dropdown).
+  const [photosExpanded, setPhotosExpanded] = useState(() => new Set());
+
+  // Only ever adds — once a row is auto-revealed because its photos tab
+  // became active, it stays open (per design) even if the visitor switches
+  // to some other tab afterward; closing it again is a deliberate action.
+  useEffect(() => {
+    const active = experiences.find((exp) => `${exp.slug}-photos` === activePage);
+    if (!active) return;
+    setPhotosExpanded((prev) =>
+      prev.has(active.slug) ? prev : new Set(prev).add(active.slug),
+    );
+  }, [activePage, experiences]);
 
   const toggle = (key) => {
     setExpanded((prev) => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
       else next.add(key);
+      return next;
+    });
+  };
+
+  const togglePhotos = (slug) => {
+    setPhotosExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(slug)) next.delete(slug);
+      else next.add(slug);
       return next;
     });
   };
@@ -324,6 +372,7 @@ function ExperienceTree({ projects, experiences, updatePage, updateSidebar }) {
         updateSidebar={updateSidebar}
         projectName="experience"
         icon={<Briefcase size={15} />}
+        isActive={activePage === "experience"}
       />
 
       <FolderRow
@@ -331,18 +380,66 @@ function ExperienceTree({ projects, experiences, updatePage, updateSidebar }) {
         open={expanded.has("professional")}
         onClick={() => toggle("professional")}
       />
-      {expanded.has("professional") &&
-        experiences.map((exp) => (
-          <SidebarLink
-            key={exp.slug}
-            text={exp.role}
-            subtitle={`@ ${exp.company}`}
-            updatePage={updatePage}
-            updateSidebar={updateSidebar}
-            projectName={exp.slug}
-            indent={1}
-          />
-        ))}
+      <Collapsible open={expanded.has("professional")}>
+        {experiences.map((exp) => {
+          const hasPhotos = exp.photos?.length > 0;
+          if (!hasPhotos) {
+            return (
+              <SidebarLink
+                key={exp.slug}
+                text={exp.role}
+                subtitle={`@ ${exp.company}`}
+                updatePage={updatePage}
+                updateSidebar={updateSidebar}
+                projectName={exp.slug}
+                indent={1}
+                isActive={activePage === exp.slug}
+              />
+            );
+          }
+          const photosTab = `${exp.slug}-photos`;
+          const showPhotos = photosExpanded.has(exp.slug);
+          return (
+            <div key={exp.slug}>
+              <div className="relative">
+                <SidebarLink
+                  text={exp.role}
+                  subtitle={`@ ${exp.company}`}
+                  updatePage={updatePage}
+                  updateSidebar={updateSidebar}
+                  projectName={exp.slug}
+                  indent={1}
+                  isActive={activePage === exp.slug}
+                />
+                <button
+                  type="button"
+                  onClick={() => togglePhotos(exp.slug)}
+                  aria-label={showPhotos ? "Hide photos" : "Show photos"}
+                  className="cursor-pointer absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded text-[var(--text-secondary)] hover:bg-[var(--bg)] hover:text-[var(--text)]"
+                >
+                  <ChevronRight
+                    size={12}
+                    className={`transition-transform duration-200 ease-in-out ${
+                      showPhotos ? "rotate-90" : ""
+                    }`}
+                  />
+                </button>
+              </div>
+              <Collapsible open={showPhotos}>
+                <SidebarLink
+                  text="Photos"
+                  updatePage={updatePage}
+                  updateSidebar={updateSidebar}
+                  projectName={photosTab}
+                  icon={<Images size={13} />}
+                  indent={2}
+                  isActive={activePage === photosTab}
+                />
+              </Collapsible>
+            </div>
+          );
+        })}
+      </Collapsible>
 
       {/* Disabled for now — re-enable by restoring this block:
       <FolderRow
@@ -366,8 +463,8 @@ function ExperienceTree({ projects, experiences, updatePage, updateSidebar }) {
         open={expanded.has("projects")}
         onClick={() => toggle("projects")}
       />
-      {expanded.has("projects") &&
-        (projects.length === 0 ? (
+      <Collapsible open={expanded.has("projects")}>
+        {projects.length === 0 ? (
           <p className="px-5 py-2 text-sm sm:text-xs text-[var(--text-secondary)]">
             No projects found.
           </p>
@@ -381,9 +478,11 @@ function ExperienceTree({ projects, experiences, updatePage, updateSidebar }) {
               updateSidebar={updateSidebar}
               projectName={project.name}
               indent={1}
+              isActive={activePage === project.name}
             />
           ))
-        ))}
+        )}
+      </Collapsible>
     </div>
   );
 }
@@ -394,6 +493,7 @@ function ExtracurricularsTree({
   extracurriculars = [],
   updatePage,
   updateSidebar,
+  activePage,
 }) {
   const [open, setOpen] = useState(true);
 
@@ -404,8 +504,8 @@ function ExtracurricularsTree({
         open={open}
         onClick={() => setOpen((prev) => !prev)}
       />
-      {open &&
-        (extracurriculars.length === 0 ? (
+      <Collapsible open={open}>
+        {extracurriculars.length === 0 ? (
           <p className="px-5 py-2 text-sm sm:text-xs text-[var(--text-secondary)]">
             No extracurriculars found.
           </p>
@@ -419,16 +519,18 @@ function ExtracurricularsTree({
               updateSidebar={updateSidebar}
               projectName={item.slug}
               indent={1}
+              isActive={activePage === item.slug}
             />
           ))
-        ))}
+        )}
+      </Collapsible>
     </div>
   );
 }
 
 // Two independently-collapsible folders — Books and Blogs — same shape as
 // ExperienceTree's Work/Projects split.
-function LibraryTree({ books = [], blogPosts = [], updatePage, updateSidebar }) {
+function LibraryTree({ books = [], blogPosts = [], updatePage, updateSidebar, activePage }) {
   const [expanded, setExpanded] = useState(() => new Set(["books", "blogs"]));
 
   const toggle = (key) => {
@@ -443,8 +545,8 @@ function LibraryTree({ books = [], blogPosts = [], updatePage, updateSidebar }) 
   return (
     <div>
       <FolderRow label="Books" open={expanded.has("books")} onClick={() => toggle("books")} />
-      {expanded.has("books") &&
-        (books.length === 0 ? (
+      <Collapsible open={expanded.has("books")}>
+        {books.length === 0 ? (
           <p className="px-5 py-2 text-sm sm:text-xs text-[var(--text-secondary)]">
             No books found.
           </p>
@@ -457,13 +559,15 @@ function LibraryTree({ books = [], blogPosts = [], updatePage, updateSidebar }) 
               updateSidebar={updateSidebar}
               projectName={book.slug}
               indent={1}
+              isActive={activePage === book.slug}
             />
           ))
-        ))}
+        )}
+      </Collapsible>
 
       <FolderRow label="Blogs" open={expanded.has("blogs")} onClick={() => toggle("blogs")} />
-      {expanded.has("blogs") &&
-        (blogPosts.length === 0 ? (
+      <Collapsible open={expanded.has("blogs")}>
+        {blogPosts.length === 0 ? (
           <p className="px-5 py-2 text-sm sm:text-xs text-[var(--text-secondary)]">
             No blog posts found.
           </p>
@@ -476,9 +580,11 @@ function LibraryTree({ books = [], blogPosts = [], updatePage, updateSidebar }) 
               updateSidebar={updateSidebar}
               projectName={post.slug}
               indent={1}
+              isActive={activePage === post.slug}
             />
           ))
-        ))}
+        )}
+      </Collapsible>
     </div>
   );
 }
@@ -500,7 +606,7 @@ function buildChangelogTree(releases) {
   return minors;
 }
 
-function ChangelogTree({ releases, updatePage, updateSidebar }) {
+function ChangelogTree({ releases, updatePage, updateSidebar, activePage }) {
   const tree = buildChangelogTree(releases);
 
   const [expandedMinors, setExpandedMinors] = useState(
@@ -535,17 +641,20 @@ function ChangelogTree({ releases, updatePage, updateSidebar }) {
               open={open}
               onClick={() => toggleMinor(minorNode.key)}
             />
-            {open &&
-              minorNode.releases.map((release) => (
+            <Collapsible open={open}>
+              {minorNode.releases.map((release) => (
                 <SidebarLink
                   key={release.version}
                   text={release.version}
+                  subtitle={release.date}
                   updatePage={updatePage}
                   updateSidebar={updateSidebar}
                   projectName={release.version}
                   indent={1}
+                  isActive={activePage === release.version}
                 />
               ))}
+            </Collapsible>
           </div>
         );
       })}
@@ -554,7 +663,6 @@ function ChangelogTree({ releases, updatePage, updateSidebar }) {
 }
 
 function FolderRow({ label, open, onClick, indent = 0 }) {
-  const Chevron = open ? ChevronDown : ChevronRight;
   const FolderIcon = open ? FolderOpen : Folder;
 
   return (
@@ -563,14 +671,35 @@ function FolderRow({ label, open, onClick, indent = 0 }) {
       className="font-mono text-lg sm:text-xs hover:bg-[var(--bg)] py-2 flex items-center gap-1 w-full min-w-0 cursor-pointer text-left"
       style={{ paddingLeft: `${0.5 + indent * 1}rem` }}
     >
-      <Chevron size={14} className="shrink-0 text-[var(--text-secondary)]" />
+      <ChevronRight
+        size={14}
+        className={`shrink-0 text-[var(--text-secondary)] transition-transform duration-200 ease-in-out ${
+          open ? "rotate-90" : ""
+        }`}
+      />
       <FolderIcon size={15} className="shrink-0" />
       <span className="ml-1 min-w-0 truncate">{label}</span>
     </button>
   );
 }
 
-function FriendLink({ friend, updatePage, updateSidebar }) {
+// Shared open/close animation for every sidebar dropdown — folder sections
+// and per-entry sub-items alike. The grid-rows 0fr/1fr trick animates
+// to/from the child's intrinsic height without measuring it in JS, and
+// children stay mounted while collapsed (clipped via overflow-hidden)
+// rather than unmounting, so nested expand state survives a collapse.
+function Collapsible({ open, children }) {
+  return (
+    <div
+      className="grid transition-[grid-template-rows] duration-200 ease-in-out"
+      style={{ gridTemplateRows: open ? "1fr" : "0fr" }}
+    >
+      <div className="overflow-hidden min-h-0">{children}</div>
+    </div>
+  );
+}
+
+function FriendLink({ friend, updatePage, updateSidebar, isActive = false }) {
   const handleClick = () => {
     updatePage(friend.name);
     if (window.innerWidth < 768) updateSidebar(false);
@@ -578,17 +707,17 @@ function FriendLink({ friend, updatePage, updateSidebar }) {
 
   return (
     <a
-      className="font-mono hover:bg-[var(--bg)] px-5 py-2 flex items-start gap-2 group cursor-pointer"
+      className={`font-mono px-5 py-2 flex items-start gap-2 group cursor-pointer border-l-2 ${
+        isActive
+          ? "border-[var(--accent)] text-[var(--accent)] bg-[var(--bg-tertiary)]"
+          : "border-transparent text-[var(--text-secondary)] hover:text-[var(--text)] hover:bg-[var(--bg-tertiary)]"
+      }`}
       onClick={handleClick}
     >
-      <Globe size={15} className="mt-1 shrink-0 text-[var(--text-secondary)]" />
+      <Globe size={15} className="mt-1 shrink-0" />
       <span className="flex flex-col min-w-0">
-        <span className="text-lg sm:text-xs truncate transition-transform duration-200 group-hover:translate-x-2">
-          {friend.name}
-        </span>
-        <span className="text-sm sm:text-[10px] text-[var(--text-secondary)] truncate transition-transform duration-200 group-hover:translate-x-2">
-          {friend.link}
-        </span>
+        <span className="text-lg sm:text-xs truncate">{friend.name}</span>
+        <span className="text-sm sm:text-[10px] truncate">{friend.link}</span>
       </span>
     </a>
   );
@@ -601,8 +730,10 @@ function Panel({ title, children, width, animateWidth }) {
       className={`flex flex-col h-full bg-[var(--bg-secondary)] overflow-y-auto pb-10 shrink-0 overflow-x-hidden border-l border-[var(--border-secondary)] ${animateWidth ? "transition-[width] duration-300 ease-out" : ""}`}
       style={{ width: `${width}px` }}
     >
-      <h2 className="sticky top-0 z-10 font-bold text-xl sm:text-xs text-[var(--text-secondary)] uppercase px-6 sm:px-3 py-3 sm:py-2 bg-[var(--bg-secondary)] border-b border-[var(--border-secondary)]">
-        {title}
+      <h2 className="sticky top-0 z-10 flex items-center px-6 sm:px-3 py-3 sm:pt-2 sm:pb-[9px] bg-[var(--bg-secondary)] border-b border-[var(--border-secondary)]">
+        <span className="font-bold text-xl sm:text-xs text-[var(--text-secondary)] uppercase">
+          {title}
+        </span>
       </h2>
       {children}
     </div>

@@ -2,10 +2,14 @@ import { FileUser, Mail, Linkedin, Github } from "lucide-react";
 import { getIcon } from "../iconMap";
 import { useExternalLinkConfirm } from "../../lib/useExternalLinkConfirm";
 
-function ExternalIcon({ href, label, children, onClick }) {
+function ExternalIcon({ href, label, children, onClick, isActive }) {
   return (
     <a
-      className="group relative flex items-center justify-center w-full py-2.5 cursor-pointer text-[var(--text-secondary)] hover:text-[var(--text)] hover:bg-[var(--bg-tertiary)]"
+      className={`group relative flex items-center justify-center w-full py-2.5 cursor-pointer border-l-2 ${
+        isActive
+          ? "border-[var(--accent)] text-[var(--accent)] bg-[var(--bg-tertiary)] font-semibold"
+          : "border-transparent text-[var(--text-secondary)] hover:text-[var(--accent)] hover:bg-[var(--bg-tertiary)]"
+      }`}
       href={href}
       target="_blank"
       rel="noopener noreferrer"
@@ -21,11 +25,15 @@ function ExternalIcon({ href, label, children, onClick }) {
 
 // Same look as ExternalIcon, but opens the target as an in-app Simple
 // Browser tab (via updatePage) instead of navigating away in a new tab.
-function BrowserIcon({ onClick, label, children }) {
+function BrowserIcon({ onClick, label, children, isActive }) {
   return (
     <button
       onClick={onClick}
-      className="group relative flex items-center justify-center w-full py-2.5 cursor-pointer text-[var(--text-secondary)] hover:text-[var(--text)] hover:bg-[var(--bg-tertiary)]"
+      className={`group relative flex items-center justify-center w-full py-2.5 cursor-pointer border-l-2 ${
+        isActive
+          ? "border-[var(--accent)] text-[var(--accent)] bg-[var(--bg-tertiary)] font-semibold"
+          : "border-transparent text-[var(--text-secondary)] hover:text-[var(--accent)] hover:bg-[var(--bg-tertiary)]"
+      }`}
     >
       {children}
       <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition pointer-events-none text-md sm:text-xs font-mono py-1 px-2 rounded bg-[var(--bg-tertiary)] border border-[var(--border-secondary)] whitespace-nowrap z-50">
@@ -42,8 +50,8 @@ function ActivityIcon({ icon, label, isActive, onClick }) {
       onClick={onClick}
       className={`group relative flex items-center justify-center w-full py-3 cursor-pointer border-l-2 ${
         isActive
-          ? "border-[var(--text)] text-[var(--text)] bg-[var(--bg-tertiary)]"
-          : "border-transparent text-[var(--text-secondary)] hover:text-[var(--text)] hover:bg-[var(--bg-tertiary)]"
+          ? "border-[var(--accent)] text-[var(--accent)] bg-[var(--bg-tertiary)] font-semibold"
+          : "border-transparent text-[var(--text-secondary)] hover:text-[var(--accent)] hover:bg-[var(--bg-tertiary)]"
       }`}
     >
       <Icon className="w-6 sm:w-5" />
@@ -57,6 +65,7 @@ function ActivityIcon({ icon, label, isActive, onClick }) {
 function ActivityBar({
   pages,
   activeActivity,
+  activePage,
   onSelectActivity,
   updatePage,
   updateSidebar,
@@ -67,6 +76,9 @@ function ActivityBar({
   const cv = quickLinks.find((q) => q.id === "cv");
   const changelogPage = pages.find((page) => page.id === "changelog");
   const { handleClick, modal } = useExternalLinkConfirm();
+  // Resume is its own destination, not a category panel — while it's the
+  // open tab, none of the category icons below should read as active too.
+  const isResumeActive = Boolean(cv) && activePage === cv.name;
 
   return (
     <div
@@ -107,6 +119,7 @@ function ActivityBar({
               if (window.innerWidth < 768) updateSidebar(false);
             }}
             label="resume"
+            isActive={activePage === cv.name}
           >
             <FileUser className="w-6 sm:w-5" />
           </BrowserIcon>
@@ -121,7 +134,7 @@ function ActivityBar({
               key={page.id}
               icon={getIcon(page.icon)}
               label={page.label}
-              isActive={activeActivity === page.id}
+              isActive={!isResumeActive && activeActivity === page.id}
               onClick={() => onSelectActivity(page.id)}
             />
           ))}
@@ -132,7 +145,7 @@ function ActivityBar({
           <ActivityIcon
             icon={getIcon(changelogPage.icon)}
             label={changelogPage.label}
-            isActive={activeActivity === "changelog"}
+            isActive={!isResumeActive && activeActivity === "changelog"}
             onClick={() => onSelectActivity("changelog")}
           />
         </div>

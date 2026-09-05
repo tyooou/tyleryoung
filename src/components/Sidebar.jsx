@@ -31,6 +31,7 @@ const Sidebar = forwardRef(function Sidebar(
     books,
     blogPosts,
     quickLinks,
+    activePage,
     onPanelWidthChange,
     onPanelResizingChange,
   },
@@ -176,13 +177,14 @@ const Sidebar = forwardRef(function Sidebar(
 
   return (
     <div
-      className={`font-mono fixed left-0 top-[57px] sm:top-[35px] bottom-[37px] sm:bottom-[33px] sm:translate-x-0 flex flex-row bg-[var(--bg-secondary)] text-[var(--text)] transition-transform duration-300 select-none z-30 ${state ? "translate-x-0" : "-translate-x-full"}`}
+      className={`font-mono fixed left-0 top-[57px] sm:top-[var(--toolbar-height)] bottom-[37px] sm:bottom-[33px] sm:translate-x-0 flex flex-row bg-[var(--bg-secondary)] text-[var(--text)] transition-transform duration-300 select-none z-30 ${state ? "translate-x-0" : "-translate-x-full"}`}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
       <ActivityBar
         pages={visiblePages}
         activeActivity={activeActivity}
+        activePage={activePage}
         onSelectActivity={handleSelectActivity}
         updatePage={updatePage}
         updateSidebar={updateSidebar}
@@ -203,6 +205,7 @@ const Sidebar = forwardRef(function Sidebar(
         updateSidebar={updateSidebar}
         width={effectiveWidth}
         animateWidth={!isDragging}
+        activePage={activePage}
       />
       {/* Desktop only — on mobile the panel always spans full width (not
           user-resizable) and closes via swipe instead; this also sidesteps
