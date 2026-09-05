@@ -3,7 +3,7 @@
 // walk the exact content the tabs do, rather than a second copy of it.
 
 function sanitize(name) {
-  return String(name).replace(/\//g, "-").trim() || "untitled";
+  return String(name).replace(/\//g, "-").trim().replace(/\s+/g, "-") || "untitled";
 }
 
 function fileNode(name, tabId) {
@@ -20,6 +20,15 @@ function place(parent, parentPath, node, pathById) {
   parent.children[node.name] = node;
   if (node.type === "file") pathById[node.tabId] = [...parentPath, node.name];
   return node;
+}
+
+// Returns the existing subdirectory named `name` under `parent`, creating it
+// (and recording it) if it doesn't exist yet.
+function getOrCreateDir(parent, parentPath, name, pathById) {
+  const key = sanitize(name);
+  const existing = parent.children[key];
+  if (existing) return existing;
+  return place(parent, parentPath, dirNode(name), pathById);
 }
 
 export function buildFileTree(data = {}) {
@@ -88,7 +97,14 @@ export function buildFileTree(data = {}) {
     place(root, [], leetcodeDir, pathById);
     place(leetcodeDir, ["leetcode"], fileNode("overview.txt", "leetcode"), pathById);
     leetcodeProblems.forEach((problem) => {
-      place(leetcodeDir, ["leetcode"], fileNode(`LC${problem.number}.md`, problem.path), pathById);
+      const yearDir = getOrCreateDir(leetcodeDir, ["leetcode"], problem.year, pathById);
+      const monthDir = getOrCreateDir(yearDir, ["leetcode", problem.year], problem.month, pathById);
+      place(
+        monthDir,
+        ["leetcode", problem.year, problem.month],
+        fileNode(`${problem.number}-${problem.title}.md`, problem.path),
+        pathById,
+      );
     });
   }
 
