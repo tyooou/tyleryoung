@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Github, Tag } from "lucide-react";
 import Scribble from "../Scribble";
 import StatTile from "../StatTile";
+import { useExternalLinkConfirm } from "../../lib/useExternalLinkConfirm";
 import {
   fetchContributorStats,
   fetchLatestCommits,
@@ -32,6 +33,8 @@ function monthLabel(year, month) {
 }
 
 function ChangelogOverviewCard({ releases = [], updatePage = () => {} }) {
+  const { handleClick: handleExternalClick, modal: externalLinkModal } =
+    useExternalLinkConfirm();
   const [yearStats, setYearStats] = useState(null); // null = loading, [] = empty/failed
   const [monthStats, setMonthStats] = useState([]);
   const [latestCommits, setLatestCommits] = useState(null); // null = loading, [] = failed/empty
@@ -75,6 +78,7 @@ function ChangelogOverviewCard({ releases = [], updatePage = () => {} }) {
 
   return (
     <div className="w-full h-full p-3 sm:p-5 font-mono select-none cursor-default overflow-y-auto">
+      {externalLinkModal}
       <h2 className="font-bold text-6xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl">
         Changelog.
       </h2>
@@ -87,6 +91,7 @@ function ChangelogOverviewCard({ releases = [], updatePage = () => {} }) {
           href={REPO_URL}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={handleExternalClick(REPO_URL)}
           className="group flex items-center gap-1.5 text-[var(--text-secondary)] hover:text-[var(--text)]"
         >
           <Github size={14} />
@@ -167,6 +172,7 @@ function ChangelogOverviewCard({ releases = [], updatePage = () => {} }) {
                         href={commit.html_url}
                         target="_blank"
                         rel="noopener noreferrer"
+                        onClick={handleExternalClick(commit.html_url)}
                         className="group flex flex-col gap-1 border border-[var(--border-secondary)] rounded p-3 hover:bg-[var(--bg-secondary)] shrink-0"
                       >
                         <p className="text-sm break-words underline decoration-transparent group-hover:decoration-current transition-colors">
