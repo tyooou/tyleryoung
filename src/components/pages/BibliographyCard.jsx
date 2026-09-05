@@ -4,7 +4,7 @@ import {
   Briefcase,
   Code2,
   Compass,
-  Sparkles,
+  Wand2,
   Folder,
   Github,
   Linkedin,
@@ -31,15 +31,20 @@ const HIGHLIGHTS = [
 ];
 
 // A single "Start"-section row: icon + label, code-editor welcome-page style.
-function StartLink({ icon, text, onClick }) {
+function StartLink({ icon, text, onClick, accent = false }) {
   const Icon = icon;
   return (
     <button
       onClick={onClick}
       className="group flex items-center gap-3 text-left w-full py-1.5 hover:bg-[var(--bg-secondary)] px-2 -mx-2 rounded cursor-pointer"
     >
-      <Icon size={16} className="shrink-0 text-[var(--text-secondary)]" />
-      <span className="text-sm sm:text-base underline decoration-transparent group-hover:decoration-current transition-colors">
+      <Icon
+        size={16}
+        className={`shrink-0 ${accent ? "text-[var(--accent)]" : "text-[var(--text-secondary)]"}`}
+      />
+      <span
+        className={`text-sm sm:text-base underline decoration-transparent group-hover:decoration-current transition-colors ${accent ? "text-[var(--accent)]" : ""}`}
+      >
         {text}
       </span>
     </button>
@@ -76,9 +81,10 @@ function BibliographyCard({
           <h3 className="font-bold text-xl sm:text-2xl mb-3">Start</h3>
           <div className="flex flex-col">
             <StartLink
-              icon={Sparkles}
+              icon={Wand2}
               text="Take a Tour"
               onClick={startTour}
+              accent
             />
             {cv && (
               <StartLink

@@ -519,7 +519,10 @@ function SearchBar({
 
   return (
     <>
-      <div className="cursor-default select-none fixed sm:sticky top-0 w-full z-50 flex items-center justify-center bg-[var(--bg-secondary)] border-b border-[var(--border-secondary)] py-2 px-1 sm:py-1 font-mono text-xs">
+      <div
+        data-toolbar
+        className="cursor-default select-none fixed sm:sticky top-0 w-full z-50 flex items-center justify-center bg-[var(--bg-secondary)] border-b border-[var(--border-secondary)] py-2 px-1 sm:py-1 font-mono text-xs"
+      >
         {panelRendered && (
           <div
             className={`absolute z-100 border border-[var(--border-secondary)] bg-[var(--bg-tertiary)] flex flex-col items-center max-w-lg w-full p-1 top-1 rounded gap-2 ${panelClosing ? "animate-modal-out" : "animate-modal-in"}`}
@@ -624,7 +627,7 @@ function SearchBar({
               <button
                 // Fades in place, the same way the back/forward arrows do,
                 // rather than travelling with the search bar.
-                className={`group relative hover:text-[var(--text)] hover:bg-[var(--bg-tertiary)] text-[var(--text-secondary)] p-1 rounded cursor-pointer shrink-0 transition-opacity duration-300 ${
+                className={`group relative hover:bg-[var(--bg-tertiary)] text-[var(--accent)] p-1 rounded cursor-pointer shrink-0 transition-opacity duration-300 ${
                   expanded
                     ? "opacity-0 pointer-events-none"
                     : "opacity-100 pointer-events-auto"

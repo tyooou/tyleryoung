@@ -44,7 +44,7 @@ function ExternalLinkWarningModal({ url, onConfirm, onCancel }) {
                 ? "Do you want to open your email client?"
                 : "Do you want to open this external website?"}
             </p>
-            <p className="mt-2 text-sm text-[var(--text-secondary)] break-all">
+            <p className="mt-2 text-sm text-[var(--accent)] break-all">
               {isEmail ? url.replace("mailto:", "") : url}
             </p>
           </div>
