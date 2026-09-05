@@ -15,7 +15,6 @@ import {
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
-import TyGlyph from "./TyGlyph";
 import Scribble from "./Scribble";
 import ResizeHandle from "./ResizeHandle";
 import {
@@ -98,6 +97,24 @@ function titleFrom(text) {
   return flat.length > 32 ? `${flat.slice(0, 32)}…` : flat;
 }
 
+// Coarse relative time for the chat history list — doesn't need to be more
+// precise than "how long ago was this roughly".
+function relativeTime(timestamp) {
+  const seconds = Math.max(0, Math.round((Date.now() - timestamp) / 1000));
+  if (seconds < 60) return "now";
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return `${minutes}m`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours}h`;
+  const days = Math.round(hours / 24);
+  if (days < 7) return `${days}d`;
+  const weeks = Math.round(days / 7);
+  if (weeks < 5) return `${weeks}w`;
+  const months = Math.round(days / 30);
+  if (months < 12) return `${months}mo`;
+  return `${Math.round(days / 365)}y`;
+}
+
 function ThinkingLine({ startedAt }) {
   const [wordIndex, setWordIndex] = useState(() =>
     Math.floor(Math.random() * THINKING_WORDS.length),
@@ -155,7 +172,7 @@ function ContextChip({ label, onOpen, className = "" }) {
     <button
       onClick={onOpen}
       title={`Open ${label}`}
-      className={`flex items-center gap-1 min-w-0 text-[10px] text-[var(--text-secondary)] hover:text-[var(--text)] hover:underline cursor-pointer ${className}`}
+      className={`flex items-center gap-1 min-w-0 text-[10px] text-[var(--accent)] hover:underline cursor-pointer ${className}`}
     >
       {content}
     </button>
@@ -225,6 +242,8 @@ function AiChatPanel({
   const [modelMenuOpen, setModelMenuOpen] = useState(false);
   const [modelMenuRendered, setModelMenuRendered] = useState(false);
   const [modelMenuClosing, setModelMenuClosing] = useState(false);
+  const [historyRendered, setHistoryRendered] = useState(false);
+  const [historyClosing, setHistoryClosing] = useState(false);
   const [loadingRendered, setLoadingRendered] = useState(false);
   const [loadingClosing, setLoadingClosing] = useState(false);
   const [queued, setQueued] = useState([]);
@@ -251,6 +270,23 @@ function AiChatPanel({
     }, MODAL_CLOSE_MS);
     return () => clearTimeout(timeout);
   }, [modelMenuOpen, modelMenuRendered]);
+
+  // Same mount-through-close pattern as the model picker, for the chat
+  // history dropdown.
+  useEffect(() => {
+    if (historyOpen) {
+      setHistoryRendered(true);
+      setHistoryClosing(false);
+      return;
+    }
+    if (!historyRendered) return;
+    setHistoryClosing(true);
+    const timeout = setTimeout(() => {
+      setHistoryRendered(false);
+      setHistoryClosing(false);
+    }, MODAL_CLOSE_MS);
+    return () => clearTimeout(timeout);
+  }, [historyOpen, historyRendered]);
 
   // Same mount-through-close the picker uses: without it the loading modal
   // would animate in and then vanish outright the instant the model is
@@ -670,42 +706,40 @@ function AiChatPanel({
   // that wrapper's own pt-2 for the same 9px the model picker leaves above
   // the box (its mb-2.5 is measured from the padding box, so the box's 1px
   // border eats into it — hence px here rather than a matching 2.5).
-  const loadingModal =
-    loadingRendered ? (
-      <div
-        className={`absolute inset-0 z-20 flex items-end justify-center px-2 pb-px pt-3 bg-[var(--bg)]/95 ${
-          loadingClosing
-            ? "animate-modal-backdrop-out pointer-events-none"
-            : "animate-modal-backdrop-in"
-        }`}
-      >
-        {/* menu-up, not modal-in/out — this one is anchored to the bottom,
+  const loadingModal = loadingRendered ? (
+    <div
+      className={`absolute inset-0 z-20 flex items-end justify-center px-2 pb-px pt-3 bg-[var(--bg)]/95 ${
+        loadingClosing
+          ? "animate-modal-backdrop-out pointer-events-none"
+          : "animate-modal-backdrop-in"
+      }`}
+    >
+      {/* menu-up, not modal-in/out — this one is anchored to the bottom,
             so it should rise into place and sink back out, rather than drop
             in from above. */}
-        <div
-          className={`w-full flex flex-col gap-2.5 rounded border border-[var(--border-secondary)] bg-[var(--bg-secondary)] p-3 ${
-            loadingClosing ? "animate-menu-up-out" : "animate-menu-up-in"
-          }`}
-        >
-          <div className="flex items-start gap-2 text-[var(--text-secondary)] text-xs leading-relaxed">
-            <Scribble />
-            <span>
-              One sec, pulling {model.label} down to run locally in your
-              browser.
-            </span>
-          </div>
-          <div className="w-full h-1.5 rounded-full bg-[var(--bg-tertiary)] overflow-hidden">
-            <div
-              className="h-full bg-[var(--accent)] transition-[width] duration-200"
-              style={{ width: `${Math.round(progress * 100)}%` }}
-            />
-          </div>
-          <p className="text-[var(--text-secondary)] text-[10px] truncate">
-            {describeProgress(progressText, progress)}
-          </p>
+      <div
+        className={`w-full flex flex-col gap-2.5 rounded border border-[var(--border-secondary)] bg-[var(--bg-secondary)] p-3 ${
+          loadingClosing ? "animate-menu-up-out" : "animate-menu-up-in"
+        }`}
+      >
+        <div className="flex items-start gap-2 text-[var(--text-secondary)] text-xs leading-relaxed">
+          <Scribble />
+          <span>
+            One sec, pulling {model.label} down to run locally in your browser.
+          </span>
         </div>
+        <div className="w-full h-1.5 rounded-full bg-[var(--bg-tertiary)] overflow-hidden">
+          <div
+            className="h-full bg-[var(--accent)] transition-[width] duration-200"
+            style={{ width: `${Math.round(progress * 100)}%` }}
+          />
+        </div>
+        <p className="text-[var(--text-secondary)] text-[10px] truncate">
+          {describeProgress(progressText, progress)}
+        </p>
       </div>
-    ) : null;
+    </div>
+  ) : null;
 
   return (
     <>
@@ -722,7 +756,7 @@ function AiChatPanel({
           invisible hit-target either way, so there's nothing extra to show
           while closed; only the drag behavior changes. */}
       <ResizeHandle
-        className="hidden sm:block fixed top-[57px] sm:top-[35px] bottom-[37px] sm:bottom-[33px] w-2 z-50"
+        className="hidden sm:block fixed top-[57px] sm:top-[var(--toolbar-height)] bottom-[37px] sm:bottom-[33px] w-2 z-50"
         style={{ right: `${isOpen ? panelWidth - 4 : 0}px` }}
         onDragStart={() => {
           if (!isOpen) {
@@ -777,353 +811,358 @@ function AiChatPanel({
             : "translate-x-full sm:translate-x-0 sm:w-0"
         }`}
       >
-      <div className="flex flex-col h-full w-full sm:w-[var(--ai-panel-width)] bg-[var(--bg)] text-[var(--text)] sm:border-l border-[var(--border-secondary)] font-mono text-sm">
-        {/* Header — current chat title, new chat, history, close. */}
-        <div className="relative flex items-center justify-between gap-2 px-3 pt-2 pb-[9px] border-b border-[var(--border-secondary)] bg-[var(--bg-quaternary)] text-[var(--text)] shrink-0">
-          <span className="flex items-center gap-2 text-xs font-bold min-w-0">
-            <Brain className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">{activeChat?.title || "New chat"}</span>
-          </span>
-          {/* -my-1 (not -m-1) on the buttons: the vertical cancel keeps the
+        <div className="flex flex-col h-full w-full sm:w-[var(--ai-panel-width)] bg-[var(--bg)] text-[var(--text)] sm:border-l border-[var(--border-secondary)] font-mono text-sm">
+          {/* Header — current chat title, new chat, history, close. */}
+          <div className="relative flex items-center justify-between gap-2 px-3 pt-2 pb-[9px] border-b border-[var(--border-secondary)] bg-[var(--bg-secondary)] text-[var(--text)] shrink-0">
+            <span className="flex items-center gap-2 text-xs font-bold min-w-0 text-[var(--accent)]">
+              <Brain className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">tyouAI</span>
+            </span>
+            {/* -my-1 (not -m-1) on the buttons: the vertical cancel keeps the
               header the same height as the main one it lines up with, while
               leaving the horizontal padding in place so gap-1 puts real space
               between the hover rectangles instead of overlapping them. */}
-          <span className="flex items-center gap-1 shrink-0">
-            <button
-              onClick={startNewChat}
-              className="hover:bg-[var(--bg-tertiary)] text-[var(--text)] p-1 -my-1 rounded cursor-pointer"
-              aria-label="New chat"
-              title="New chat"
-            >
-              <Plus className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => setHistoryOpen((open) => !open)}
-              className="hover:bg-[var(--bg-tertiary)] text-[var(--text)] p-1 -my-1 rounded cursor-pointer"
-              aria-label="Chat history"
-              title="Chat history"
-            >
-              <History className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={onClose}
-              className="hover:bg-[var(--bg-tertiary)] text-[var(--text)] p-1 -my-1 rounded cursor-pointer"
-              aria-label="Close chat"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </span>
-
-          {historyOpen && (
-            <div className="absolute top-full left-0 right-0 z-20 max-h-64 overflow-y-auto border-b border-[var(--border-secondary)] bg-[var(--bg-secondary)]">
-              {chats.map((chat) => (
-                <div
-                  key={chat.id}
-                  className={`group flex items-center gap-2 px-3 py-1.5 text-xs cursor-pointer hover:bg-[var(--bg-tertiary)] ${
-                    chat.id === activeChatId ? "bg-[var(--bg-tertiary)]" : ""
-                  }`}
-                  onClick={() => {
-                    setActiveChatId(chat.id);
-                    setHistoryOpen(false);
-                  }}
-                >
-                  <span className="truncate flex-1">{chat.title}</span>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteChat(chat.id);
-                    }}
-                    className="opacity-0 group-hover:opacity-100 text-[var(--text-secondary)] hover:text-[var(--difficulty-hard)] cursor-pointer shrink-0"
-                    aria-label="Delete chat"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* The question for whatever answer you're currently looking at —
-            always present, and the only place a question is rendered.
-            Scrolling back through answers walks it back too. */}
-        {respondingTo && (
-          <div className="flex flex-col gap-0.5 px-3 py-1.5 border-b border-[var(--border-secondary)] bg-[var(--bg-secondary)] shrink-0">
-            <div className="flex items-center gap-2 min-w-0">
-              <span
-                className="text-[var(--text-secondary)] shrink-0"
-                aria-hidden="true"
-              >
-                &gt;
-              </span>
-              <span className="truncate text-[11px] text-[var(--text-secondary)]">
-                {respondingTo.content}
-              </span>
-            </div>
-            {respondingTo.contextLabel && (
-              <ContextChip
-                label={respondingTo.contextLabel}
-                onOpen={
-                  respondingTo.contextId
-                    ? () => onOpenTab?.(respondingTo.contextId)
-                    : null
-                }
-                className="ml-4"
-              />
-            )}
-          </div>
-        )}
-
-        {/* Transcript. Wrapped in a relative box purely so the loading
-            modal has something panel-shaped to cover. */}
-        <div className="relative flex-1 min-h-0 flex flex-col">
-          <div
-            ref={listRef}
-            onScroll={syncActiveTurn}
-            className="flex-1 min-h-0 overflow-y-auto p-3 flex flex-col gap-3"
-          >
-            {/* A fresh chat leads with the "ty." mark + greeting, with any
-              model status tucked underneath rather than replacing it. */}
-            {messages.length === 0 && (
-              <div className="flex-1 flex flex-col items-center justify-center text-center gap-3 px-2">
-                <TyGlyph className="w-8 h-8 text-[var(--accent)]" />
-                <p className="text-[var(--text-secondary)] text-xs leading-relaxed">
-                  Hey, I'm tyouAI. Ask me about Tyler's work, projects, or
-                  whatever's on the page you're looking at.
-                </p>
-                {statusBlock}
-              </div>
-            )}
-
-            {messages.length > 0 && statusBlock}
-
-            {turns.map((turn, ti) => {
-              const answer = turn.answer;
-              return (
-                <div
-                  key={ti}
-                  ref={(el) => {
-                    turnRefs.current[ti] = el;
-                  }}
-                  className="group flex flex-col gap-3"
-                >
-                  {turn.question && (
-                    <div className="flex flex-col gap-1">
-                      <div className="flex items-start gap-2 text-[var(--text-secondary)]">
-                        <span className="shrink-0" aria-hidden="true">
-                          &gt;
-                        </span>
-                        <span className="min-w-0 flex-1 whitespace-pre-wrap leading-relaxed text-[13px]">
-                          {turn.question.content}
-                        </span>
-                      </div>
-                      {turn.question.contextLabel && (
-                        <ContextChip
-                          label={turn.question.contextLabel}
-                          onOpen={
-                            turn.question.contextId
-                              ? () => onOpenTab?.(turn.question.contextId)
-                              : null
-                          }
-                          className="ml-4"
-                        />
-                      )}
-                    </div>
-                  )}
-                  {answer && (
-                    <div className="flex flex-col gap-1">
-                      {answer.content && answer.thoughtMs != null && (
-                        <div className="flex items-center gap-1.5 text-[10px] text-[var(--text-secondary)]">
-                          <span aria-hidden="true">✻</span>
-                          Thought for {(answer.thoughtMs / 1000).toFixed(1)}s
-                        </div>
-                      )}
-                      <div className="flex items-start gap-2">
-                        {/* The bullet marks an actual answer — while it's
-                          still thinking the scribble is the only marker. */}
-                        {answer.content && (
-                          <span
-                            className="w-1.5 h-1.5 mt-[7px] rounded-full bg-[var(--accent)] shrink-0"
-                            aria-hidden="true"
-                          />
-                        )}
-                        <div className="min-w-0 flex-1 text-[13px]">
-                          {answer.content ? (
-                            <ReactMarkdown
-                              remarkPlugins={[remarkGfm]}
-                              rehypePlugins={[
-                                [
-                                  rehypeHighlight,
-                                  { detect: true, ignoreMissing: true },
-                                ],
-                              ]}
-                              components={chatMarkdownComponents}
-                            >
-                              {answer.content}
-                            </ReactMarkdown>
-                          ) : (
-                            <ThinkingLine
-                              startedAt={streamStartedAt || Date.now()}
-                            />
-                          )}
-                        </div>
-                        {answer.content && <CopyButton text={answer.content} />}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-          {loadingModal}
-        </div>
-
-        {/* Composer — input and the model/context row are one bordered box
-            with an internal divider, rather than a bordered input sitting
-            above separate controls. */}
-        <div className="p-2 shrink-0">
-          {queued.length > 0 && (
-            <div className="flex flex-col gap-1 mb-1.5">
-              {queued.map((q, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-2 text-[10px] text-[var(--text-secondary)] min-w-0"
-                >
-                  <span className="shrink-0 opacity-70">queued</span>
-                  <span className="truncate">{q}</span>
-                  <button
-                    onClick={() =>
-                      setQueued((prev) => prev.filter((_, j) => j !== i))
-                    }
-                    className="ml-auto shrink-0 hover:text-[var(--text)] cursor-pointer"
-                    aria-label="Remove queued message"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-          <div className="relative rounded border border-[var(--border-secondary)] bg-[var(--bg-secondary)] focus-within:border-[var(--accent)] transition-colors">
-            <div className="p-2">
-              <textarea
-                ref={inputRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                disabled={status !== "ready" && status !== "streaming"}
-                rows={1}
-                placeholder={
-                  status === "ready"
-                    ? "Ask away…"
-                    : status === "unsupported"
-                      ? "Unavailable in this browser"
-                      : status === "streaming"
-                        ? "Queue another message… (esc to stop)"
-                        : "Loading…"
-                }
-                // placeholder:text-* — the browser's default placeholder
-                // colour is a fixed grey that ignores the theme entirely,
-                // so "Unavailable in this browser" (and the other states)
-                // sat off-palette, worst on the dark themes.
-                className="tabs-scroll w-full resize-none outline-none border-0 bg-transparent text-[var(--text)] placeholder:text-[var(--text-secondary)] text-[13px] leading-relaxed disabled:opacity-50"
-              />
-            </div>
-
-            <div className="flex items-center gap-3 px-2 py-1.5 border-t border-[var(--border-secondary)] text-[10px] text-[var(--text-secondary)] min-w-0">
+            <span className="flex items-center gap-1 shrink-0">
               <button
-                ref={modelButtonRef}
-                onClick={() => setModelMenuOpen((open) => !open)}
-                className="flex items-center gap-1 shrink-0 hover:text-[var(--text)] cursor-pointer"
-                title="Change model"
+                onClick={startNewChat}
+                className="text-[var(--text-secondary)] hover:text-[var(--text)] hover:bg-[var(--bg-tertiary)] p-1 -my-1 rounded cursor-pointer"
+                aria-label="New chat"
+                title="New chat"
               >
-                <Brain className="w-3 h-3" />
-                <span className="truncate">{model.label}</span>
-                {/* Tailwind v4's rotate-* sets the standalone `rotate`
-                    property, not `transform` — transitioning `transform`
-                    here animates nothing. */}
-                <ChevronDown
-                  className={`w-3 h-3 transition-[rotate] duration-200 ${
-                    modelMenuOpen ? "rotate-180" : ""
-                  }`}
-                />
+                <Plus className="w-3.5 h-3.5" />
               </button>
-              {activeTab?.label && (
-                <ContextChip
-                  label={activeTab.label}
-                  onOpen={activeTab.id ? () => onOpenTab?.(activeTab.id) : null}
-                />
-              )}
-              {/* Mid-reply the button stops generation — unless there's
-                  something typed, in which case it queues that instead. */}
-              {status === "streaming" && !input.trim() ? (
-                <button
-                  onClick={cancelGeneration}
-                  className="ml-auto p-1 rounded bg-[var(--accent)] text-[var(--bg)] cursor-pointer shrink-0"
-                  aria-label="Stop generating"
-                  title="Stop (esc)"
-                >
-                  <Square className="w-3.5 h-3.5" fill="currentColor" />
-                </button>
-              ) : (
-                <button
-                  onClick={submit}
-                  disabled={
-                    (status !== "ready" && status !== "streaming") ||
-                    !input.trim()
-                  }
-                  className="ml-auto p-1 rounded bg-[var(--accent)] text-[var(--bg)] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shrink-0"
-                  aria-label={status === "streaming" ? "Queue message" : "Send"}
-                  title={status === "streaming" ? "Queue message" : "Send"}
-                >
-                  <ArrowUp className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
+              <button
+                onClick={() => setHistoryOpen((open) => !open)}
+                className="text-[var(--text-secondary)] hover:text-[var(--text)] hover:bg-[var(--bg-tertiary)] p-1 -my-1 rounded cursor-pointer"
+                aria-label="Chat history"
+                title="Chat history"
+              >
+                <History className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={onClose}
+                className="text-[var(--text-secondary)] hover:text-[var(--text)] hover:bg-[var(--bg-tertiary)] p-1 -my-1 rounded cursor-pointer"
+                aria-label="Close chat"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </span>
 
-            {modelMenuRendered && (
+            {historyRendered && (
               <div
-                ref={modelMenuRef}
-                className={`absolute bottom-full left-0 right-0 mb-2.5 z-30 rounded border border-[var(--border-secondary)] bg-[var(--bg-secondary)] overflow-hidden ${
-                  modelMenuClosing
-                    ? // pointer-events-none so the extra beat it stays
-                      // mounted for can't swallow a click meant for what's
-                      // underneath it.
-                      "animate-menu-up-out pointer-events-none"
-                    : "animate-menu-up-in"
+                className={`absolute top-full left-0 right-0 z-20 max-h-64 overflow-y-auto border-b border-[var(--border-secondary)] bg-[var(--bg-secondary)] ${
+                  historyClosing ? "animate-modal-out" : "animate-modal-in"
                 }`}
               >
-                {MODELS.map((m) => (
-                  <button
-                    key={m.id}
-                    onClick={() => {
-                      setModelId(m.id);
-                      setModelMenuOpen(false);
-                    }}
-                    className={`flex w-full flex-col gap-0.5 px-2 py-1.5 text-left cursor-pointer hover:bg-[var(--bg-tertiary)] ${
-                      m.id === modelId ? "bg-[var(--bg-tertiary)]" : ""
+                {chats.map((chat) => (
+                  <div
+                    key={chat.id}
+                    className={`group flex items-center gap-2 px-3 py-1.5 text-xs cursor-pointer hover:bg-[var(--bg-tertiary)] ${
+                      chat.id === activeChatId ? "bg-[var(--bg-tertiary)]" : ""
                     }`}
+                    onClick={() => {
+                      setActiveChatId(chat.id);
+                      setHistoryOpen(false);
+                    }}
                   >
-                    <span className="flex items-center gap-1.5 text-[11px] text-[var(--text)]">
-                      {m.id === modelId && (
-                        <Check className="w-3 h-3 shrink-0" />
-                      )}
-                      <span className="truncate">{m.label}</span>
-                      <span className="ml-auto shrink-0 text-[10px] text-[var(--text-secondary)]">
-                        {m.sizeGb} GB
-                        {isEngineReady(m.id) ? " · loaded" : ""}
-                      </span>
+                    <span className="truncate flex-1">{chat.title}</span>
+                    <span className="text-[10px] text-[var(--text-secondary)] shrink-0">
+                      {relativeTime(chat.updatedAt)}
                     </span>
-                    <span className="text-[10px] text-[var(--text-secondary)] leading-snug">
-                      {m.pro}
-                    </span>
-                  </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteChat(chat.id);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 text-[var(--text-secondary)] hover:text-[var(--text)] hover:bg-[var(--bg-tertiary)] p-1 rounded cursor-pointer shrink-0"
+                      aria-label="Delete chat"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
                 ))}
               </div>
             )}
           </div>
+
+          {/* The question for whatever answer you're currently looking at —
+            always present, and the only place a question is rendered.
+            Scrolling back through answers walks it back too. */}
+          {respondingTo && (
+            <div className="p-2 shrink-0">
+              <div className="flex flex-col gap-0.5 rounded bg-[var(--bg-secondary)] border border-[var(--border-secondary)] p-2">
+                <span className="truncate text-[11px]">
+                  {respondingTo.content}
+                </span>
+                {respondingTo.contextLabel && (
+                  <ContextChip
+                    label={respondingTo.contextLabel}
+                    onOpen={
+                      respondingTo.contextId
+                        ? () => onOpenTab?.(respondingTo.contextId)
+                        : null
+                    }
+                  />
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Transcript. Wrapped in a relative box purely so the loading
+            modal has something panel-shaped to cover. */}
+          <div className="relative flex-1 min-h-0 flex flex-col">
+            <div
+              ref={listRef}
+              onScroll={syncActiveTurn}
+              className="flex-1 min-h-0 overflow-y-auto p-3 flex flex-col gap-3"
+            >
+              {/* A fresh chat leads with the "ty." mark + greeting, with any
+              model status tucked underneath rather than replacing it. */}
+              {messages.length === 0 && (
+                <div className="flex-1 flex flex-col items-center justify-center text-center gap-3 px-2">
+                  <Brain className="w-8 h-8 text-[var(--accent)]" />
+                  <p className="text-[var(--text-secondary)] text-xs leading-relaxed">
+                    Hey, I'm tyouAI. Ask me about Tyler's work, projects, or
+                    whatever's on the page you're looking at.
+                  </p>
+                  {statusBlock}
+                </div>
+              )}
+
+              {messages.length > 0 && statusBlock}
+
+              {turns.map((turn, ti) => {
+                const answer = turn.answer;
+                return (
+                  <div
+                    key={ti}
+                    ref={(el) => {
+                      turnRefs.current[ti] = el;
+                    }}
+                    className="group flex flex-col gap-3"
+                  >
+                    {turn.question && (
+                      <div className="flex flex-col gap-1 animate-content-in">
+                        <div className="flex flex-col gap-0.5 rounded border border-[var(--border-secondary)] p-2">
+                          <span className="min-w-0 flex-1 whitespace-pre-wrap leading-relaxed text-[13px]">
+                            {turn.question.content}
+                          </span>
+                          {turn.question.contextLabel && (
+                            <ContextChip
+                              label={turn.question.contextLabel}
+                              onOpen={
+                                turn.question.contextId
+                                  ? () => onOpenTab?.(turn.question.contextId)
+                                  : null
+                              }
+                            />
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {answer && (
+                      <div className="flex flex-col gap-1">
+                        {answer.content && answer.thoughtMs != null && (
+                          <div className="flex items-center gap-1.5 text-[10px] text-[var(--text-secondary)]">
+                            <span aria-hidden="true">✻</span>
+                            Thought for {(answer.thoughtMs / 1000).toFixed(1)}s
+                          </div>
+                        )}
+                        <div
+                          key={answer.thoughtMs != null ? "final" : "pending"}
+                          className="flex items-start gap-2 animate-content-in"
+                        >
+                          {/* The bullet marks an actual answer — while it's
+                          still thinking the scribble is the only marker. */}
+                          {answer.content && (
+                            <span
+                              className="w-1.5 h-1.5 mt-[7px] rounded-full bg-[var(--accent)] shrink-0"
+                              aria-hidden="true"
+                            />
+                          )}
+                          <div className="min-w-0 flex-1 text-[13px]">
+                            {answer.content ? (
+                              <ReactMarkdown
+                                remarkPlugins={[remarkGfm]}
+                                rehypePlugins={[
+                                  [
+                                    rehypeHighlight,
+                                    { detect: true, ignoreMissing: true },
+                                  ],
+                                ]}
+                                components={chatMarkdownComponents}
+                              >
+                                {answer.content}
+                              </ReactMarkdown>
+                            ) : (
+                              <ThinkingLine
+                                startedAt={streamStartedAt || Date.now()}
+                              />
+                            )}
+                          </div>
+                          {answer.content && (
+                            <CopyButton text={answer.content} />
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            {loadingModal}
+          </div>
+
+          {/* Composer — input and the model/context row are one bordered box
+            with an internal divider, rather than a bordered input sitting
+            above separate controls. */}
+          <div className="p-2 shrink-0">
+            {queued.length > 0 && (
+              <div className="flex flex-col gap-1 mb-1.5">
+                {queued.map((q, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-2 text-[10px] text-[var(--text-secondary)] min-w-0"
+                  >
+                    <span className="shrink-0 opacity-70">queued</span>
+                    <span className="truncate">{q}</span>
+                    <button
+                      onClick={() =>
+                        setQueued((prev) => prev.filter((_, j) => j !== i))
+                      }
+                      className="ml-auto shrink-0 hover:text-[var(--text)] cursor-pointer"
+                      aria-label="Remove queued message"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="relative rounded border border-[var(--border-secondary)] bg-[var(--bg-secondary)] focus-within:border-[var(--accent)] transition-colors">
+              <div className="p-2">
+                <textarea
+                  ref={inputRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  disabled={status !== "ready" && status !== "streaming"}
+                  rows={1}
+                  placeholder={
+                    status === "ready"
+                      ? "Ask away…"
+                      : status === "unsupported"
+                        ? "Unavailable in this browser"
+                        : status === "streaming"
+                          ? "Queue another message… (esc to stop)"
+                          : "Loading…"
+                  }
+                  // placeholder:text-* — the browser's default placeholder
+                  // colour is a fixed grey that ignores the theme entirely,
+                  // so "Unavailable in this browser" (and the other states)
+                  // sat off-palette, worst on the dark themes.
+                  className="tabs-scroll w-full resize-none outline-none border-0 bg-transparent text-[var(--text)] placeholder:text-[var(--text-secondary)] text-[13px] leading-relaxed disabled:opacity-50"
+                />
+              </div>
+
+              <div className="flex items-center gap-3 px-2 py-1.5 border-t border-[var(--border-secondary)] text-[10px] text-[var(--text-secondary)] min-w-0">
+                <button
+                  ref={modelButtonRef}
+                  onClick={() => setModelMenuOpen((open) => !open)}
+                  className="flex items-center gap-1 shrink-0 hover:text-[var(--text)] cursor-pointer"
+                  title="Change model"
+                >
+                  <Brain className="w-3 h-3" />
+                  <span className="truncate">{model.label}</span>
+                  {/* Tailwind v4's rotate-* sets the standalone `rotate`
+                    property, not `transform` — transitioning `transform`
+                    here animates nothing. */}
+                  <ChevronDown
+                    className={`w-3 h-3 transition-[rotate] duration-200 ${
+                      modelMenuOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+                {activeTab?.label && (
+                  <ContextChip
+                    label={activeTab.label}
+                    onOpen={
+                      activeTab.id ? () => onOpenTab?.(activeTab.id) : null
+                    }
+                  />
+                )}
+                {/* Mid-reply the button stops generation — unless there's
+                  something typed, in which case it queues that instead. */}
+                {status === "streaming" && !input.trim() ? (
+                  <button
+                    onClick={cancelGeneration}
+                    className="ml-auto p-1 rounded bg-[var(--accent)] text-[var(--bg)] cursor-pointer shrink-0"
+                    aria-label="Stop generating"
+                    title="Stop (esc)"
+                  >
+                    <Square className="w-3.5 h-3.5" fill="currentColor" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={submit}
+                    disabled={
+                      (status !== "ready" && status !== "streaming") ||
+                      !input.trim()
+                    }
+                    className="ml-auto p-1 rounded bg-[var(--accent)] text-[var(--bg)] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shrink-0"
+                    aria-label={
+                      status === "streaming" ? "Queue message" : "Send"
+                    }
+                    title={status === "streaming" ? "Queue message" : "Send"}
+                  >
+                    <ArrowUp className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              {modelMenuRendered && (
+                <div
+                  ref={modelMenuRef}
+                  className={`absolute bottom-full left-0 right-0 mb-2.5 z-30 rounded border border-[var(--border-secondary)] bg-[var(--bg-secondary)] overflow-hidden ${
+                    modelMenuClosing
+                      ? // pointer-events-none so the extra beat it stays
+                        // mounted for can't swallow a click meant for what's
+                        // underneath it.
+                        "animate-menu-up-out pointer-events-none"
+                      : "animate-menu-up-in"
+                  }`}
+                >
+                  {MODELS.map((m) => (
+                    <button
+                      key={m.id}
+                      onClick={() => {
+                        setModelId(m.id);
+                        setModelMenuOpen(false);
+                      }}
+                      className={`flex w-full flex-col gap-0.5 px-2 py-1.5 text-left cursor-pointer hover:bg-[var(--bg-tertiary)] ${
+                        m.id === modelId ? "bg-[var(--bg-tertiary)]" : ""
+                      }`}
+                    >
+                      <span className="flex items-center gap-1.5 text-[11px] text-[var(--text)]">
+                        {m.id === modelId && (
+                          <Check className="w-3 h-3 shrink-0" />
+                        )}
+                        <span className="truncate">{m.label}</span>
+                        <span className="ml-auto shrink-0 text-[10px] text-[var(--text-secondary)]">
+                          {m.sizeGb} GB
+                          {isEngineReady(m.id) ? " · loaded" : ""}
+                        </span>
+                      </span>
+                      <span className="text-[10px] text-[var(--text-secondary)] leading-snug">
+                        {m.pro}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-      </div>
       </div>
     </>
   );

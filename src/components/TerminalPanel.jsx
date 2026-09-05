@@ -12,6 +12,11 @@ const DEFAULT_HEIGHT = 260;
 // on release, instead of resting at a barely-there sliver height — same
 // idea (and value) as the sidebar's own SNAP_CLOSE_THRESHOLD.
 const SNAP_CLOSE_THRESHOLD = 80;
+// Must match the panel's `duration-300` slide-closed transition below —
+// resetting `height` any sooner than that would grow the (bottom-anchored,
+// non-transitioned) box back to full height mid-slide, flashing it open
+// again before it finishes sliding off screen.
+const CLOSE_TRANSITION_MS = 300;
 const HEIGHT_KEY = "tyouTerminalHeight";
 const SESSIONS_KEY = "tyouTerminalSessions";
 const GROUPS_KEY = "tyouTerminalGroups";
@@ -405,7 +410,9 @@ function TerminalPanel({
           onResizingChange?.(false);
           if (liveHeightRef.current < SNAP_CLOSE_THRESHOLD) {
             onClose?.();
-            setHeight(DEFAULT_HEIGHT);
+            // Wait for the slide-closed transition to finish before
+            // restoring the height — see CLOSE_TRANSITION_MS.
+            setTimeout(() => setHeight(DEFAULT_HEIGHT), CLOSE_TRANSITION_MS);
           }
         }}
       />
@@ -428,17 +435,17 @@ function TerminalPanel({
           isResizing ? "" : "transition-transform duration-300 ease-in-out"
         } ${isOpen ? "" : "pointer-events-none"} h-[var(--terminal-height)]`}
       >
-      <div className="flex flex-col h-full sm:h-[var(--terminal-height)] w-full bg-[var(--bg)] text-[var(--text)] border-t-2 sm:border-l border-[var(--border-secondary)] font-mono text-sm">
+      <div className="flex flex-col h-full sm:h-[var(--terminal-height)] w-full bg-[var(--bg)] text-[var(--text)] border-t sm:border-l border-[var(--border-secondary)] font-mono text-sm">
         {/* Top bar — just panel-level controls. Session tabs live in the
             right-hand rail below, VS Code-style, rather than a top strip. */}
-        <div className="flex items-center justify-between gap-2 pl-2 pr-2 py-1 border-b border-[var(--border-secondary)] bg-[var(--bg-quaternary)] shrink-0">
-          <span className="text-[10px] tracking-wider uppercase font-bold text-[var(--text)]">
+        <div className="flex items-center justify-between gap-2 pl-2 pr-2 py-1 border-b border-[var(--border-secondary)] bg-[var(--bg-secondary)] shrink-0">
+          <span className="text-xs uppercase font-bold text-[var(--text-secondary)]">
             Terminal
           </span>
           <div className="flex items-center gap-1 shrink-0">
             <button
               onClick={openNewSession}
-              className="hover:bg-[var(--bg-tertiary)] p-1 rounded cursor-pointer"
+              className="text-[var(--text-secondary)] hover:text-[var(--text)] hover:bg-[var(--bg-tertiary)] p-1 rounded cursor-pointer"
               aria-label="New terminal"
               title="New terminal"
             >
@@ -447,7 +454,7 @@ function TerminalPanel({
             <button
               onClick={deleteActivePane}
               disabled={activeSessionId == null}
-              className="hover:bg-[var(--bg-tertiary)] p-1 rounded cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+              className="text-[var(--text-secondary)] hover:text-[var(--text)] hover:bg-[var(--bg-tertiary)] p-1 rounded cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
               aria-label="Delete terminal"
               title="Delete terminal"
             >
@@ -456,7 +463,9 @@ function TerminalPanel({
             <button
               onClick={addSplitPane}
               className={`p-1 rounded cursor-pointer ${
-                paneIds.length > 1 ? "bg-[var(--bg-tertiary)]" : "hover:bg-[var(--bg-tertiary)]"
+                paneIds.length > 1
+                  ? "text-[var(--text)] bg-[var(--bg-tertiary)]"
+                  : "text-[var(--text-secondary)] hover:text-[var(--text)] hover:bg-[var(--bg-tertiary)]"
               }`}
               aria-label="Split terminal"
               title="Split terminal (adds another pane)"
@@ -465,7 +474,7 @@ function TerminalPanel({
             </button>
             <button
               onClick={onClose}
-              className="hover:bg-[var(--bg-tertiary)] p-1 rounded cursor-pointer"
+              className="text-[var(--text-secondary)] hover:text-[var(--text)] hover:bg-[var(--bg-tertiary)] p-1 rounded cursor-pointer"
               aria-label="Close terminal panel"
             >
               <X className="w-3.5 h-3.5" />
@@ -507,7 +516,7 @@ function TerminalPanel({
             })}
           </div>
 
-          <div className="tabs-scroll w-9 shrink-0 overflow-y-auto overflow-x-hidden border-l border-[var(--border-secondary)] bg-[var(--bg-quaternary)]">
+          <div className="tabs-scroll w-9 shrink-0 overflow-y-auto overflow-x-hidden bg-[var(--bg-quaternary)]">
             {/* Icon-only, VS Code-style, always in creation order — this
                 order never changes as terminals are split/selected, and
                 closing one just shifts the rest up, so a terminal never
@@ -516,20 +525,23 @@ function TerminalPanel({
                 (its whole group, if it has one). */}
             {sessions.map((s, i) => {
               const shown = paneIdSet.has(s.id);
+              const isActive = s.id === activeSessionId;
               const connector = connectorForRow(i);
               return (
                 <div key={s.id} className="group relative">
                   <button
                     onClick={() => selectSession(s.id)}
                     className={`relative flex items-center justify-center w-full h-9 border-b border-[var(--border-secondary)] cursor-pointer ${
-                      shown
-                        ? "bg-[var(--bg)] text-[var(--text)]"
-                        : "text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]"
+                      isActive
+                        ? "bg-[var(--bg)] text-[var(--accent)] border-l-2 border-l-[var(--bg)] border-r-2 border-r-[var(--accent)] -ml-px"
+                        : shown
+                          ? "bg-[var(--bg)] text-[var(--text)] border-l-2 border-l-[var(--bg)] -ml-px"
+                          : "border-l border-l-[var(--border-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]"
                     }`}
                     aria-label={`zsh — ${s.name}`}
                   >
                     {connector && (
-                      <span className="absolute left-1.5 top-0 bottom-0 w-2 pointer-events-none" aria-hidden="true">
+                      <span className="absolute left-0 top-0 bottom-0 w-1 pointer-events-none" aria-hidden="true">
                         {/* Branch connector: top row = an "L" rotated 90°
                             clockwise (horizontal top, vertical down);
                             bottom row = the same corner mirrored (vertical
@@ -537,7 +549,9 @@ function TerminalPanel({
                             "T" rotated 90° counter-clockwise (vertical
                             passes through, tick out); a row the line
                             merely passes on its way between panes gets
-                            just the vertical stroke, no tick. */}
+                            just the vertical stroke, no tick. Kept slim and
+                            flush with the button's left edge so it never
+                            reaches into the centered icon's glyph. */}
                         <span
                           className={`absolute left-0 w-px bg-[var(--accent)] ${
                             connector === "top"
@@ -548,7 +562,7 @@ function TerminalPanel({
                           }`}
                         />
                         {connector !== "through" && (
-                          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-px bg-[var(--accent)]" />
+                          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-px bg-[var(--accent)]" />
                         )}
                       </span>
                     )}
