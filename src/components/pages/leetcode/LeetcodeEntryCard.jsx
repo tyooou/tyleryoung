@@ -23,6 +23,7 @@ import ExternalLink from "../../ExternalLink";
 import Scribble from "../../Scribble";
 import { fetchProblemMarkdown, DIFFICULTY_COLOR } from "../../../lib/leetcode";
 import remarkObsidian from "../../../lib/remarkObsidian";
+import { useExternalLinkConfirm } from "../../../lib/useExternalLinkConfirm";
 
 // YAML parses unquoted dates like `date: 2026-08-03` into real Date objects,
 // not strings, so this can't just be rendered directly in JSX.
@@ -188,6 +189,8 @@ function createMarkdownComponents({ leetcodeProblems, updatePage }) {
 }
 
 function LeetcodeEntryCard({ path, title, leetcodeProblems = [], updatePage }) {
+  const { handleClick: handleExternalClick, modal: externalLinkModal } =
+    useExternalLinkConfirm();
   const [frontmatter, setFrontmatter] = useState(null);
   const [body, setBody] = useState("");
   const [loading, setLoading] = useState(true);
@@ -213,6 +216,7 @@ function LeetcodeEntryCard({ path, title, leetcodeProblems = [], updatePage }) {
 
   return (
     <div className="w-full h-full p-3 sm:p-5 font-mono select-none cursor-default overflow-y-auto">
+      {externalLinkModal}
       <h2 className="font-bold text-4xl sm:text-3xl md:text-4xl">{title}</h2>
 
       {loading && (
@@ -254,6 +258,7 @@ function LeetcodeEntryCard({ path, title, leetcodeProblems = [], updatePage }) {
                 text="View on LeetCode"
                 link={frontmatter.link}
                 icon={<Code2 size={14} />}
+                onClick={handleExternalClick(frontmatter.link)}
               />
             )}
           </div>

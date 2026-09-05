@@ -1,6 +1,7 @@
 import ExternalLink from "../ExternalLink";
 import Scribble from "../Scribble";
 import StatTile from "../StatTile";
+import { useExternalLinkConfirm } from "../../lib/useExternalLinkConfirm";
 import { Keyboard } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -35,7 +36,7 @@ function KeyboardLayout({ label, rows }) {
             {row.map((key) => (
               <div
                 key={key}
-                className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center border border-[var(--border-secondary)] rounded bg-[var(--bg-tertiary)] text-xs font-bold shrink-0"
+                className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center border border-[var(--border-secondary)] rounded bg-[var(--bg-tertiary)] text-xs font-bold shrink-0 transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
               >
                 {key}
               </div>
@@ -234,8 +235,11 @@ function MonkeyTypeStats() {
 }
 
 function TypingCard() {
+  const { handleClick: handleExternalClick, modal: externalLinkModal } =
+    useExternalLinkConfirm();
   return (
     <>
+      {externalLinkModal}
       <div className="w-full h-full p-3 sm:p-5 font-mono select-none cursor-default overflow-y-auto">
         <div className="flex flex-col">
           <h2 className="font-bold text-6xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl">
@@ -267,6 +271,7 @@ function TypingCard() {
               text="monkeytype profile"
               link={"https://monkeytype.com/profile/tyooou"}
               icon={<Keyboard size={16} className="text-[var(--text-secondary)]" />}
+              onClick={handleExternalClick("https://monkeytype.com/profile/tyooou")}
             />
           </div>
         </div>

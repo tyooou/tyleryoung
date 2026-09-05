@@ -6,6 +6,7 @@ import {
   ExternalLink as ExternalLinkIcon,
 } from "lucide-react";
 import ZoomedIframe from "../ZoomedIframe";
+import { useExternalLinkConfirm } from "../../lib/useExternalLinkConfirm";
 
 function normalizeUrl(raw) {
   const trimmed = raw.trim();
@@ -15,6 +16,8 @@ function normalizeUrl(raw) {
 }
 
 function SimpleBrowserCard({ url, title }) {
+  const { handleClick: handleExternalClick, modal: externalLinkModal } =
+    useExternalLinkConfirm();
   const [history, setHistory] = useState([url]);
   const [historyIndex, setHistoryIndex] = useState(0);
   const [inputValue, setInputValue] = useState(url);
@@ -73,6 +76,7 @@ function SimpleBrowserCard({ url, title }) {
 
   return (
     <div className="w-full h-full flex flex-col select-none">
+      {externalLinkModal}
       <form
         onSubmit={handleSubmit}
         className="flex items-center gap-1 px-1 py-1 border-b border-[var(--border-secondary)] bg-[var(--bg)] shrink-0"
@@ -113,6 +117,7 @@ function SimpleBrowserCard({ url, title }) {
           href={currentUrl}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={handleExternalClick(currentUrl)}
           className="p-1 rounded hover:bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:text-[var(--text)] cursor-pointer shrink-0"
           title="Open in new tab"
         >
@@ -141,6 +146,7 @@ function SimpleBrowserCard({ url, title }) {
               href={currentUrl}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={handleExternalClick(currentUrl)}
               className="text-sm font-mono underline text-[var(--text)] hover:text-[var(--text-secondary)]"
             >
               Open in a new tab ↗

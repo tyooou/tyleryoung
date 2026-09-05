@@ -5,6 +5,7 @@ import ExternalLink from "../../ExternalLink";
 import StatTile from "../../StatTile";
 import { sanityClient } from "../../../lib/sanityClient";
 import { PROFILE_URL, DIFFICULTY_COLOR, computeStreaks } from "../../../lib/leetcode";
+import { useExternalLinkConfirm } from "../../../lib/useExternalLinkConfirm";
 import LeetcodeHeatmap from "./LeetcodeHeatmap";
 
 function formatDate(dateStr) {
@@ -21,6 +22,8 @@ function formatDate(dateStr) {
 const LATEST_SOLVED_COUNT = 4;
 
 function LeetcodeCard({ leetcodeProblems = [], updatePage = () => {}, sidebarPanelOpen }) {
+  const { handleClick: handleExternalClick, modal: externalLinkModal } =
+    useExternalLinkConfirm();
   const [stats, setStats] = useState(null); // null = loading, false = failed
   const [submissionCalendar, setSubmissionCalendar] = useState({});
 
@@ -51,6 +54,7 @@ function LeetcodeCard({ leetcodeProblems = [], updatePage = () => {}, sidebarPan
 
   return (
     <div className="w-full h-full p-3 sm:p-5 font-mono select-none cursor-default overflow-y-auto">
+      {externalLinkModal}
       <h2 className="font-bold text-6xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl">
         Leetcode.
       </h2>
@@ -66,6 +70,7 @@ function LeetcodeCard({ leetcodeProblems = [], updatePage = () => {}, sidebarPan
           text="View on LeetCode"
           link={PROFILE_URL}
           icon={<Code2 size={14} />}
+          onClick={handleExternalClick(PROFILE_URL)}
         />
       </div>
 
