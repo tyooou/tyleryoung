@@ -82,6 +82,16 @@ function resolveTab(tab, data) {
     };
   }
 
+  const experiencePhotos = experiences.find(
+    (e) => `${e.slug}-photos` === tab,
+  );
+  if (experiencePhotos) {
+    return {
+      label: `${experiencePhotos.company}-photos.txt`,
+      context: `A photo gallery from Tyler's role as ${experiencePhotos.role} at ${experiencePhotos.company}.`,
+    };
+  }
+
   const extracurricular = extracurriculars.find((e) => e.slug === tab);
   if (extracurricular) {
     return {

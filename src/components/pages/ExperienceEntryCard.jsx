@@ -1,7 +1,6 @@
-import { Globe } from "lucide-react";
+import { Globe, Images } from "lucide-react";
 import ExternalLink from "../ExternalLink";
 import TechStack from "./project/TechStack";
-import ExperiencePhotoGrid from "./ExperiencePhotoGrid";
 
 function formatMonthYear(dateStr) {
   if (!dateStr) return "";
@@ -12,14 +11,14 @@ function formatMonthYear(dateStr) {
   return `${month} '${year}`;
 }
 
-function ExperienceEntryCard({ experience }) {
+function ExperienceEntryCard({ experience, onOpenPhotos }) {
   if (!experience) return null;
-  const { role, company, location, description, start, end, link, tags, techStack, photos } =
+  const { role, company, location, description, start, end, link, tags, techStack, photos, slug } =
     experience;
 
   return (
-    <div className="flex flex-col sm:flex-row w-full h-full font-mono select-none cursor-default sm:overflow-hidden">
-      <div className="flex-1 sm:flex-2 p-3 sm:p-5 sm:overflow-y-auto">
+    <div className="w-full h-full font-mono select-none cursor-default sm:overflow-y-auto">
+      <div className="p-3 sm:p-5">
         <h2 className="font-bold text-4xl sm:text-3xl md:text-4xl lg:text-5xl flex-shrink-0">
           {role}
         </h2>
@@ -60,13 +59,22 @@ function ExperienceEntryCard({ experience }) {
               />
             </p>
           )}
+          {photos?.length > 0 && (
+            <p className="mt-2">
+              <button
+                type="button"
+                onClick={() => onOpenPhotos(`${slug}-photos`)}
+                className="cursor-pointer text-left group inline-flex items-center gap-2 hover:bg-[var(--bg-secondary)] p-2"
+              >
+                <Images size={16} className="text-[var(--text-secondary)]" />
+                <span className="font-bold">
+                  View photos ({photos.length})
+                </span>
+              </button>
+            </p>
+          )}
         </div>
       </div>
-      {photos?.length > 0 && (
-        <div className="flex-1 sm:flex-3 p-6 pl-3 sm:pl-6 h-96 sm:h-full overflow-hidden">
-          <ExperiencePhotoGrid photos={photos} alt={role} />
-        </div>
-      )}
     </div>
   );
 }
