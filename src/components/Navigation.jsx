@@ -59,7 +59,7 @@ function TabLabel({
     return (
       <span className="flex items-center gap-2.5 min-w-0 pl-1 pr-1">
         <TyGlyph />
-        <span className="truncate font-bold">Welcome</span>
+        <span className="truncate">Welcome</span>
       </span>
     );
   }
@@ -82,6 +82,14 @@ function TabLabel({
   if (experience) {
     return <>{`${titleCase(experience.company).replace(/ /g, "-")}.txt`}</>;
   }
+  const experiencePhotos = experiences.find(
+    (exp) => `${exp.slug}-photos` === tab,
+  );
+  if (experiencePhotos) {
+    return (
+      <>{`${titleCase(experiencePhotos.company).replace(/ /g, "-")}-Photos.txt`}</>
+    );
+  }
   const extracurricular = extracurriculars.find((item) => item.slug === tab);
   if (extracurricular) {
     return (
@@ -103,6 +111,7 @@ function TabLabel({
 
 function Navigation({
   pane,
+  isActivePane = true,
   onSwitchTab,
   onDeleteTab,
   onTabDragStart,
@@ -127,6 +136,13 @@ function Navigation({
   const [collapsing, setCollapsing] = useState({});
 
   const handleDeleteTab = (tab, tabEl) => {
+    // Closing the last tab of a non-"left" pane collapses the whole pane,
+    // which already animates its own width down to 0 — animating this tab
+    // shrinking first just adds a redundant, out-of-sync flourish before it.
+    if (paneId !== "left" && openTabs.length === 1) {
+      onDeleteTab(paneId, tab);
+      return;
+    }
     const width = tabEl?.getBoundingClientRect().width ?? 0;
     setClosingWidths((prev) => ({ ...prev, [tab]: width }));
     // Two rAFs: the first lets the browser paint the tab at its just-set
@@ -141,18 +157,35 @@ function Navigation({
     });
     setTimeout(() => {
       onDeleteTab(paneId, tab);
-      setClosingWidths((prev) => {
-        const next = { ...prev };
-        delete next[tab];
-        return next;
-      });
-      setCollapsing((prev) => {
-        const next = { ...prev };
-        delete next[tab];
-        return next;
-      });
     }, TAB_CLOSE_ANIMATION_MS);
   };
+
+  // Drops closing/collapsing bookkeeping only once a tab has actually left
+  // openTabs, rather than on a timer that races the parent's state update.
+  // Clearing it on a fixed timeout let the parent's removal land a paint
+  // late: for one frame the tab would still be in openTabs but no longer
+  // marked as closing, so it snapped back to full width/opacity (and
+  // replayed the animate-tab-in entrance) right before actually
+  // disappearing. Keying the cleanup off openTabs itself means it can
+  // never run before the removal it's cleaning up after.
+  useEffect(() => {
+    setClosingWidths((prev) => {
+      const next = Object.fromEntries(
+        Object.entries(prev).filter(([tab]) => openTabs.includes(tab)),
+      );
+      return Object.keys(next).length === Object.keys(prev).length
+        ? prev
+        : next;
+    });
+    setCollapsing((prev) => {
+      const next = Object.fromEntries(
+        Object.entries(prev).filter(([tab]) => openTabs.includes(tab)),
+      );
+      return Object.keys(next).length === Object.keys(prev).length
+        ? prev
+        : next;
+    });
+  }, [openTabs]);
   // Native scrollbars either overlay the row (covering tab text) or are too
   // fat to make "way thinner" — so the real scrollbar is hidden entirely and
   // this mock thumb tracks scroll position instead. It's absolutely
@@ -222,7 +255,7 @@ function Navigation({
     <>
       <nav
         data-tour="tab-bar"
-        className="hidden md:flex justify-between min-w-0 bg-[var(--bg-quaternary)] text-[var(--text)] select-none"
+        className="hidden md:flex justify-between min-w-0 bg-[var(--bg-secondary)] text-[var(--text)] select-none"
       >
         <div className="sm:hidden flex items-center space-x-2 px-4 py-3 border-r border-[var(--border-secondary)] bg-[var(--bg)] -mb-5 border-b-0">
           <button
@@ -278,17 +311,21 @@ function Navigation({
                       }
                     : undefined
                 }
-                className={`flex items-center space-x-2 px-2 pt-2 pb-[9px] border-r border-[var(--border-secondary)] shrink-0 ${
+                className={`flex items-center space-x-2 px-2 pt-2 pb-[9px] border-r border-b border-[var(--border-secondary)] shrink-0 ${
                   isClosing ? "" : "animate-tab-in"
                 } ${
                   tab === page
-                    ? "bg-[var(--bg)] border-b-2 border-b-[var(--bg)]"
-                    : "bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)] border-b border-b-[var(--border-secondary)]"
+                    ? "bg-[var(--bg)] border-b-[var(--bg)]"
+                    : "bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)] border-b-[var(--border-secondary)]"
                 }`}
               >
                 <button
                   className={`font-mono text-xs truncate overflow-hidden whitespace-nowrap max-w-[150px] ${
-                    tab === page ? "" : "cursor-pointer"
+                    tab === page
+                      ? isActivePane
+                        ? "font-bold text-[var(--accent)]"
+                        : ""
+                      : "cursor-pointer"
                   }`}
                   onClick={() => onSwitchTab(paneId, tab)}
                 >
@@ -305,11 +342,19 @@ function Navigation({
                 </button>
                 {tab != "bibliography" && (
                   <span
-                    className={`hover:bg-[var(--bg-secondary)] cursor-pointer text-mono text-xs px-1 rounded-sm ${
-                      tab === page
-                        ? "hover:bg-[var(--bg-secondary)]"
+                    className={`cursor-pointer text-mono text-xs px-1 rounded-sm ${
+                      tab === page && isActivePane
+                        ? "text-[var(--accent)] hover:bg-[var(--accent)]/15"
                         : "hover:bg-[var(--bg-tertiary)]"
                     }`}
+                    // Closing a tab in a pane that isn't focused shouldn't
+                    // first flash that pane's tab bold/accented — the pane
+                    // container focuses on mousedown (see onFocusPane
+                    // below), which fires before this span's onClick, so
+                    // without stopping it here the pane (and its current
+                    // tab) briefly becomes "active" right before the tab
+                    // being closed disappears.
+                    onMouseDown={(e) => e.stopPropagation()}
                     onClick={(e) =>
                       handleDeleteTab(tab, e.currentTarget.closest("[data-tab-item]"))
                     }

@@ -151,6 +151,29 @@ function Portfolio() {
       : DEFAULT_PANEL_WIDTH;
   });
   const [isSidebarResizing, setIsSidebarResizing] = useState(false);
+  // Measured rather than hardcoded: the sidebar and AI-panel resize handle
+  // are `fixed` (so they can span the viewport independent of scroll) and
+  // need to know exactly how tall the toolbar above them renders, which
+  // varies with font metrics/zoom/DPR in ways a guessed px value can't
+  // track reliably.
+  const [toolbarHeight, setToolbarHeight] = useState(35);
+  useEffect(() => {
+    const el = document.querySelector("[data-toolbar]");
+    if (!el) return;
+    // getBoundingClientRect reports post-zoom viewport pixels, but the
+    // fixed-positioned elements reading this var live inside the same
+    // html { zoom } subtree — a CSS length there gets multiplied by zoom
+    // again when rendered, so the measurement has to be un-scaled first
+    // or the fixed offset ends up zoomed twice.
+    const update = () => {
+      const zoom = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
+      setToolbarHeight(el.getBoundingClientRect().height / zoom);
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
   const [terminalReservedHeight, setTerminalReservedHeight] = useState(0);
   const [isTerminalResizing, setIsTerminalResizing] = useState(false);
   const [touchStart, setTouchStart] = useState(null);
@@ -158,11 +181,50 @@ function Portfolio() {
   const [tourStep, setTourStep] = useState(null); // null = inactive, else 0-based step index
   const [tourSteps, setTourSteps] = useState(TOUR_STEPS); // filtered per-viewport at tour start
 
+  const [isSplitResizing, setIsSplitResizing] = useState(false);
+
   const splitRatioStartRef = useRef(splitRatio);
   const panesRowRef = useRef(null);
   const sidebarRef = useRef(null);
 
   const activePane = panes.find((p) => p.id === activePaneId) || panes[0];
+
+  // The right pane's width animates open/closed rather than snapping, so it
+  // has to stay mounted for a beat after `panes` drops it (rendered from
+  // this snapshot) while its flex-basis transitions down to 0.
+  const rightPane = panes.find((p) => p.id === "right");
+  const [rightPaneSnapshot, setRightPaneSnapshot] = useState(rightPane || null);
+  const [isPaneSplit, setIsPaneSplit] = useState(!!rightPane);
+  const paneCloseTimeoutRef = useRef(null);
+  const rightPaneMountedRef = useRef(!!rightPane);
+
+  useEffect(() => {
+    if (rightPane) {
+      clearTimeout(paneCloseTimeoutRef.current);
+      setRightPaneSnapshot(rightPane);
+      if (!rightPaneMountedRef.current) {
+        // A freshly-mounted element has no prior style for the browser to
+        // transition from, so it renders at its final width instantly.
+        // Mount it at 0 first, then flip to the open width a couple of
+        // frames later once that 0-width state has actually painted.
+        rightPaneMountedRef.current = true;
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => setIsPaneSplit(true));
+        });
+      }
+    } else if (rightPaneSnapshot) {
+      rightPaneMountedRef.current = false;
+      setIsPaneSplit(false);
+      paneCloseTimeoutRef.current = setTimeout(
+        () => setRightPaneSnapshot(null),
+        180,
+      );
+    }
+    return () => clearTimeout(paneCloseTimeoutRef.current);
+    // rightPaneSnapshot is intentionally excluded: this effect only reacts
+    // to the split opening/closing, not to the snapshot it manages.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rightPane]);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -487,11 +549,19 @@ function Portfolio() {
   // bar (switching/opening within a known pane) and wrapped by `updatePage`
   // below for every other call site, which always targets "whichever pane
   // is currently focused" rather than naming one explicitly.
+  //
+  // A tab is only ever open in one pane at a time: if it's already open
+  // somewhere else (e.g. a link opened it in a split pane, then a sidebar
+  // click for that same tab targets whichever pane happens to be active),
+  // this reuses that pane instead of adding a second copy of the tab.
   const openInPane = (paneId, tab) => {
-    setActivePaneId(paneId);
+    const targetPaneId = panes.some((p) => p.openTabs.includes(tab))
+      ? panes.find((p) => p.openTabs.includes(tab)).id
+      : paneId;
+    setActivePaneId(targetPaneId);
     setPanes((prev) =>
       prev.map((p) => {
-        if (p.id !== paneId) return p;
+        if (p.id !== targetPaneId) return p;
         if (p.page === tab) return p;
         return {
           ...p,
@@ -606,6 +676,28 @@ function Portfolio() {
     setActivePaneId(toPaneId);
   };
 
+  // Opens `tab` in whichever pane isn't `fromPaneId`, creating a split if
+  // none exists yet — used by in-page links (e.g. an experience's "View
+  // photos") that want a tab to appear alongside the page that opened it
+  // rather than replacing it. If `tab` is already open somewhere, that
+  // pane is simply focused instead of opening a duplicate.
+  const openInSplitPane = (fromPaneId, tab) => {
+    const existing = panes.find((p) => p.openTabs.includes(tab));
+    if (existing) {
+      openInPane(existing.id, tab);
+      return;
+    }
+    const otherPane = panes.find((p) => p.id !== fromPaneId);
+    if (otherPane) {
+      openInPane(otherPane.id, tab);
+      return;
+    }
+    setSplitRatio(0.5);
+    const targetId = fromPaneId === "right" ? "left" : "right";
+    setPanes((prev) => [...prev, makePane(targetId, [tab], tab)]);
+    setActivePaneId(targetId);
+  };
+
   const handleTabDragStart = (paneId, tab) => setDraggedTab({ paneId, tab });
   const handleTabDragEnd = () => setDraggedTab(null);
 
@@ -692,76 +784,102 @@ function Portfolio() {
 
   const sidebarMargin = ACTIVITY_BAR_WIDTH + sidebarPanelWidth;
 
-  const paneElements = panes.flatMap((pane, index) => {
-    const paneEl = (
-      <PaneView
-        key={pane.id}
-        pane={pane}
-        isPrimary={index === 0}
-        isSolePane={panes.length === 1}
-        isDragActive={draggedTab !== null}
-        onSwitchTab={openInPane}
-        onDeleteTab={deletePaneTab}
-        onTabDragStart={handleTabDragStart}
-        onTabDragEnd={handleTabDragEnd}
-        onFocusPane={setActivePaneId}
-        onDropIntoPane={handleDropIntoPane}
-        onDropCreateSplit={handleDropCreateSplit}
-        updateSidebar={updateSidebar}
-        friends={friends}
-        quickLinks={quickLinks}
-        leetcodeProblems={leetcodeProblems}
-        projects={projects}
-        releases={releases}
-        experiences={experiences}
-        extracurriculars={extracurriculars}
-        books={books}
-        blogPosts={blogPosts}
-        sidebarPanelOpen={sidebarPanelWidth > 0}
-        pageComponents={PAGE_COMPONENTS}
-        startTour={startTour}
-        style={
-          panes.length === 2 && index === 0
-            ? { flex: `0 0 ${splitRatio * 100}%` }
-            : { flex: "1 1 0%" }
-        }
-      />
-    );
-    if (index === 0 && panes.length === 2) {
-      return [
-        paneEl,
-        <ResizeHandle
-          key="pane-split-handle"
-          className="hidden sm:block absolute top-0 h-full w-2 z-20"
-          style={{
-            left: `${splitRatio * 100}%`,
-            transform: "translateX(-50%)",
-          }}
-          onDragStart={() => {
-            splitRatioStartRef.current = splitRatio;
-          }}
-          onDrag={(deltaX) => {
-            const total = panesRowRef.current?.offsetWidth || 1;
-            const deltaRatio = deltaX / total;
-            setSplitRatio(
-              Math.min(
-                MAX_SPLIT_RATIO,
-                Math.max(
-                  MIN_SPLIT_RATIO,
-                  splitRatioStartRef.current + deltaRatio,
-                ),
+  const leftPane = panes.find((p) => p.id === "left");
+
+  const sharedPaneProps = {
+    isDragActive: draggedTab !== null,
+    onSwitchTab: openInPane,
+    onDeleteTab: deletePaneTab,
+    onTabDragStart: handleTabDragStart,
+    onTabDragEnd: handleTabDragEnd,
+    onFocusPane: setActivePaneId,
+    onDropIntoPane: handleDropIntoPane,
+    onDropCreateSplit: handleDropCreateSplit,
+    onOpenInSplitPane: openInSplitPane,
+    updateSidebar,
+    friends,
+    quickLinks,
+    leetcodeProblems,
+    projects,
+    releases,
+    experiences,
+    extracurriculars,
+    books,
+    blogPosts,
+    sidebarPanelOpen: sidebarPanelWidth > 0,
+    pageComponents: PAGE_COMPONENTS,
+    startTour,
+  };
+
+  const paneElements = [
+    <PaneView
+      key="left"
+      pane={leftPane}
+      isPrimary={true}
+      isActivePane={leftPane?.id === activePaneId}
+      isSolePane={!rightPaneSnapshot}
+      {...sharedPaneProps}
+      style={{ flex: "1 1 0%" }}
+    />,
+  ];
+
+  if (isPaneSplit) {
+    paneElements.push(
+      <ResizeHandle
+        key="pane-split-handle"
+        className="hidden sm:block absolute top-0 h-full w-2 z-20"
+        style={{
+          left: `${splitRatio * 100}%`,
+          transform: "translateX(-50%)",
+        }}
+        onDragStart={() => {
+          splitRatioStartRef.current = splitRatio;
+          setIsSplitResizing(true);
+        }}
+        onDrag={(deltaX) => {
+          const total = panesRowRef.current?.offsetWidth || 1;
+          const deltaRatio = deltaX / total;
+          setSplitRatio(
+            Math.min(
+              MAX_SPLIT_RATIO,
+              Math.max(
+                MIN_SPLIT_RATIO,
+                splitRatioStartRef.current + deltaRatio,
               ),
-            );
-          }}
-        />,
-      ];
-    }
-    return [paneEl];
-  });
+            ),
+          );
+        }}
+        onDragEnd={() => setIsSplitResizing(false)}
+      />,
+    );
+  }
+
+  if (rightPaneSnapshot) {
+    paneElements.push(
+      <PaneView
+        key="right"
+        pane={rightPaneSnapshot}
+        isPrimary={false}
+        isActivePane={rightPaneSnapshot.id === activePaneId}
+        isSolePane={false}
+        {...sharedPaneProps}
+        style={{
+          flex: `0 0 ${isPaneSplit ? (1 - splitRatio) * 100 : 0}%`,
+          transition: isSplitResizing
+            ? "none"
+            : `flex-basis 180ms ${isPaneSplit ? "ease-out" : "ease-in"}`,
+          overflow: "hidden",
+        }}
+      />,
+    );
+  }
 
   return (
     <>
-      <div className="flex flex-col min-h-full sm:h-full sm:fixed w-full bg-[var(--bg-secondary)]">
+      <div
+        style={{ "--toolbar-height": `${toolbarHeight}px` }}
+        className="flex flex-col min-h-full sm:h-full sm:fixed w-full bg-[var(--bg-secondary)]"
+      >
         <SearchBar
           updateSidebar={updateSidebar}
           toggleSidebar={() => sidebarRef.current?.toggle()}
@@ -809,6 +927,7 @@ function Portfolio() {
             books={books}
             blogPosts={blogPosts}
             quickLinks={quickLinks}
+            activePage={activePane?.page}
             onPanelWidthChange={setSidebarPanelWidth}
             onPanelResizingChange={setIsSidebarResizing}
           />
