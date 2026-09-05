@@ -100,6 +100,16 @@ function resolveTab(tab, data) {
     };
   }
 
+  const extracurricularPhotos = extracurriculars.find(
+    (e) => `${e.slug}-photos` === tab,
+  );
+  if (extracurricularPhotos) {
+    return {
+      label: `${extracurricularPhotos.organisation}-photos.txt`,
+      context: `A photo gallery from Tyler's extracurricular role at ${extracurricularPhotos.organisation}.`,
+    };
+  }
+
   const project = projects.find((p) => p.name === tab);
   if (project) {
     const tech = project.techStack?.length ? ` Tech: ${project.techStack.join(", ")}.` : "";

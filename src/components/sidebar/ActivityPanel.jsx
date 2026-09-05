@@ -496,6 +496,28 @@ function ExtracurricularsTree({
   activePage,
 }) {
   const [open, setOpen] = useState(true);
+  // Which individual extracurricular rows have their "Photos" sub-item
+  // revealed — mirrors ExperienceTree's photosExpanded/togglePhotos.
+  const [photosExpanded, setPhotosExpanded] = useState(() => new Set());
+
+  useEffect(() => {
+    const active = extracurriculars.find(
+      (item) => `${item.slug}-photos` === activePage,
+    );
+    if (!active) return;
+    setPhotosExpanded((prev) =>
+      prev.has(active.slug) ? prev : new Set(prev).add(active.slug),
+    );
+  }, [activePage, extracurriculars]);
+
+  const togglePhotos = (slug) => {
+    setPhotosExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(slug)) next.delete(slug);
+      else next.add(slug);
+      return next;
+    });
+  };
 
   return (
     <div>
@@ -510,18 +532,64 @@ function ExtracurricularsTree({
             No extracurriculars found.
           </p>
         ) : (
-          extracurriculars.map((item) => (
-            <SidebarLink
-              key={item.slug}
-              text={item.role}
-              subtitle={`@ ${item.organisation}`}
-              updatePage={updatePage}
-              updateSidebar={updateSidebar}
-              projectName={item.slug}
-              indent={1}
-              isActive={activePage === item.slug}
-            />
-          ))
+          extracurriculars.map((item) => {
+            const hasPhotos = item.photos?.length > 0;
+            if (!hasPhotos) {
+              return (
+                <SidebarLink
+                  key={item.slug}
+                  text={item.role}
+                  subtitle={`@ ${item.organisation}`}
+                  updatePage={updatePage}
+                  updateSidebar={updateSidebar}
+                  projectName={item.slug}
+                  indent={1}
+                  isActive={activePage === item.slug}
+                />
+              );
+            }
+            const photosTab = `${item.slug}-photos`;
+            const showPhotos = photosExpanded.has(item.slug);
+            return (
+              <div key={item.slug}>
+                <div className="relative">
+                  <SidebarLink
+                    text={item.role}
+                    subtitle={`@ ${item.organisation}`}
+                    updatePage={updatePage}
+                    updateSidebar={updateSidebar}
+                    projectName={item.slug}
+                    indent={1}
+                    isActive={activePage === item.slug}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => togglePhotos(item.slug)}
+                    aria-label={showPhotos ? "Hide photos" : "Show photos"}
+                    className="cursor-pointer absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded text-[var(--text-secondary)] hover:bg-[var(--bg)] hover:text-[var(--text)]"
+                  >
+                    <ChevronRight
+                      size={12}
+                      className={`transition-transform duration-200 ease-in-out ${
+                        showPhotos ? "rotate-90" : ""
+                      }`}
+                    />
+                  </button>
+                </div>
+                <Collapsible open={showPhotos}>
+                  <SidebarLink
+                    text="Photos"
+                    updatePage={updatePage}
+                    updateSidebar={updateSidebar}
+                    projectName={photosTab}
+                    icon={<Images size={13} />}
+                    indent={2}
+                    isActive={activePage === photosTab}
+                  />
+                </Collapsible>
+              </div>
+            );
+          })
         )}
       </Collapsible>
     </div>

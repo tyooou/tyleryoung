@@ -1,29 +1,17 @@
-import { Globe } from "lucide-react";
+import { Globe, Images } from "lucide-react";
 import ExternalLink from "../ExternalLink";
-import MasonryPhoto from "../MasonryPhoto";
+import { useExternalLinkConfirm } from "../../lib/useExternalLinkConfirm";
 
-function MasonryGallery({ title, photos, altFallback }) {
-  if (!photos?.length) return null;
-  return (
-    <div>
-      <p className="font-bold text-lg mb-3">{title}</p>
-      <div className="columns-2 lg:columns-3 gap-3">
-        {photos.map((photo, index) => (
-          <MasonryPhoto key={photo.url || index} src={photo.url} alt={photo.alt || altFallback} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ExtracurricularEntryCard({ extracurricular }) {
+function ExtracurricularEntryCard({ extracurricular, onOpenPhotos }) {
+  const { handleClick: handleExternalClick, modal: externalLinkModal } =
+    useExternalLinkConfirm();
   if (!extracurricular) return null;
-  const { role, organisation, position, description, link, tags, graphics, photos } =
+  const { role, organisation, position, description, link, tags, photos, slug } =
     extracurricular;
-  const hasGallery = graphics?.length > 0 || photos?.length > 0;
 
   return (
     <div className="w-full h-full font-mono select-none cursor-default overflow-y-auto p-3 sm:p-5">
+      {externalLinkModal}
       <h2 className="font-bold text-4xl sm:text-3xl md:text-4xl lg:text-5xl flex-shrink-0">
         {role}
       </h2>
@@ -55,16 +43,25 @@ function ExtracurricularEntryCard({ extracurricular }) {
               text="Visit website"
               link={link}
               icon={<Globe size={16} className="text-[var(--text-secondary)]" />}
+              onClick={handleExternalClick(link)}
             />
           </p>
         )}
+        {photos?.length > 0 && (
+          <p className="mt-2">
+            <button
+              type="button"
+              onClick={() => onOpenPhotos(`${slug}-photos`)}
+              className="cursor-pointer text-left group inline-flex items-center gap-2 hover:bg-[var(--bg-secondary)] p-2"
+            >
+              <Images size={16} className="text-[var(--text-secondary)]" />
+              <span className="font-bold">
+                View photos ({photos.length})
+              </span>
+            </button>
+          </p>
+        )}
       </div>
-      {hasGallery && (
-        <div className="mt-8 flex flex-col gap-8">
-          <MasonryGallery title="Graphics" photos={graphics} altFallback={`${organisation} graphic`} />
-          <MasonryGallery title="Photos" photos={photos} altFallback={organisation} />
-        </div>
-      )}
     </div>
   );
 }

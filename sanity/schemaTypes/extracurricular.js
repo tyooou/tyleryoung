@@ -32,13 +32,6 @@ export default defineType({
       description: "Skills/areas, e.g. marketing, events, design",
     }),
     defineField({
-      name: "graphics",
-      title: "Graphics",
-      type: "array",
-      of: [{ type: "image", options: { hotspot: true } }],
-      description: "Design work / graphics you made for this organisation.",
-    }),
-    defineField({
       name: "photos",
       title: "Photos",
       type: "array",
@@ -49,9 +42,9 @@ export default defineType({
     defineField({ name: "order", type: "number", description: "Lower numbers show first" }),
   ],
   preview: {
-    select: { role: "role", organisation: "organisation", photo: "photos.0", graphic: "graphics.0" },
-    prepare({ role, organisation, photo, graphic }) {
-      return { title: role, subtitle: organisation, media: photo || graphic };
+    select: { role: "role", organisation: "organisation", photo: "photos.0" },
+    prepare({ role, organisation, photo }) {
+      return { title: role, subtitle: organisation, media: photo };
     },
   },
 });

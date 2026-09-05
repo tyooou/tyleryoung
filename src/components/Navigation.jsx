@@ -98,6 +98,16 @@ function TabLabel({
       </>
     );
   }
+  const extracurricularPhotos = extracurriculars.find(
+    (item) => `${item.slug}-photos` === tab,
+  );
+  if (extracurricularPhotos) {
+    return (
+      <>
+        {`${titleCase(extracurricularPhotos.organisation).replace(/ /g, "-")}-Photos.txt`}
+      </>
+    );
+  }
   const book = books.find((b) => b.slug === tab);
   if (book) {
     return <>{`${titleCase(book.title).replace(/ /g, "-")}.txt`}</>;

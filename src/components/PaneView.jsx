@@ -9,6 +9,7 @@ import LeetcodeEntryCard from "./pages/leetcode/LeetcodeEntryCard";
 import ExperienceEntryCard from "./pages/ExperienceEntryCard";
 import ExperiencePhotosCard from "./pages/ExperiencePhotosCard";
 import ExtracurricularEntryCard from "./pages/ExtracurricularEntryCard";
+import ExtracurricularPhotosCard from "./pages/ExtracurricularPhotosCard";
 import BookEntryCard from "./pages/BookEntryCard";
 import BlogEntryCard from "./pages/BlogEntryCard";
 
@@ -60,6 +61,9 @@ function PaneView({
   );
   const activeExtracurricular = extracurriculars.find(
     (item) => item.slug === page,
+  );
+  const activeExtracurricularPhotos = extracurriculars.find(
+    (item) => `${item.slug}-photos` === page,
   );
   const activeBook = books.find((book) => book.slug === page);
   const activeBlogPost = blogPosts.find((post) => post.slug === page);
@@ -150,7 +154,10 @@ function PaneView({
           onDropIntoPane(pane.id);
         }}
       >
-        {isPrimary && !activeBrowserLink && !activeExperiencePhotos && (
+        {isPrimary &&
+          !activeBrowserLink &&
+          !activeExperiencePhotos &&
+          !activeExtracurricularPhotos && (
           <div className="hidden sm:block">
             <VerticalNumbering gutterRef={gutterRef} count={gutterLineCount} />
           </div>
@@ -193,7 +200,16 @@ function PaneView({
             />
           )}
           {activeExtracurricular && (
-            <ExtracurricularEntryCard extracurricular={activeExtracurricular} />
+            <ExtracurricularEntryCard
+              extracurricular={activeExtracurricular}
+              onOpenPhotos={(tab) => onOpenInSplitPane(pane.id, tab)}
+            />
+          )}
+          {activeExtracurricularPhotos && (
+            <ExtracurricularPhotosCard
+              extracurricular={activeExtracurricularPhotos}
+              isActive={isActivePane}
+            />
           )}
           {activeBook && <BookEntryCard book={activeBook} />}
           {activeBlogPost && <BlogEntryCard post={activeBlogPost} />}
