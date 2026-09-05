@@ -133,6 +133,7 @@ function PaneView({
         friends={friends}
         quickLinks={quickLinks}
         leetcodeProblems={leetcodeProblems}
+        releases={releases}
         experiences={experiences}
         extracurriculars={extracurriculars}
         books={books}

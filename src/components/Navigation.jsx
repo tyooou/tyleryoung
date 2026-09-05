@@ -50,6 +50,7 @@ function TabLabel({
   friends,
   quickLinks,
   leetcodeProblems,
+  releases,
   experiences,
   extracurriculars,
   books,
@@ -77,6 +78,10 @@ function TabLabel({
   const problem = leetcodeProblems.find((p) => p.path === tab);
   if (problem) {
     return <>{`LC${problem.number}.md`}</>;
+  }
+  const release = releases.find((r) => r.version === tab);
+  if (release) {
+    return <>{`${release.version}.txt`}</>;
   }
   const experience = experiences.find((exp) => exp.slug === tab);
   if (experience) {
@@ -128,6 +133,7 @@ function Navigation({
   onTabDragEnd,
   friends,
   leetcodeProblems,
+  releases = [],
   experiences = [],
   extracurriculars = [],
   books = [],
@@ -277,6 +283,7 @@ function Navigation({
               friends={friends}
               quickLinks={quickLinks}
               leetcodeProblems={leetcodeProblems}
+              releases={releases}
               experiences={experiences}
               extracurriculars={extracurriculars}
               books={books}
@@ -344,6 +351,7 @@ function Navigation({
                     friends={friends}
                     quickLinks={quickLinks}
                     leetcodeProblems={leetcodeProblems}
+                    releases={releases}
                     experiences={experiences}
                     extracurriculars={extracurriculars}
                     books={books}
