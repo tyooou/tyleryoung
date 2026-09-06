@@ -681,6 +681,13 @@ function Portfolio() {
   // rather than replacing it. If `tab` is already open somewhere, that
   // pane is simply focused instead of opening a duplicate.
   const openInSplitPane = (fromPaneId, tab) => {
+    // Mobile has no split-pane UI, so the same "view photos" affordance
+    // should just open the tab alongside the current one in the one pane
+    // that exists, instead of trying to create a split.
+    if (window.innerWidth < 768) {
+      openInPane(fromPaneId, tab);
+      return;
+    }
     const existing = panes.find((p) => p.openTabs.includes(tab));
     if (existing) {
       openInPane(existing.id, tab);
