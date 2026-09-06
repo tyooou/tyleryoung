@@ -300,7 +300,7 @@ function Navigation({
           <div
             ref={tabsRef}
             onScroll={updateScrollbar}
-            className="tabs-scroll flex items-start min-w-0 overflow-x-auto overflow-y-hidden"
+            className="flex items-start min-w-0 overflow-x-auto overflow-y-hidden"
           >
             {openTabs.map((tab) => {
               const closingWidth = closingWidths[tab];

@@ -28,7 +28,7 @@ function CodeBlock({ children, ...props }) {
   return (
     <div className="relative group/code mb-2">
       <pre
-        className="tabs-scroll bg-[var(--bg-tertiary)] border border-[var(--border-secondary)] rounded p-2 pr-8 text-xs overflow-x-auto"
+        className="bg-[var(--bg-tertiary)] border border-[var(--border-secondary)] rounded p-2 pr-8 text-xs overflow-x-auto"
         {...props}
       >
         {children}

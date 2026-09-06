@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import StatTile from "../StatTile";
 import { aggregateLibraryByMonth } from "../../lib/library";
+import CustomScrollbar from "../CustomScrollbar";
 
 function monthLabel(year, month) {
   return new Date(year, month, 1).toLocaleString("en-US", { month: "short", year: "2-digit" });
@@ -28,7 +29,7 @@ function LibraryOverviewCard({ books = [], blogPosts = [], updatePage = () => {}
     .slice(0, 5);
 
   return (
-    <div className="w-full h-full p-3 sm:p-5 font-mono select-none cursor-default overflow-y-auto">
+    <CustomScrollbar className="p-3 sm:p-5 font-mono select-none cursor-default">
       <h2 className="font-bold text-6xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl">
         Library.
       </h2>
@@ -49,7 +50,11 @@ function LibraryOverviewCard({ books = [], blogPosts = [], updatePage = () => {}
               <p className="text-sm text-[var(--text-secondary)]">No activity yet.</p>
             ) : (
               <>
-                <div className="flex items-end gap-3 h-56 overflow-x-auto pb-1 mb-4">
+                <CustomScrollbar
+                  direction="horizontal"
+                  wrapperClassName="h-56 mb-4"
+                  className="flex items-end gap-3 pb-1"
+                >
                   {monthly.map((m) => (
                     <div
                       key={`${m.year}-${m.month}`}
@@ -78,7 +83,7 @@ function LibraryOverviewCard({ books = [], blogPosts = [], updatePage = () => {}
                       </div>
                     </div>
                   ))}
-                </div>
+                </CustomScrollbar>
                 <div className="flex items-center gap-4 text-xs text-[var(--text-secondary)]">
                   <span className="flex items-center gap-1.5">
                     <span className="w-2.5 h-2.5 rounded-sm bg-[var(--accent)]" /> Books
@@ -138,7 +143,7 @@ function LibraryOverviewCard({ books = [], blogPosts = [], updatePage = () => {}
           </div>
         </div>
       </div>
-    </div>
+    </CustomScrollbar>
   );
 }
 

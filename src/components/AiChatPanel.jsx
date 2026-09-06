@@ -17,6 +17,7 @@ import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import Scribble from "./Scribble";
 import ResizeHandle from "./ResizeHandle";
+import CustomScrollbar from "./CustomScrollbar";
 import {
   getEngine,
   isEngineReady,
@@ -849,10 +850,11 @@ function AiChatPanel({
             </span>
 
             {historyRendered && (
-              <div
-                className={`absolute top-full left-0 right-0 z-20 max-h-64 overflow-y-auto border-b border-[var(--border-secondary)] bg-[var(--bg-secondary)] ${
+              <CustomScrollbar
+                wrapperClassName={`absolute top-full left-0 right-0 z-20 ${
                   historyClosing ? "animate-modal-out" : "animate-modal-in"
                 }`}
+                className="max-h-64 border-b border-[var(--border-secondary)] bg-[var(--bg-secondary)]"
               >
                 {chats.map((chat) => (
                   <div
@@ -881,7 +883,7 @@ function AiChatPanel({
                     </button>
                   </div>
                 ))}
-              </div>
+              </CustomScrollbar>
             )}
           </div>
 
@@ -911,10 +913,11 @@ function AiChatPanel({
           {/* Transcript. Wrapped in a relative box purely so the loading
             modal has something panel-shaped to cover. */}
           <div className="relative flex-1 min-h-0 flex flex-col">
-            <div
+            <CustomScrollbar
               ref={listRef}
               onScroll={syncActiveTurn}
-              className="flex-1 min-h-0 overflow-y-auto p-3 flex flex-col gap-3"
+              wrapperClassName="flex-1 min-h-0 w-full"
+              className="p-3 flex flex-col gap-3"
             >
               {/* A fresh chat leads with the "ty." mark + greeting, with any
               model status tucked underneath rather than replacing it. */}
@@ -1009,7 +1012,7 @@ function AiChatPanel({
                   </div>
                 );
               })}
-            </div>
+            </CustomScrollbar>
             {loadingModal}
           </div>
 
@@ -1061,7 +1064,7 @@ function AiChatPanel({
                   // colour is a fixed grey that ignores the theme entirely,
                   // so "Unavailable in this browser" (and the other states)
                   // sat off-palette, worst on the dark themes.
-                  className="tabs-scroll w-full resize-none outline-none border-0 bg-transparent text-[var(--text)] placeholder:text-[var(--text-secondary)] text-[13px] leading-relaxed disabled:opacity-50"
+                  className="w-full resize-none outline-none border-0 bg-transparent text-[var(--text)] placeholder:text-[var(--text-secondary)] text-[13px] leading-relaxed disabled:opacity-50"
                 />
               </div>
 

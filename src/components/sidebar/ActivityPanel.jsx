@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { getIcon } from "../iconMap";
 import SidebarLink from "./SidebarLink";
+import CustomScrollbar from "../CustomScrollbar";
 
 const MONTH_NAMES = [
   "January",
@@ -858,10 +859,12 @@ function FriendLink({ friend, updatePage, updateSidebar, isActive = false }) {
 
 function Panel({ title, children, width, animateWidth }) {
   return (
-    <div
+    <CustomScrollbar
+      wrapperClassName={`h-full shrink-0 bg-[var(--bg-secondary)] border-l border-[var(--border-secondary)] ${animateWidth ? "transition-[width] duration-300 ease-out" : ""}`}
+      wrapperStyle={{ width: `${width}px` }}
+      overflowClassName="overflow-y-auto overflow-x-hidden"
+      className="flex flex-col bg-[var(--bg-secondary)] pb-10"
       data-tour="sidebar-panel"
-      className={`flex flex-col h-full bg-[var(--bg-secondary)] overflow-y-auto pb-10 shrink-0 overflow-x-hidden border-l border-[var(--border-secondary)] ${animateWidth ? "transition-[width] duration-300 ease-out" : ""}`}
-      style={{ width: `${width}px` }}
     >
       <h2 className="sticky top-0 z-10 flex items-center px-6 sm:px-3 py-3 sm:pt-2 sm:pb-[9px] bg-[var(--bg-secondary)] border-b border-[var(--border-secondary)]">
         <span className="font-bold text-xl sm:text-xs text-[var(--text-secondary)] uppercase">
@@ -869,7 +872,7 @@ function Panel({ title, children, width, animateWidth }) {
         </span>
       </h2>
       {children}
-    </div>
+    </CustomScrollbar>
   );
 }
 

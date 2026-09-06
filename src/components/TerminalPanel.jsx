@@ -3,6 +3,7 @@ import { X, Plus, SquareSplitHorizontal, TerminalSquare, Trash2 } from "lucide-r
 import Terminal from "./Terminal";
 import ResizeHandle from "./ResizeHandle";
 import HeaderTooltip from "./HeaderTooltip";
+import CustomScrollbar from "./CustomScrollbar";
 import { buildFileTree, dirForTab } from "../lib/virtualFs";
 
 const MIN_HEIGHT = 140;
@@ -516,7 +517,10 @@ function TerminalPanel({
             })}
           </div>
 
-          <div className="tabs-scroll w-9 shrink-0 overflow-y-auto overflow-x-hidden bg-[var(--bg-quaternary)]">
+          <CustomScrollbar
+            wrapperClassName="w-9 shrink-0"
+            className="overflow-x-hidden bg-[var(--bg-quaternary)]"
+          >
             {/* Icon-only, VS Code-style, always in creation order — this
                 order never changes as terminals are split/selected, and
                 closing one just shifts the rest up, so a terminal never
@@ -572,7 +576,7 @@ function TerminalPanel({
                 </div>
               );
             })}
-          </div>
+          </CustomScrollbar>
         </div>
       </div>
       </div>

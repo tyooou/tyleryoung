@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import CustomScrollbar from "../CustomScrollbar";
 
 // A single-photo viewer for an extracurricular's gallery, opened as its own
 // tab (see ExtracurricularEntryCard's "View photos" link) rather than
@@ -81,9 +82,11 @@ function ExtracurricularPhotosCard({ extracurricular, isActive }) {
         )}
       </div>
       {photos.length > 1 && (
-        <div
+        <CustomScrollbar
           ref={stripRef}
-          className="flex gap-2 mt-3 overflow-x-auto shrink-0 pb-1"
+          direction="horizontal"
+          wrapperClassName="mt-3 shrink-0"
+          className="flex gap-2 pb-1"
         >
           {photos.map((photo, i) => (
             <button
@@ -104,7 +107,7 @@ function ExtracurricularPhotosCard({ extracurricular, isActive }) {
               />
             </button>
           ))}
-        </div>
+        </CustomScrollbar>
       )}
     </div>
   );

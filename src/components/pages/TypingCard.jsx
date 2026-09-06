@@ -4,6 +4,7 @@ import StatTile from "../StatTile";
 import { useExternalLinkConfirm } from "../../lib/useExternalLinkConfirm";
 import { Keyboard } from "lucide-react";
 import { useState, useEffect } from "react";
+import CustomScrollbar from "../CustomScrollbar";
 
 // Alpha keys only (no numbers/modifiers) — enough to see how the two
 // layouts differ. Each row is indented a bit further than the last to
@@ -240,7 +241,7 @@ function TypingCard() {
   return (
     <>
       {externalLinkModal}
-      <div className="w-full h-full p-3 sm:p-5 font-mono select-none cursor-default overflow-y-auto">
+      <CustomScrollbar className="p-3 sm:p-5 font-mono select-none cursor-default">
         <div className="flex flex-col">
           <h2 className="font-bold text-6xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl">
             Typing Statistics.
@@ -275,7 +276,7 @@ function TypingCard() {
             />
           </div>
         </div>
-      </div>
+      </CustomScrollbar>
     </>
   );
 }

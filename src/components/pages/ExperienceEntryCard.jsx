@@ -2,6 +2,7 @@ import { Globe, Images } from "lucide-react";
 import ExternalLink from "../ExternalLink";
 import TechStack from "./project/TechStack";
 import { useExternalLinkConfirm } from "../../lib/useExternalLinkConfirm";
+import CustomScrollbar from "../CustomScrollbar";
 
 function formatMonthYear(dateStr) {
   if (!dateStr) return "";
@@ -20,7 +21,10 @@ function ExperienceEntryCard({ experience, onOpenPhotos }) {
     experience;
 
   return (
-    <div className="w-full h-full font-mono select-none cursor-default sm:overflow-y-auto">
+    <CustomScrollbar
+      overflowClassName="overflow-visible sm:overflow-y-auto"
+      className="font-mono select-none cursor-default"
+    >
       {externalLinkModal}
       <div className="p-3 sm:p-5">
         <h2 className="font-bold text-4xl sm:text-3xl md:text-4xl lg:text-5xl flex-shrink-0">
@@ -80,7 +84,7 @@ function ExperienceEntryCard({ experience, onOpenPhotos }) {
           )}
         </div>
       </div>
-    </div>
+    </CustomScrollbar>
   );
 }
 

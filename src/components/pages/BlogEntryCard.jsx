@@ -1,5 +1,6 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import CustomScrollbar from "../CustomScrollbar";
 
 function formatDate(dateStr) {
   if (!dateStr) return "";
@@ -55,7 +56,7 @@ function BlogEntryCard({ post }) {
   const { title, date, excerpt, body } = post;
 
   return (
-    <div className="w-full h-full p-3 sm:p-5 font-mono flex flex-col select-none cursor-default overflow-y-auto">
+    <CustomScrollbar className="p-3 sm:p-5 font-mono flex flex-col select-none cursor-default">
       <h2 className="font-bold text-4xl sm:text-3xl md:text-4xl lg:text-5xl flex-shrink-0">
         {title}
       </h2>
@@ -72,7 +73,7 @@ function BlogEntryCard({ post }) {
           <p className="text-base text-[var(--text-secondary)]">(fill in)</p>
         )}
       </div>
-    </div>
+    </CustomScrollbar>
   );
 }
 

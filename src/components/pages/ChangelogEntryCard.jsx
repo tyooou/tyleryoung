@@ -1,8 +1,10 @@
+import CustomScrollbar from "../CustomScrollbar";
+
 function ChangelogEntryCard({ release }) {
   if (!release) return null;
 
   return (
-    <div className="w-full h-full p-3 sm:p-5 font-mono flex flex-col select-none cursor-default overflow-y-auto">
+    <CustomScrollbar className="p-3 sm:p-5 font-mono flex flex-col select-none cursor-default">
       <h2 className="font-bold text-6xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl flex-shrink-0">
         {release.version}
       </h2>
@@ -32,7 +34,7 @@ function ChangelogEntryCard({ release }) {
           </ul>
         )}
       </div>
-    </div>
+    </CustomScrollbar>
   );
 }
 

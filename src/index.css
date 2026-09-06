@@ -320,55 +320,29 @@ body {
   animation: thinking-ellipsis 1.2s steps(4, end) infinite;
 }
 
-/* The tab bar's real scrollbar is hidden — a mock thumb rendered in its own
-   reserved row (see Navigation.jsx) replaces it so it's exactly as thin as
-   we want and never overlaps tab text the way an overlay scrollbar would. */
-.tabs-scroll {
-  scrollbar-width: none;
-}
-.tabs-scroll::-webkit-scrollbar {
-  display: none;
-}
-
-/* Every other scrollbar on the site — sidebar, page content, the chat
-   transcript — styled to match that mock tab-bar thumb: hairline-thin,
-   rounded, --border-secondary, on an invisible track, and revealed only
-   while you're actually in the thing that scrolls.
-   Everything is wrapped in :where() so the whole rule has zero
-   specificity: .tabs-scroll above (and any future opt-out) still wins on a
-   plain class selector rather than needing an !important.
+/* Real scrollbars can't be styled reliably across browsers (Safari's
+   scrollbar-color support is buggy, and WebKit has never supported
+   ::-webkit-scrollbar-thumb colors at all), so every scrollable area on
+   the site hides its native scrollbar entirely and renders its own thin
+   floating mock thumb instead — the tab bar does this itself
+   (Navigation.jsx), everything else goes through <CustomScrollbar>.
    Scoped to a themed <html> so it can't reach Sanity Studio at /admin,
    which is rendered outside ThemeProvider and does its own theming. */
 @supports (scrollbar-width: thin) {
   :where(html[class*="theme-"], html[class*="theme-"] *) {
-    scrollbar-width: thin;
-    scrollbar-color: transparent transparent;
-  }
-  :where(html[class*="theme-"]:hover, html[class*="theme-"] *:hover) {
-    scrollbar-color: var(--border-secondary) transparent;
+    scrollbar-width: none;
   }
 }
 
-/* Safari < 18.2 and Chrome < 121 don't have the standard properties. Note
-   the two can't be combined: browsers that support both ignore
-   ::-webkit-scrollbar entirely once scrollbar-width is set. */
+/* Safari < 18.2 and Chrome < 121 don't have the standard property.
+   Deliberately NOT using :where(...)::-webkit-scrollbar here (unlike the
+   block above): older WebKit treats a :where()/:is() selector combined
+   with a -webkit- scrollbar pseudo-element as an invalid compound selector
+   and drops the whole rule, which is exactly the browser this fallback
+   exists for — so it's written out as a plain selector list instead. */
 @supports not (scrollbar-width: thin) {
-  :where(html[class*="theme-"], html[class*="theme-"] *)::-webkit-scrollbar {
-    width: 7px;
-    height: 7px;
-  }
-  :where(html[class*="theme-"], html[class*="theme-"] *)::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  /* A transparent border + content-box clip is what makes the visible
-     thumb thinner than the track it needs for a usable hit area. */
-  :where(html[class*="theme-"], html[class*="theme-"] *)::-webkit-scrollbar-thumb {
-    background-color: transparent;
-    background-clip: content-box;
-    border: 2px solid transparent;
-    border-radius: 999px;
-  }
-  :where(html[class*="theme-"], html[class*="theme-"] *):hover::-webkit-scrollbar-thumb {
-    background-color: var(--border-secondary);
+  html[class*="theme-"]::-webkit-scrollbar,
+  html[class*="theme-"] *::-webkit-scrollbar {
+    display: none;
   }
 }

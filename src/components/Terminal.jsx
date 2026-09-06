@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { resolvePath, getNode, formatPath, listDir } from "../lib/virtualFs";
+import CustomScrollbar from "./CustomScrollbar";
 
 const HELP_TEXT = [
   "Commands:",
@@ -177,9 +178,10 @@ function Terminal({ root, initialCwd, version, onOpenTab, visible, active, onFoc
         active ? "" : "opacity-70"
       }`}
     >
-      <div
+      <CustomScrollbar
         ref={scrollRef}
-        className="tabs-scroll flex-1 min-h-0 overflow-y-auto px-3 py-2 text-[12px] leading-relaxed"
+        wrapperClassName="flex-1 min-h-0 w-full"
+        className="px-3 py-2 text-[12px] leading-relaxed"
         onClick={() => inputRef.current?.focus()}
       >
         {lines.map((line) => {
@@ -242,7 +244,7 @@ function Terminal({ root, initialCwd, version, onOpenTab, visible, active, onFoc
             />
           </div>
         </div>
-      </div>
+      </CustomScrollbar>
     </div>
   );
 }

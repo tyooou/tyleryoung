@@ -1,6 +1,7 @@
 import { Globe, Images } from "lucide-react";
 import ExternalLink from "../ExternalLink";
 import { useExternalLinkConfirm } from "../../lib/useExternalLinkConfirm";
+import CustomScrollbar from "../CustomScrollbar";
 
 function ExtracurricularEntryCard({ extracurricular, onOpenPhotos }) {
   const { handleClick: handleExternalClick, modal: externalLinkModal } =
@@ -10,7 +11,7 @@ function ExtracurricularEntryCard({ extracurricular, onOpenPhotos }) {
     extracurricular;
 
   return (
-    <div className="w-full h-full font-mono select-none cursor-default overflow-y-auto p-3 sm:p-5">
+    <CustomScrollbar className="font-mono select-none cursor-default p-3 sm:p-5">
       {externalLinkModal}
       <h2 className="font-bold text-4xl sm:text-3xl md:text-4xl lg:text-5xl flex-shrink-0">
         {role}
@@ -62,7 +63,7 @@ function ExtracurricularEntryCard({ extracurricular, onOpenPhotos }) {
           </p>
         )}
       </div>
-    </div>
+    </CustomScrollbar>
   );
 }
 

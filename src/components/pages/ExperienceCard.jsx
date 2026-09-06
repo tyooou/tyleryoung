@@ -1,4 +1,5 @@
 import StatTile from "../StatTile";
+import CustomScrollbar from "../CustomScrollbar";
 
 function formatMonthYear(dateStr) {
   if (!dateStr) return "";
@@ -192,7 +193,7 @@ function ExperienceCard({
     .slice(0, Math.max(spans.length, 1));
 
   return (
-    <div className="w-full h-full p-3 sm:p-5 font-mono select-none cursor-default overflow-y-auto">
+    <CustomScrollbar className="p-3 sm:p-5 font-mono select-none cursor-default">
       <div className="flex flex-col">
         <h2 className="font-bold text-5xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl">
           Experience.
@@ -261,7 +262,7 @@ function ExperienceCard({
           </div>
         </div>
       </div>
-    </div>
+    </CustomScrollbar>
   );
 }
 

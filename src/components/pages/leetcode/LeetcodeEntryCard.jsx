@@ -24,6 +24,7 @@ import Scribble from "../../Scribble";
 import { fetchProblemMarkdown, DIFFICULTY_COLOR } from "../../../lib/leetcode";
 import remarkObsidian from "../../../lib/remarkObsidian";
 import { useExternalLinkConfirm } from "../../../lib/useExternalLinkConfirm";
+import CustomScrollbar from "../../CustomScrollbar";
 
 // YAML parses unquoted dates like `date: 2026-08-03` into real Date objects,
 // not strings, so this can't just be rendered directly in JSX.
@@ -215,7 +216,7 @@ function LeetcodeEntryCard({ path, title, leetcodeProblems = [], updatePage }) {
   }, [path]);
 
   return (
-    <div className="w-full h-full p-3 sm:p-5 font-mono select-none cursor-default overflow-y-auto">
+    <CustomScrollbar className="p-3 sm:p-5 font-mono select-none cursor-default">
       {externalLinkModal}
       <h2 className="font-bold text-4xl sm:text-3xl md:text-4xl">{title}</h2>
 
@@ -295,7 +296,7 @@ function LeetcodeEntryCard({ path, title, leetcodeProblems = [], updatePage }) {
           </ReactMarkdown>
         </div>
       )}
-    </div>
+    </CustomScrollbar>
   );
 }
 

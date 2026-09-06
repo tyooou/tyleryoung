@@ -14,6 +14,7 @@ import DecodeText from "../DecodeText";
 import ExternalLink from "../ExternalLink";
 import { useTheme } from "../../lib/theme";
 import { useExternalLinkConfirm } from "../../lib/useExternalLinkConfirm";
+import CustomScrollbar from "../CustomScrollbar";
 
 const HIGHLIGHTS = [
   {
@@ -67,7 +68,7 @@ function BibliographyCard({
     .slice(0, 3);
 
   return (
-    <div className="w-full h-full p-3 sm:p-6 font-mono select-none cursor-default overflow-y-auto">
+    <CustomScrollbar className="p-3 sm:p-6 font-mono select-none cursor-default">
       {externalLinkModal}
       <div className="flex items-center gap-4 ml-2">
         <DecodeText text="Tyler Young" speed={80} />
@@ -207,7 +208,7 @@ function BibliographyCard({
           </span>
         </div>
       </div>
-    </div>
+    </CustomScrollbar>
   );
 }
 

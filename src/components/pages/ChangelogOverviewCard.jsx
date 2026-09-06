@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Github, Tag } from "lucide-react";
 import Scribble from "../Scribble";
 import StatTile from "../StatTile";
+import CustomScrollbar from "../CustomScrollbar";
 import { useExternalLinkConfirm } from "../../lib/useExternalLinkConfirm";
 import {
   fetchContributorStats,
@@ -77,7 +78,7 @@ function ChangelogOverviewCard({ releases = [], updatePage = () => {} }) {
   const latestRelease = releases[0];
 
   return (
-    <div className="w-full h-full p-3 sm:p-5 font-mono select-none cursor-default overflow-y-auto">
+    <CustomScrollbar className="p-3 sm:p-5 font-mono select-none cursor-default">
       {externalLinkModal}
       <h2 className="font-bold text-6xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl">
         Changelog.
@@ -130,7 +131,11 @@ function ChangelogOverviewCard({ releases = [], updatePage = () => {} }) {
               {monthStats.length > 0 && (
                 <div>
                   <p className="font-bold text-lg mb-3">Commit Volume</p>
-                  <div className="flex items-end gap-2 h-64 sm:h-72 overflow-x-auto pb-1">
+                  <CustomScrollbar
+                    direction="horizontal"
+                    wrapperClassName="h-64 sm:h-72"
+                    className="flex items-end gap-2 pb-1"
+                  >
                     {monthStats.map((m) => (
                       <div
                         key={`${m.year}-${m.month}`}
@@ -152,13 +157,16 @@ function ChangelogOverviewCard({ releases = [], updatePage = () => {} }) {
                         </div>
                       </div>
                     ))}
-                  </div>
+                  </CustomScrollbar>
                 </div>
               )}
 
               <div>
                 <p className="font-bold text-lg mb-3">Latest Commits</p>
-                <div className="flex flex-col gap-2 h-64 sm:h-72 overflow-y-auto pr-1">
+                <CustomScrollbar
+                  wrapperClassName="h-64 sm:h-72"
+                  className="flex flex-col gap-2 pr-1"
+                >
                   {latestCommits === null ? (
                     <Scribble />
                   ) : latestCommits.length === 0 ? (
@@ -185,7 +193,7 @@ function ChangelogOverviewCard({ releases = [], updatePage = () => {} }) {
                       </a>
                     ))
                   )}
-                </div>
+                </CustomScrollbar>
               </div>
             </div>
 
@@ -219,7 +227,7 @@ function ChangelogOverviewCard({ releases = [], updatePage = () => {} }) {
           </>
         )}
       </div>
-    </div>
+    </CustomScrollbar>
   );
 }
 
