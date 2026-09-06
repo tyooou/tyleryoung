@@ -33,11 +33,10 @@ function PdfViewerCard({ url, title = "Document" }) {
           </a>
           <a
             href={downloadUrl}
-            className="flex items-center gap-1.5 px-2 py-1 rounded text-xs font-mono bg-[var(--bg-tertiary)] hover:bg-[var(--bg-quaternary)] text-[var(--text)] cursor-pointer"
+            className="p-1.5 rounded hover:bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:text-[var(--text)] cursor-pointer"
             title="Download"
           >
             <Download size={13} />
-            Download
           </a>
         </div>
       </div>

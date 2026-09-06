@@ -117,6 +117,10 @@ function TabLabel({
   if (book) {
     return <>{`${titleCase(book.title).replace(/ /g, "-")}.txt`}</>;
   }
+  const bookPdf = books.find((b) => `${b.slug}-pdf` === tab);
+  if (bookPdf) {
+    return <>{`${titleCase(bookPdf.title).replace(/ /g, "-")}.pdf`}</>;
+  }
   const post = blogPosts.find((p) => p.slug === tab);
   if (post) {
     return <>{`${titleCase(post.title).replace(/ /g, "-")}.txt`}</>;

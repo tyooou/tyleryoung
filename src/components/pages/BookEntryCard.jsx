@@ -1,4 +1,5 @@
-import { Star } from "lucide-react";
+import { Star, FileText } from "lucide-react";
+import CustomScrollbar from "../CustomScrollbar";
 
 function formatMonthYear(dateStr) {
   if (!dateStr) return "";
@@ -39,7 +40,7 @@ function StarRating({ rating }) {
   );
 }
 
-function BookEntryCard({ book }) {
+function BookEntryCard({ book, onOpenPdf }) {
   if (!book) return null;
   const {
     title,
@@ -47,25 +48,21 @@ function BookEntryCard({ book }) {
     isbn,
     dateStarted,
     dateCompleted,
-    coverImage,
     rating,
     themes,
     keyPoints,
     favoriteQuote,
+    pdfUrl,
+    slug,
   } = book;
 
   return (
     <div className="flex flex-col sm:flex-row w-full h-full font-mono select-none cursor-default sm:overflow-hidden">
-      {coverImage && (
-        <div className="p-3 sm:p-5 sm:pr-0 shrink-0">
-          <img
-            src={coverImage}
-            alt={`${title} cover`}
-            className="w-40 sm:w-48 aspect-[2/3] rounded border border-[var(--border-secondary)] object-cover"
-          />
-        </div>
-      )}
-      <div className="flex-1 p-3 sm:p-5 sm:overflow-y-auto select-text cursor-text">
+      <CustomScrollbar
+        wrapperClassName="flex-1 h-full w-full min-w-0"
+        overflowClassName="overflow-visible sm:overflow-y-auto"
+        className="p-3 sm:p-5 select-text cursor-text"
+      >
         <h2 className="font-bold text-4xl sm:text-3xl md:text-4xl lg:text-5xl italic">{title}</h2>
         <p className="text-xl sm:text-2xl mt-2 ml-2 font-bold text-[var(--text-secondary)]">
           {author}
@@ -107,8 +104,21 @@ function BookEntryCard({ book }) {
               “{favoriteQuote}”
             </blockquote>
           )}
+
+          {pdfUrl && (
+            <p className="mt-6">
+              <button
+                type="button"
+                onClick={() => onOpenPdf(`${slug}-pdf`)}
+                className="cursor-pointer text-left group inline-flex items-center gap-2 hover:bg-[var(--bg-secondary)] p-2"
+              >
+                <FileText size={16} className="text-[var(--text-secondary)]" />
+                <span className="font-bold">View book</span>
+              </button>
+            </p>
+          )}
         </div>
-      </div>
+      </CustomScrollbar>
     </div>
   );
 }

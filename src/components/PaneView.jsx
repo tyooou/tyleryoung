@@ -66,6 +66,7 @@ function PaneView({
     (item) => `${item.slug}-photos` === page,
   );
   const activeBook = books.find((book) => book.slug === page);
+  const activeBookPdf = books.find((book) => `${book.slug}-pdf` === page);
   const activeBlogPost = blogPosts.find((post) => post.slug === page);
   const ActivePageComponent = pageComponents[page];
 
@@ -158,7 +159,8 @@ function PaneView({
         {isPrimary &&
           !activeBrowserLink &&
           !activeExperiencePhotos &&
-          !activeExtracurricularPhotos && (
+          !activeExtracurricularPhotos &&
+          !activeBookPdf && (
           <div className="hidden sm:block">
             <VerticalNumbering gutterRef={gutterRef} count={gutterLineCount} />
           </div>
@@ -212,7 +214,15 @@ function PaneView({
               isActive={isActivePane}
             />
           )}
-          {activeBook && <BookEntryCard book={activeBook} />}
+          {activeBook && (
+            <BookEntryCard
+              book={activeBook}
+              onOpenPdf={(tab) => onOpenInSplitPane(pane.id, tab)}
+            />
+          )}
+          {activeBookPdf && (
+            <PdfViewerCard url={activeBookPdf.pdfUrl} title={`${activeBookPdf.title}.pdf`} />
+          )}
           {activeBlogPost && <BlogEntryCard post={activeBlogPost} />}
           {activeBrowserLink && activeBrowserLink.id === "cv" && (
             <PdfViewerCard url={activeBrowserLink.link} title={page} />

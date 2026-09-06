@@ -127,6 +127,14 @@ function resolveTab(tab, data) {
     };
   }
 
+  const bookPdf = books.find((b) => `${b.slug}-pdf` === tab);
+  if (bookPdf) {
+    return {
+      label: `${bookPdf.title}.pdf`,
+      context: `The full PDF of "${bookPdf.title}" from Tyler's library.`,
+    };
+  }
+
   const post = blogPosts.find((p) => p.slug === tab);
   if (post) {
     return {

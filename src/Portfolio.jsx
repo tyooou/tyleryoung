@@ -382,7 +382,7 @@ function Portfolio() {
           *[_type == "book"] | order(dateCompleted desc, dateStarted desc){
             title, author, isbn, dateStarted, dateCompleted,
             rating, themes, keyPoints, favoriteQuote,
-            "coverImage": coverImage.asset->url + "?w=400&auto=format"
+            "pdfUrl": pdf.asset->url
           }
         `);
         // No CMS slug field for books — derive a stable one from title+start
@@ -575,7 +575,34 @@ function Portfolio() {
     );
   };
 
-  const updatePage = (newPage) => openInPane(activePaneId, newPage);
+  // Given a tab id, finds the id of the photo/PDF-viewer tab that belongs to
+  // it (if it's an experience/extracurricular entry with photos, or a book
+  // with a PDF), so opening the entry can also surface its viewer
+  // automatically.
+  const findPhotosTabFor = (tab) => {
+    const exp = experiences.find((e) => e.slug === tab);
+    if (exp?.photos?.length > 0) return `${exp.slug}-photos`;
+    const item = extracurriculars.find((e) => e.slug === tab);
+    if (item?.photos?.length > 0) return `${item.slug}-photos`;
+    const book = books.find((b) => b.slug === tab);
+    if (book?.pdfUrl) return `${book.slug}-pdf`;
+    return null;
+  };
+
+  // Opening an experience/extracurricular entry for the first time (neither
+  // it nor its photos are already open anywhere) also opens its photos tab
+  // in a split pane and focuses it, so photos are one click away instead of
+  // requiring a second click on the nested "Photos" sidebar row.
+  const updatePage = (newPage) => {
+    const alreadyOpen = panes.some((p) => p.openTabs.includes(newPage));
+    const photosTab = findPhotosTabFor(newPage);
+    const photosAlreadyOpen =
+      photosTab != null && panes.some((p) => p.openTabs.includes(photosTab));
+    openInPane(activePaneId, newPage);
+    if (photosTab && !alreadyOpen && !photosAlreadyOpen) {
+      openInSplitPane(activePaneId, photosTab);
+    }
+  };
 
   const goBack = () => {
     setPanes((prev) =>

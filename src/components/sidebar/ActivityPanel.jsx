@@ -9,6 +9,7 @@ import {
   Briefcase,
   Library,
   Images,
+  FileText,
 } from "lucide-react";
 import { getIcon } from "../iconMap";
 import SidebarLink from "./SidebarLink";
@@ -600,6 +601,26 @@ function ExtracurricularsTree({
 // ExperienceTree's Work/Projects split.
 function LibraryTree({ books = [], blogPosts = [], updatePage, updateSidebar, activePage }) {
   const [expanded, setExpanded] = useState(() => new Set(["books", "blogs"]));
+  // Which individual book rows have their "View book" sub-item revealed —
+  // mirrors ExperienceTree/ExtracurricularsTree's photosExpanded/togglePhotos.
+  const [pdfExpanded, setPdfExpanded] = useState(() => new Set());
+
+  useEffect(() => {
+    const active = books.find((book) => `${book.slug}-pdf` === activePage);
+    if (!active) return;
+    setPdfExpanded((prev) =>
+      prev.has(active.slug) ? prev : new Set(prev).add(active.slug),
+    );
+  }, [activePage, books]);
+
+  const togglePdf = (slug) => {
+    setPdfExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(slug)) next.delete(slug);
+      else next.add(slug);
+      return next;
+    });
+  };
 
   const toggle = (key) => {
     setExpanded((prev) => {
@@ -619,17 +640,61 @@ function LibraryTree({ books = [], blogPosts = [], updatePage, updateSidebar, ac
             No books found.
           </p>
         ) : (
-          books.map((book) => (
-            <SidebarLink
-              key={book.slug}
-              text={book.title}
-              updatePage={updatePage}
-              updateSidebar={updateSidebar}
-              projectName={book.slug}
-              indent={1}
-              isActive={activePage === book.slug}
-            />
-          ))
+          books.map((book) => {
+            if (!book.pdfUrl) {
+              return (
+                <SidebarLink
+                  key={book.slug}
+                  text={book.title}
+                  updatePage={updatePage}
+                  updateSidebar={updateSidebar}
+                  projectName={book.slug}
+                  indent={1}
+                  isActive={activePage === book.slug}
+                />
+              );
+            }
+            const pdfTab = `${book.slug}-pdf`;
+            const showPdf = pdfExpanded.has(book.slug);
+            return (
+              <div key={book.slug}>
+                <div className="relative">
+                  <SidebarLink
+                    text={book.title}
+                    updatePage={updatePage}
+                    updateSidebar={updateSidebar}
+                    projectName={book.slug}
+                    indent={1}
+                    isActive={activePage === book.slug}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => togglePdf(book.slug)}
+                    aria-label={showPdf ? "Hide book" : "Show book"}
+                    className="cursor-pointer absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded text-[var(--text-secondary)] hover:bg-[var(--bg)] hover:text-[var(--text)]"
+                  >
+                    <ChevronRight
+                      size={12}
+                      className={`transition-transform duration-200 ease-in-out ${
+                        showPdf ? "rotate-90" : ""
+                      }`}
+                    />
+                  </button>
+                </div>
+                <Collapsible open={showPdf}>
+                  <SidebarLink
+                    text="View book"
+                    updatePage={updatePage}
+                    updateSidebar={updateSidebar}
+                    projectName={pdfTab}
+                    icon={<FileText size={13} />}
+                    indent={2}
+                    isActive={activePage === pdfTab}
+                  />
+                </Collapsible>
+              </div>
+            );
+          })
         )}
       </Collapsible>
 

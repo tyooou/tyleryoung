@@ -15,10 +15,10 @@ export default defineType({
       description: "Leave blank if still in progress",
     }),
     defineField({
-      name: "coverImage",
-      title: "Cover Image",
-      type: "image",
-      options: { hotspot: true },
+      name: "pdf",
+      title: "PDF",
+      type: "file",
+      options: { accept: "application/pdf" },
     }),
     defineField({
       name: "rating",
@@ -48,6 +48,6 @@ export default defineType({
     }),
   ],
   preview: {
-    select: { title: "title", subtitle: "author", media: "coverImage" },
+    select: { title: "title", subtitle: "author" },
   },
 });
