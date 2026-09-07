@@ -3,7 +3,7 @@ import { Eye } from "lucide-react";
 
 // Free, no-auth hit counter (CORS-enabled). /hit increments and returns the
 // new total; /get just reads the current total with no side effect.
-const NAMESPACE = "tyou-dev-portfolio/visits";
+const NAMESPACE = "tyou-dev-portfolio/visits-v2";
 const HIT_URL = `https://abacus.jasoncameron.dev/hit/${NAMESPACE}`;
 const GET_URL = `https://abacus.jasoncameron.dev/get/${NAMESPACE}`;
 
@@ -14,6 +14,15 @@ const GET_URL = `https://abacus.jasoncameron.dev/get/${NAMESPACE}`;
 // the read-only endpoint, rather than racing the first call's async result.
 const SESSION_KEY = "visitorCounted";
 
+// Own-visit exclusion: dev server (localhost/127.0.0.1) never counts, and on
+// any host — including the deployed site — setting
+// localStorage.setItem("tyouOwnerVisit", "true") in a browser's devtools
+// console permanently opts that browser out of incrementing the counter too.
+const isOwnVisit = () =>
+  import.meta.env.DEV ||
+  ["localhost", "127.0.0.1"].includes(window.location.hostname) ||
+  localStorage.getItem("tyouOwnerVisit") === "true";
+
 function VisitorCounter() {
   const [count, setCount] = useState(null);
 
@@ -21,9 +30,13 @@ function VisitorCounter() {
     const alreadyCounted = sessionStorage.getItem(SESSION_KEY) === "true";
     if (!alreadyCounted) sessionStorage.setItem(SESSION_KEY, "true");
 
-    fetch(alreadyCounted ? GET_URL : HIT_URL)
-      .then((res) => res.json())
-      .then((data) => setCount(data.value))
+    const shouldSkipHit = alreadyCounted || isOwnVisit();
+
+    fetch(shouldSkipHit ? GET_URL : HIT_URL)
+      .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
+      .then((data) =>
+        setCount(typeof data.value === "number" ? data.value : null),
+      )
       .catch(() => setCount(null));
   }, []);
 

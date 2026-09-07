@@ -458,7 +458,15 @@ function TerminalPanel({
       <div
         data-tour="terminal-panel"
         style={{
-          "--terminal-height": `${height}px`,
+          // Pinned to the frozen closeHeightRef (not the live `height` state)
+          // while closed, for the same reason the transform below uses it:
+          // the post-close setTimeout resets `height` back to DEFAULT_HEIGHT
+          // before the panel is reopened, and if this var tracked that reset
+          // live, the box would instantly grow to DEFAULT_HEIGHT while the
+          // transform stayed put at the (smaller) translate distance it was
+          // closed at — poking the now-taller-than-its-translate box back
+          // into view right after it finished sliding shut.
+          "--terminal-height": `${isOpen ? height : closeHeightRef.current}px`,
           "--terminal-left": `${leftInset}px`,
           // A fixed pixel offset (closeHeightRef), not Tailwind's
           // translate-y-full (100%, relative to the element's own height) —
