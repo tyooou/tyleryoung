@@ -10,6 +10,21 @@ import HeaderTooltip from "./HeaderTooltip";
 // can actually play, instead of the dropdown just vanishing instantly.
 const CLOSE_ANIMATION_MS = 150;
 
+const MONTH_NAMES = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
 function SearchBar({
   updateSidebar,
   toggleSidebar,
@@ -40,6 +55,8 @@ function SearchBar({
   const [isCmd, setIsCmd] = useState(false);
   const [menuContext, setMenuContext] = useState("main");
   const [selectedOption, setSelectedOption] = useState(0);
+  const [leetcodeYear, setLeetcodeYear] = useState(null);
+  const [leetcodeMonth, setLeetcodeMonth] = useState(null);
   const inputRef = useRef(null);
   const panelRef = useRef(null);
 
@@ -199,12 +216,24 @@ function SearchBar({
     ...friends.map((f) => ({ label: f.name, value: f.name })),
   ];
 
-  const leetcodeLinks = [
-    ...leetcodeProblems.map((p) => ({
-      label: `${p.number}. ${p.title}`,
-      value: p.path,
-    })),
-  ];
+  // Groups the flat problem list into a Year -> Month -> problems[] tree,
+  // matching the folder layout the sidebar/terminal already use (see
+  // buildLeetcodeTree in sidebar/ActivityPanel.jsx) — so browsing here goes
+  // through the same folders instead of dumping every problem in one list.
+  const leetcodeTree = [];
+  for (const p of leetcodeProblems) {
+    let yearNode = leetcodeTree.find((y) => y.year === p.year);
+    if (!yearNode) {
+      yearNode = { year: p.year, months: [] };
+      leetcodeTree.push(yearNode);
+    }
+    let monthNode = yearNode.months.find((m) => m.month === p.month);
+    if (!monthNode) {
+      monthNode = { month: p.month, problems: [] };
+      yearNode.months.push(monthNode);
+    }
+    monthNode.problems.push(p);
+  }
 
   const workLinks = [
     ...experiences.map((exp) => ({
@@ -258,14 +287,44 @@ function SearchBar({
     },
   }));
 
-  const leetcodeOptions = leetcodeLinks.map((l) => ({
-    label: l.label,
+  const leetcodeProblemOption = (p) => ({
+    label: `${p.number}. ${p.title}`,
     action: () => {
-      updatePage(l.value);
+      updatePage(p.path);
       setExpanded(false);
       if (window.innerWidth < 768) updateSidebar(false);
     },
+  });
+
+  // Flat, all-problems list — only used when actively searching (typing a
+  // query flattens the folders, the same way VS Code's Ctrl+P does).
+  const leetcodeOptions = leetcodeProblems.map(leetcodeProblemOption);
+
+  const leetcodeYearOptions = leetcodeTree.map((y) => ({
+    label: y.year,
+    action: () => {
+      setLeetcodeYear(y.year);
+      setMenuContext("leetcode-year");
+      setSelectedOption(0);
+    },
   }));
+
+  const leetcodeMonthOptions = (year) =>
+    (leetcodeTree.find((y) => y.year === year)?.months ?? []).map((m) => ({
+      label: MONTH_NAMES[Number(m.month) - 1],
+      action: () => {
+        setLeetcodeMonth(m.month);
+        setMenuContext("leetcode-month");
+        setSelectedOption(0);
+      },
+    }));
+
+  const leetcodeMonthProblemOptions = (year, month) =>
+    (
+      leetcodeTree
+        .find((y) => y.year === year)
+        ?.months.find((m) => m.month === month)?.problems ?? []
+    ).map(leetcodeProblemOption);
 
   const workOptions = workLinks.map((w) => ({
     label: w.label,
@@ -351,7 +410,11 @@ function SearchBar({
       case "friends":
         return friendOptions;
       case "leetcode":
-        return leetcodeOptions;
+        return leetcodeYearOptions;
+      case "leetcode-year":
+        return leetcodeMonthOptions(leetcodeYear);
+      case "leetcode-month":
+        return leetcodeMonthProblemOptions(leetcodeYear, leetcodeMonth);
       case "work":
         return workOptions;
       case "theme":
@@ -409,7 +472,14 @@ function SearchBar({
         opt.label.toLowerCase().includes(lower),
       );
     }
-    if (menuContext === "leetcode" && input.trim() !== "") {
+    if (
+      (menuContext === "leetcode" ||
+        menuContext === "leetcode-year" ||
+        menuContext === "leetcode-month") &&
+      input.trim() !== ""
+    ) {
+      // Typing a query searches every problem flat, regardless of which
+      // folder is currently open — same as VS Code's Ctrl+P.
       const lower = input.trim().toLowerCase();
       return leetcodeOptions.filter((opt) =>
         opt.label.toLowerCase().includes(lower),
@@ -470,7 +540,13 @@ function SearchBar({
         filteredOptions[selectedOption]?.action();
         e.preventDefault();
       } else if (e.key === "Escape") {
-        if (menuContext !== "main") {
+        if (menuContext === "leetcode-month") {
+          setMenuContext("leetcode-year");
+          setSelectedOption(0);
+        } else if (menuContext === "leetcode-year") {
+          setMenuContext("leetcode");
+          setSelectedOption(0);
+        } else if (menuContext !== "main") {
           setMenuContext("main");
           setSelectedOption(0);
         } else {
