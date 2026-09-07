@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { ArrowDown } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import rehypeHighlight from "rehype-highlight";
 import { resolvePath, getNode, formatPath, listDir } from "../lib/virtualFs";
 import { THEMES, useTheme } from "../lib/theme";
 import Scribble from "./Scribble";
@@ -15,6 +16,7 @@ import {
 } from "../lib/aiModels";
 import { buildSystemPrompt } from "../lib/aiChatContext";
 import CustomScrollbar from "./CustomScrollbar";
+import TerminalCodeBlock from "./TerminalCodeBlock";
 
 // Deliberately bare-bones next to chatMarkdownComponents.jsx (the panel's
 // map) — the terminal keeps its tight, no-margin aesthetic, so this only
@@ -40,9 +42,21 @@ const terminalMarkdownComponents = {
       {...props}
     />
   ),
-  code: (props) => (
-    <code className="text-[var(--accent-secondary)]" {...props} />
-  ),
+  // Fenced blocks get a language-* className from remark-gfm; inline `code`
+  // spans don't, which is what distinguishes them here.
+  code: ({ className, children, ...props }) => {
+    const isBlock = /language-/.test(className || "");
+    return isBlock ? (
+      <code className={className} {...props}>
+        {children}
+      </code>
+    ) : (
+      <code className="text-[var(--accent-secondary)]" {...props}>
+        {children}
+      </code>
+    );
+  },
+  pre: TerminalCodeBlock,
 };
 
 // A little pixel-art brain for the chat intro banner — two hemispheres
@@ -1205,6 +1219,9 @@ function Terminal({
                       ) : (
                         <ReactMarkdown
                           remarkPlugins={[remarkGfm]}
+                          rehypePlugins={[
+                            [rehypeHighlight, { detect: true, ignoreMissing: true }],
+                          ]}
                           components={terminalMarkdownComponents}
                         >
                           {line.text}
