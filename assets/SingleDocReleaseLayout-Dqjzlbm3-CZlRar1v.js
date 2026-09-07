@@ -1,1 +1,0 @@
-import{c as o,aY as a,aZ as n}from"./StudioRoute-DCsJhKcI.js";import{j as i}from"./index-C_v5ke2n.js";import"./browser-DeDV2Af7.js";function d(t){let e=o.c(4),r;e[0]===t?r=e[1]:(r=t.renderDefault(t),e[0]=t,e[1]=r);let l;return e[2]===r?l=e[3]:(l=i.jsx(a,{children:i.jsx(n,{children:r})}),e[2]=r,e[3]=l),l}export{d as SingleDocReleaseLayout};
