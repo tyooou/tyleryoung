@@ -1,6 +1,11 @@
-import TechStack from "./TechStack";
+import { lazy, Suspense } from "react";
 import ProjectCarousel from "./ProjectCarousel";
 import ExternalLink from "../../ExternalLink";
+
+// tech-stack-icons bundles 690+ SVGs as one ~8MB module with no
+// per-icon entry points — split into its own chunk instead of the main
+// bundle, since this card doesn't need it until it's actually opened.
+const TechStack = lazy(() => import("./TechStack"));
 
 function ProjectCard({ project }) {
   const getTitleSizeClass = (title) => {
@@ -31,7 +36,9 @@ function ProjectCard({ project }) {
             <p className="font-mono text-lg sm:text-sm mt-4 whitespace-pre-line">
               {project.content}
             </p>
-            <TechStack techStack={project.meta.techStack} />
+            <Suspense fallback={null}>
+              <TechStack techStack={project.meta.techStack} />
+            </Suspense>
             <div className="flex flex-col space-y-2 font-mono mt-6 text-lg sm:text-sm">
               {project?.meta?.code != null && (
                 <ExternalLink text="→ Code" link={project.meta.code} />

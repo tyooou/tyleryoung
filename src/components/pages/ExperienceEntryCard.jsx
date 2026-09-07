@@ -1,8 +1,13 @@
+import { lazy, Suspense } from "react";
 import { Globe, Images } from "lucide-react";
 import ExternalLink from "../ExternalLink";
-import TechStack from "./project/TechStack";
 import { useExternalLinkConfirm } from "../../lib/useExternalLinkConfirm";
 import CustomScrollbar from "../CustomScrollbar";
+
+// tech-stack-icons bundles 690+ SVGs as one ~8MB module with no
+// per-icon entry points — split into its own chunk instead of the main
+// bundle, since this card doesn't need it until it's actually opened.
+const TechStack = lazy(() => import("./project/TechStack"));
 
 function formatMonthYear(dateStr) {
   if (!dateStr) return "";
@@ -55,7 +60,9 @@ function ExperienceEntryCard({ experience, onOpenPhotos }) {
           )}
           {techStack?.length > 0 && (
             <div className="mt-6">
-              <TechStack techStack={techStack} />
+              <Suspense fallback={null}>
+                <TechStack techStack={techStack} />
+              </Suspense>
             </div>
           )}
           {link && (

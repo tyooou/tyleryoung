@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { sanityClient } from "./lib/sanityClient";
 import Sidebar from "./components/Sidebar";
 import BibliographyCard from "./components/pages/BibliographyCard";
@@ -10,8 +10,6 @@ import OpenSourceCard from "./components/pages/OpenSourceCard";
 import LibraryOverviewCard from "./components/pages/LibraryOverviewCard";
 import { useTheme } from "./lib/theme";
 import SearchBar from "./components/SearchBar";
-import AiChatPanel from "./components/AiChatPanel";
-import TerminalPanel from "./components/TerminalPanel";
 import { describeActiveTab } from "./lib/activeTabContext";
 // Cheap capability check only — web-llm itself is dynamically imported
 // inside this module, so pulling it in here costs nothing up front.
@@ -27,6 +25,12 @@ import {
   DEFAULT_PANEL_WIDTH,
   ACTIVITY_BAR_WIDTH,
 } from "./lib/sidebarConstants";
+
+// Both are desktop-only (gated behind aiEnabled/terminalEnabled below) and
+// drag in react-markdown/rehype-highlight — split into their own chunks so
+// mobile visitors never fetch them and the initial bundle stays smaller.
+const AiChatPanel = lazy(() => import("./components/AiChatPanel"));
+const TerminalPanel = lazy(() => import("./components/TerminalPanel"));
 
 const PAGE_COMPONENTS = {
   bibliography: BibliographyCard,
@@ -981,6 +985,7 @@ function Portfolio() {
             </div>
           </div>
           {aiEnabled && (
+          <Suspense fallback={null}>
           <AiChatPanel
             isOpen={aiChatOpen}
             onOpen={() => setAiChatOpen(true)}
@@ -994,9 +999,11 @@ function Portfolio() {
             blogPosts={blogPosts}
             leetcodeProblems={leetcodeProblems}
           />
+          </Suspense>
           )}
         </div>
         {terminalEnabled && (
+          <Suspense fallback={null}>
           <TerminalPanel
             isOpen={terminalOpen}
             onOpen={() => setTerminalOpen(true)}
@@ -1014,6 +1021,7 @@ function Portfolio() {
             onReservedHeightChange={setTerminalReservedHeight}
             onResizingChange={setIsTerminalResizing}
           />
+          </Suspense>
         )}
         <Footer />
       </div>
