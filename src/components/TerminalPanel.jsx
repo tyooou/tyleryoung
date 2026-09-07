@@ -14,11 +14,12 @@ const DEFAULT_HEIGHT = 260;
 // on release, instead of resting at a barely-there sliver height — same
 // idea (and value) as the sidebar's own SNAP_CLOSE_THRESHOLD.
 const SNAP_CLOSE_THRESHOLD = 80;
-// Must match the panel's `duration-300` slide-closed transition below —
-// resetting `height` any sooner than that would grow the (bottom-anchored,
-// non-transitioned) box back to full height mid-slide, flashing it open
-// again before it finishes sliding off screen.
-const CLOSE_TRANSITION_MS = 300;
+// Must match the panel's slide-closed transform transition below (and
+// Portfolio's matching padding-bottom transition) — resetting `height` any
+// sooner than that would grow the (bottom-anchored, non-transitioned) box
+// back to full height mid-slide, flashing it open again before it finishes
+// sliding off screen.
+const CLOSE_TRANSITION_MS = 180;
 const HEIGHT_KEY = "tyouTerminalHeight";
 const SESSIONS_KEY = "tyouTerminalSessions";
 const GROUPS_KEY = "tyouTerminalGroups";
@@ -156,6 +157,12 @@ function TerminalPanel({
   const [isResizing, setIsResizing] = useState(false);
   const heightAtDragStart = useRef(height);
   const liveHeightRef = useRef(height);
+  // Snapshot of `height` from the instant before the panel closed, used as
+  // the slide-closed translate distance below. Frozen (not updated) while
+  // closed so a post-close height reset (see CLOSE_TRANSITION_MS) can't
+  // retarget an already-at-rest transform and re-trigger its transition.
+  const closeHeightRef = useRef(height);
+  if (isOpen) closeHeightRef.current = height;
 
   useEffect(() => {
     localStorage.setItem(HEIGHT_KEY, String(height));
@@ -453,15 +460,20 @@ function TerminalPanel({
         style={{
           "--terminal-height": `${height}px`,
           "--terminal-left": `${leftInset}px`,
-          // A fixed pixel offset, not Tailwind's translate-y-full (100%,
-          // relative to the element's own height) — that percentage would
-          // recompute (and, since transform is transitioned, visibly
-          // re-animate) any time `height` changes while closed, e.g. the
-          // reset back to DEFAULT_HEIGHT right after a close-drag, making
-          // the panel appear to pop back open before sliding shut again.
-          // MAX_HEIGHT is always >= the actual height, so this fully hides
-          // the panel regardless of what height happens to be underneath.
-          transform: isOpen ? "translateY(0)" : `translateY(${MAX_HEIGHT}px)`,
+          // A fixed pixel offset (closeHeightRef), not Tailwind's
+          // translate-y-full (100%, relative to the element's own height) —
+          // that percentage would recompute (and, since transform is
+          // transitioned, visibly re-animate) any time `height` changes
+          // while closed, e.g. the reset back to DEFAULT_HEIGHT right after
+          // a close-drag, making the panel appear to pop back open before
+          // sliding shut again. It also can't just be a large constant like
+          // MAX_HEIGHT: the slide distance needs to equal the panel's actual
+          // height so it finishes disappearing exactly as the main content's
+          // reserved padding-bottom (also driven by `height`, see
+          // onReservedHeightChange below) finishes collapsing — otherwise
+          // one finishes before the other and the mismatch shows up as
+          // either a lingering empty gap or a jump-cut.
+          transform: isOpen ? "translateY(0)" : `translateY(${closeHeightRef.current}px)`,
         }}
         className={`fixed inset-x-0 sm:left-[var(--terminal-left)] bottom-[37px] sm:bottom-[33px] z-40 overflow-hidden ${
           // `left` intentionally shares the main content pane's default
@@ -473,8 +485,8 @@ function TerminalPanel({
           isResizing
             ? ""
             : isSidebarResizing
-              ? "[transition:transform_300ms_ease-in-out]"
-              : "[transition:transform_300ms_ease-in-out,left_300ms_cubic-bezier(0.4,0,0.2,1)]"
+              ? "[transition:transform_180ms_ease-in-out]"
+              : "[transition:transform_180ms_ease-in-out,left_300ms_cubic-bezier(0.4,0,0.2,1)]"
         } ${isOpen ? "" : "pointer-events-none"} h-[var(--terminal-height)]`}
       >
       <div className="flex flex-col h-full sm:h-[var(--terminal-height)] w-full bg-[var(--bg)] text-[var(--text)] border-t sm:border-l border-[var(--border-secondary)] font-mono text-sm">

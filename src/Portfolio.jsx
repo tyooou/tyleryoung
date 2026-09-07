@@ -942,7 +942,7 @@ function Portfolio() {
         <div
           style={{ "--terminal-reserved": `${terminalReservedHeight}px` }}
           className={`flex-1 flex flex-row w-full sm:h-full sm:overflow-hidden pt-[52px] sm:pt-0 pb-[37px] sm:pb-[33px] sm:pb-[calc(33px+var(--terminal-reserved))] ${
-            isTerminalResizing ? "" : "transition-[padding-bottom] duration-300 ease-in-out"
+            isTerminalResizing ? "" : "transition-[padding-bottom] duration-180 ease-in-out"
           } ${sidebarState ? "overflow-hidden" : "overflow-y-auto"}`}
         >
           <Sidebar

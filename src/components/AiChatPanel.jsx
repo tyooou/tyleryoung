@@ -814,7 +814,7 @@ function AiChatPanel({
         className={`fixed sm:static inset-0 z-40 sm:z-auto overflow-hidden sm:shrink-0 ${
           // Skipped mid-drag: transitioning width would make the handle lag
           // behind the cursor.
-          isResizing ? "" : "transition-all duration-300 ease-in-out"
+          isResizing ? "" : "transition-all duration-180 ease-in-out"
         } ${
           isOpen
             ? "translate-x-0 sm:w-[var(--ai-panel-width)]"
