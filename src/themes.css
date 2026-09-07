@@ -42,48 +42,6 @@ html.theme-dark {
   --difficulty-hard: #f87171;
 }
 
-/* One Dark Pro (Atom One Dark) */
-html.theme-one-dark-pro {
-  --bg: #282c34;
-  --bg-secondary: #21252b;
-  --bg-tertiary: #2c313a;
-  --bg-quaternary: #3e4451;
-  --text: #abb2bf;
-  --text-secondary: #5c6370;
-  --accent: #61afef;
-  --accent-secondary: #c678dd;
-  --border: #3e4451;
-  --border-secondary: #4b5263;
-  --heatmap1: #2b3a2e;
-  --heatmap2: #3e5a3f;
-  --heatmap3: #5a8f52;
-  --heatmap4: #98c379;
-  --difficulty-easy: #98c379;
-  --difficulty-medium: #e5c07b;
-  --difficulty-hard: #e06c75;
-}
-
-/* Dracula */
-html.theme-dracula {
-  --bg: #282a36;
-  --bg-secondary: #21222c;
-  --bg-tertiary: #343746;
-  --bg-quaternary: #44475a;
-  --text: #f8f8f2;
-  --text-secondary: #6272a4;
-  --accent: #bd93f9;
-  --accent-secondary: #ff79c6;
-  --border: #44475a;
-  --border-secondary: #6272a4;
-  --heatmap1: #1e4620;
-  --heatmap2: #2d6b30;
-  --heatmap3: #3fa344;
-  --heatmap4: #50fa7b;
-  --difficulty-easy: #50fa7b;
-  --difficulty-medium: #f1fa8c;
-  --difficulty-hard: #ff5555;
-}
-
 /* Monokai */
 html.theme-monokai {
   --bg: #272822;
@@ -126,25 +84,109 @@ html.theme-nord {
   --difficulty-hard: #bf616a;
 }
 
-/* Solarized Light */
-html.theme-solarized-light {
-  --bg: #fdf6e3;
-  --bg-secondary: #eee8d5;
-  --bg-tertiary: #e4dcc3;
-  --bg-quaternary: #d3c9a8;
-  --text: #586e75;
-  --text-secondary: #93a1a1;
-  --accent: #268bd2;
-  --accent-secondary: #2aa198;
-  --border: #ddd6c1;
-  --border-secondary: #c9bf9d;
-  --heatmap1: #cfe6f5;
-  --heatmap2: #93cbe8;
-  --heatmap3: #4098c9;
-  --heatmap4: #268bd2;
-  --difficulty-easy: #859900;
-  --difficulty-medium: #b58900;
-  --difficulty-hard: #dc322f;
+/* Catppuccin Mocha */
+html.theme-catppuccin-mocha {
+  --bg: #1e1e2e;
+  --bg-secondary: #181825;
+  --bg-tertiary: #313244;
+  --bg-quaternary: #45475a;
+  --text: #cdd6f4;
+  --text-secondary: #a6adc8;
+  --accent: #cba6f7;
+  --accent-secondary: #f5c2e7;
+  --border: #313244;
+  --border-secondary: #45475a;
+  --heatmap1: #302d41;
+  --heatmap2: #52466d;
+  --heatmap3: #8875b3;
+  --heatmap4: #cba6f7;
+  --difficulty-easy: #a6e3a1;
+  --difficulty-medium: #f9e2af;
+  --difficulty-hard: #f38ba8;
+}
+
+/* Cobalt2 */
+html.theme-cobalt2 {
+  --bg: #193549;
+  --bg-secondary: #122738;
+  --bg-tertiary: #1f4662;
+  --bg-quaternary: #2d5b7d;
+  --text: #e4e4e4;
+  --text-secondary: #7d97a6;
+  --accent: #ffc600;
+  --accent-secondary: #ff9d00;
+  --border: #1f4662;
+  --border-secondary: #2d5b7d;
+  --heatmap1: #1f4662;
+  --heatmap2: #2d6b8a;
+  --heatmap3: #3d97b8;
+  --heatmap4: #0088ff;
+  --difficulty-easy: #3ad900;
+  --difficulty-medium: #ffc600;
+  --difficulty-hard: #ff628c;
+}
+
+/* Rosé Pine */
+html.theme-rose-pine {
+  --bg: #191724;
+  --bg-secondary: #1f1d2e;
+  --bg-tertiary: #26233a;
+  --bg-quaternary: #403d52;
+  --text: #e0def4;
+  --text-secondary: #908caa;
+  --accent: #ebbcba;
+  --accent-secondary: #c4a7e7;
+  --border: #26233a;
+  --border-secondary: #403d52;
+  --heatmap1: #2a2438;
+  --heatmap2: #4a3a54;
+  --heatmap3: #7a5670;
+  --heatmap4: #ebbcba;
+  --difficulty-easy: #9ccfd8;
+  --difficulty-medium: #f6c177;
+  --difficulty-hard: #eb6f92;
+}
+
+/* Tokyo Night */
+html.theme-tokyo-night {
+  --bg: #1a1b26;
+  --bg-secondary: #16161e;
+  --bg-tertiary: #24283b;
+  --bg-quaternary: #3b4261;
+  --text: #c0caf5;
+  --text-secondary: #565f89;
+  --accent: #7aa2f7;
+  --accent-secondary: #bb9af7;
+  --border: #292e42;
+  --border-secondary: #3b4261;
+  --heatmap1: #24304a;
+  --heatmap2: #354a75;
+  --heatmap3: #5170b8;
+  --heatmap4: #7aa2f7;
+  --difficulty-easy: #9ece6a;
+  --difficulty-medium: #e0af68;
+  --difficulty-hard: #f7768e;
+}
+
+/* Gruvbox Light */
+html.theme-gruvbox-light {
+  --bg: #fbf1c7;
+  --bg-secondary: #f2e5bc;
+  --bg-tertiary: #ebdbb2;
+  --bg-quaternary: #d5c4a1;
+  --text: #3c3836;
+  --text-secondary: #7c6f64;
+  --accent: #d65d0e;
+  --accent-secondary: #b57614;
+  --border: #d5c4a1;
+  --border-secondary: #bdae93;
+  --heatmap1: #f2e0a1;
+  --heatmap2: #e0c26a;
+  --heatmap3: #c98a2e;
+  --heatmap4: #d65d0e;
+  --difficulty-easy: #79740e;
+  --difficulty-medium: #b57614;
+  --difficulty-hard: #9d0006;
 }
 
 /* Gruvbox Dark */
