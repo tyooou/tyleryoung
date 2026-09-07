@@ -860,7 +860,17 @@ function FriendLink({ friend, updatePage, updateSidebar, isActive = false }) {
 function Panel({ title, children, width, animateWidth }) {
   return (
     <CustomScrollbar
-      wrapperClassName={`h-full shrink-0 bg-[var(--bg-secondary)] border-l border-[var(--border-secondary)] ${animateWidth ? "transition-[width] duration-300 ease-out" : ""}`}
+      wrapperClassName={`h-full shrink-0 bg-[var(--bg-secondary)] border-l border-[var(--border-secondary)] ${
+        // No explicit easing here — this has to land in lockstep with the
+        // main content pane's own `ml-[var(--panel-margin)]` transition
+        // (Portfolio.jsx), which also just uses `transition-all duration-300`
+        // and so gets Tailwind's default ease. Both sides are independently
+        // animating toward the same width; an `ease-out` here (as this used
+        // to have) diverges from that default curve mid-transition, letting
+        // this (higher z-index) panel overlap the content pane's left edge
+        // and cover its line-number gutter until the two re-converge.
+        animateWidth ? "transition-[width] duration-300" : ""
+      }`}
       wrapperStyle={{ width: `${width}px` }}
       overflowClassName="overflow-y-auto overflow-x-hidden"
       className="flex flex-col bg-[var(--bg-secondary)] pb-10"

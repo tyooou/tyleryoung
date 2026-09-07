@@ -2,6 +2,7 @@ import {
   forwardRef,
   useEffect,
   useImperativeHandle,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -100,7 +101,15 @@ const Sidebar = forwardRef(function Sidebar(
       : panelWidth
     : 0;
 
-  useEffect(() => {
+  // useLayoutEffect, not useEffect — this drives Portfolio's own
+  // `sidebarMargin` (the main content pane's margin, and transitively the
+  // terminal's left inset), which has to start transitioning in the same
+  // paint as this panel's own width does. A passive effect fires after the
+  // browser has already painted this component's new width, so the parent's
+  // resulting re-render — and thus its transition — would start one frame
+  // late, letting this (higher z-index) panel's edge briefly get ahead of
+  // the content pane's and cover its line-number gutter.
+  useLayoutEffect(() => {
     onPanelWidthChange?.(effectiveWidth);
   }, [effectiveWidth, onPanelWidthChange]);
 
