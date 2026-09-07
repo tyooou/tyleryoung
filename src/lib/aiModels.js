@@ -51,3 +51,32 @@ export function findModel(id) {
 export function resolveModelId(id) {
   return MODELS.some((m) => m.id === id) ? id : DEFAULT_MODEL_ID;
 }
+
+// AiChatPanel and Terminal both let a visitor switch models, and both stay
+// mounted at once (see CLAUDE.md), so a plain per-component useState only
+// syncs at first mount — picking a model in one wouldn't move the other off
+// whatever it started on, even though they share one downloaded engine
+// (aiChatEngine.js's enginePromises map) underneath. This tiny external
+// store is the single source of truth both read via useSyncExternalStore,
+// so switching model anywhere updates it everywhere immediately.
+export const MODEL_KEY = "tyouAiModel";
+
+let storedModelId = resolveModelId(localStorage.getItem(MODEL_KEY));
+const modelListeners = new Set();
+
+export function getStoredModelId() {
+  return storedModelId;
+}
+
+export function setStoredModelId(id) {
+  const resolved = resolveModelId(id);
+  if (resolved === storedModelId) return;
+  storedModelId = resolved;
+  localStorage.setItem(MODEL_KEY, resolved);
+  modelListeners.forEach((listener) => listener());
+}
+
+export function subscribeModelId(listener) {
+  modelListeners.add(listener);
+  return () => modelListeners.delete(listener);
+}

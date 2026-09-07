@@ -1005,7 +1005,12 @@ function Portfolio() {
             data={tabContextData}
             releases={releases}
             onOpenTab={updatePage}
+            onToggleSidebar={() => sidebarRef.current?.toggle()}
+            onToggleAiChat={
+              aiEnabled ? () => setAiChatOpen((open) => !open) : null
+            }
             leftInset={sidebarMargin}
+            isSidebarResizing={isSidebarResizing}
             onReservedHeightChange={setTerminalReservedHeight}
             onResizingChange={setIsTerminalResizing}
           />

@@ -5,6 +5,7 @@ import ResizeHandle from "./ResizeHandle";
 import HeaderTooltip from "./HeaderTooltip";
 import CustomScrollbar from "./CustomScrollbar";
 import { buildFileTree, dirForTab } from "../lib/virtualFs";
+import { describeActiveTab } from "../lib/activeTabContext";
 
 const MIN_HEIGHT = 140;
 const MAX_HEIGHT = 640;
@@ -23,6 +24,7 @@ const SESSIONS_KEY = "tyouTerminalSessions";
 const GROUPS_KEY = "tyouTerminalGroups";
 const PANE_IDS_KEY = "tyouTerminalPaneIds";
 const FOCUSED_INDEX_KEY = "tyouTerminalFocusedIndex";
+const CHAT_STATE_KEY = "tyouTerminalChatState";
 
 let sessionSeq = 0;
 function makeSession(cwd) {
@@ -88,7 +90,10 @@ function TerminalPanel({
   data,
   releases = [],
   onOpenTab,
+  onToggleSidebar,
+  onToggleAiChat,
   leftInset = 0,
+  isSidebarResizing = false,
   onReservedHeightChange,
   onResizingChange,
 }) {
@@ -97,6 +102,10 @@ function TerminalPanel({
     [data, releases],
   );
   const version = releases[0]?.version || "dev";
+  const activeTabContext = useMemo(
+    () => describeActiveTab(activeTabId, data),
+    [activeTabId, data],
+  );
 
   // Every piece of terminal state below is restored from localStorage on
   // mount (and re-saved whenever it changes) so reopening the site brings
@@ -111,6 +120,11 @@ function TerminalPanel({
   // group's members, or a single standalone terminal.
   const [paneIds, setPaneIds] = useState(() => readJSON(PANE_IDS_KEY, []));
   const [focusedIndex, setFocusedIndex] = useState(() => readJSON(FOCUSED_INDEX_KEY, 0)); // index into paneIds
+  // Per-session tyouAI chat state (mode/history/transcript), keyed by
+  // session id — unlike the rest of a session's scrollback, this is worth
+  // persisting since dropping a visitor out of an in-progress conversation
+  // on every reload reads as broken rather than as an ordinary fresh shell.
+  const [chatState, setChatState] = useState(() => readJSON(CHAT_STATE_KEY, {}));
 
   useEffect(() => {
     localStorage.setItem(
@@ -127,6 +141,13 @@ function TerminalPanel({
   useEffect(() => {
     localStorage.setItem(FOCUSED_INDEX_KEY, JSON.stringify(focusedIndex));
   }, [focusedIndex]);
+  useEffect(() => {
+    localStorage.setItem(CHAT_STATE_KEY, JSON.stringify(chatState));
+  }, [chatState]);
+
+  function updateChatState(sessionId, state) {
+    setChatState((prev) => ({ ...prev, [sessionId]: state }));
+  }
 
   const [height, setHeight] = useState(() => {
     const saved = Number(localStorage.getItem(HEIGHT_KEY));
@@ -302,6 +323,12 @@ function TerminalPanel({
     setSessions(nextSessions);
     setPaneIds(nextPaneIds);
     setFocusedIndex((fi) => Math.min(fi, nextPaneIds.length - 1));
+    setChatState((prev) => {
+      if (!(id in prev)) return prev;
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
   }
 
   const activeSessionId = paneIds[focusedIndex] ?? null;
@@ -371,7 +398,11 @@ function TerminalPanel({
           closed; only the drag behavior changes. */}
       <ResizeHandle
         direction="vertical"
-        className="hidden sm:block fixed left-[var(--terminal-left)] right-0 h-1 z-50"
+        className={`hidden sm:block fixed left-[var(--terminal-left)] right-0 h-1 z-50 ${
+          isResizing || isSidebarResizing
+            ? ""
+            : "[transition:left_300ms_cubic-bezier(0.4,0,0.2,1)]"
+        }`}
         style={{
           "--terminal-left": `${leftInset}px`,
           bottom: `${isOpen ? 33 + height : 33}px`,
@@ -433,7 +464,17 @@ function TerminalPanel({
           transform: isOpen ? "translateY(0)" : `translateY(${MAX_HEIGHT}px)`,
         }}
         className={`fixed inset-x-0 sm:left-[var(--terminal-left)] bottom-[37px] sm:bottom-[33px] z-40 overflow-hidden ${
-          isResizing ? "" : "transition-transform duration-300 ease-in-out"
+          // `left` intentionally shares the main content pane's default
+          // Tailwind ease (`transition-all duration-300` there resolves to
+          // cubic-bezier(0.4,0,0.2,1)), not `ease-in-out` — they're both
+          // reacting to the same sidebar-width change and need to land in
+          // step, whereas `transform` here drives this panel's own,
+          // unrelated open/close slide and keeps its own easing.
+          isResizing
+            ? ""
+            : isSidebarResizing
+              ? "[transition:transform_300ms_ease-in-out]"
+              : "[transition:transform_300ms_ease-in-out,left_300ms_cubic-bezier(0.4,0,0.2,1)]"
         } ${isOpen ? "" : "pointer-events-none"} h-[var(--terminal-height)]`}
       >
       <div className="flex flex-col h-full sm:h-[var(--terminal-height)] w-full bg-[var(--bg)] text-[var(--text)] border-t sm:border-l border-[var(--border-secondary)] font-mono text-sm">
@@ -493,6 +534,7 @@ function TerminalPanel({
               const paneIndex = paneIds.indexOf(s.id);
               const shown = paneIndex !== -1;
               const isLastPane = shown && paneIndex === paneIds.length - 1;
+              const savedChat = chatState[s.id];
               return (
                 <div
                   key={s.id}
@@ -508,9 +550,18 @@ function TerminalPanel({
                     initialCwd={s.cwd}
                     version={version}
                     onOpenTab={onOpenTab}
+                    onToggleSidebar={onToggleSidebar}
+                    onToggleAiChat={onToggleAiChat}
+                    chatContext={data}
+                    activeTab={activeTabContext}
                     visible={shown}
                     active={shown && paneIndex === focusedIndex}
                     onFocus={() => shown && setFocusedIndex(paneIndex)}
+                    initialChatMode={savedChat?.chatMode || false}
+                    initialChatHistory={savedChat?.history || []}
+                    initialPreChatLines={savedChat?.preChatLines || []}
+                    initialChatLines={savedChat?.lines || null}
+                    onChatStateChange={(state) => updateChatState(s.id, state)}
                   />
                 </div>
               );

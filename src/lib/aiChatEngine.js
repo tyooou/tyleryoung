@@ -10,6 +10,24 @@
 // Keyed by model id so switching models in the picker doesn't throw away
 // one that's already loaded — switching back to it is then instant.
 const enginePromises = new Map();
+// AiChatPanel and Terminal can both be mid-download of the same model at
+// once (their model selection is synced — see aiModels.js), but only
+// whichever of them called getEngine() first actually creates the
+// CreateWebWorkerMLCEngine call, so its initProgressCallback is the only
+// one WebLLM ever invokes. Fan progress out to every caller instead, keyed
+// by model id, so a caller that shows up mid-download still sees it move.
+const progressListeners = new Map(); // modelId -> Set<onProgress>
+const lastProgress = new Map(); // modelId -> most recent report, for late subscribers
+
+function notifyProgress(modelId, report) {
+  lastProgress.set(modelId, report);
+  progressListeners.get(modelId)?.forEach((listener) => listener(report));
+}
+
+function clearProgress(modelId) {
+  progressListeners.delete(modelId);
+  lastProgress.delete(modelId);
+}
 
 export function isWebGpuSupported() {
   return typeof navigator !== "undefined" && !!navigator.gpu;
@@ -20,6 +38,15 @@ export function isEngineReady(modelId) {
 }
 
 export function getEngine(modelId, onProgress) {
+  if (onProgress) {
+    if (!progressListeners.has(modelId)) progressListeners.set(modelId, new Set());
+    progressListeners.get(modelId).add(onProgress);
+    // Replay the latest report immediately so a caller that starts
+    // watching mid-download doesn't sit on "Starting…" until the next chunk.
+    const last = lastProgress.get(modelId);
+    if (last) onProgress(last);
+  }
+
   if (!enginePromises.has(modelId)) {
     const promise = import("@mlc-ai/web-llm")
       .then(({ CreateWebWorkerMLCEngine }) =>
@@ -30,12 +57,17 @@ export function getEngine(modelId, onProgress) {
             type: "module",
           }),
           modelId,
-          { initProgressCallback: onProgress },
+          { initProgressCallback: (report) => notifyProgress(modelId, report) },
         ),
       )
+      .then((engine) => {
+        clearProgress(modelId);
+        return engine;
+      })
       .catch((err) => {
         // Let the next call retry instead of permanently caching a failure.
         enginePromises.delete(modelId);
+        clearProgress(modelId);
         throw err;
       });
     enginePromises.set(modelId, promise);

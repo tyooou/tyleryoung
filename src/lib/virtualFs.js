@@ -134,9 +134,9 @@ export function buildFileTree(data = {}) {
 // input that walks past root just clamps there, same as a real shell's cd.
 export function resolvePath(cwd, input) {
   if (!input || input === ".") return cwd;
-  const segments = input.startsWith("/") ? [] : [...cwd];
+  const segments = input.startsWith("/") || input.startsWith("~") ? [] : [...cwd];
   input.split("/").forEach((seg) => {
-    if (seg === "" || seg === ".") return;
+    if (seg === "" || seg === "." || seg === "~") return;
     if (seg === "..") {
       segments.pop();
       return;
@@ -162,7 +162,7 @@ export function getNode(root, path) {
 }
 
 export function formatPath(path) {
-  return path.length ? `/${path.join("/")}` : "/";
+  return path.length ? `~/${path.join("/")}` : "~";
 }
 
 // Directories first, then alphabetical — matches the convention most real

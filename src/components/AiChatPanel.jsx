@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import {
   X,
   ArrowUp,
@@ -23,13 +29,18 @@ import {
   isEngineReady,
   isWebGpuSupported,
 } from "../lib/aiChatEngine";
-import { MODELS, findModel, resolveModelId } from "../lib/aiModels";
+import {
+  MODELS,
+  findModel,
+  getStoredModelId,
+  setStoredModelId,
+  subscribeModelId,
+} from "../lib/aiModels";
 import { buildSystemPrompt } from "../lib/aiChatContext";
 import chatMarkdownComponents from "../lib/chatMarkdownComponents";
 import { fetchProblemMarkdown } from "../lib/leetcode";
 
 const STORAGE_KEY = "tyouAiChats";
-const MODEL_KEY = "tyouAiModel";
 // The model running in the browser is small — a whole write-up would crowd
 // out the portfolio context, so the page body gets a hard cap.
 const MAX_TAB_BODY = 2000;
@@ -237,9 +248,11 @@ function AiChatPanel({
   const [activeChatId, setActiveChatId] = useState(() => chats[0].id);
   const [historyOpen, setHistoryOpen] = useState(false);
 
-  const [modelId, setModelId] = useState(() =>
-    resolveModelId(localStorage.getItem(MODEL_KEY)),
-  );
+  // Shared with Terminal via aiModels.js's external store, not local state —
+  // so switching models in the CLI's /model picker moves this panel's
+  // selection too, live, instead of only agreeing at first mount.
+  const modelId = useSyncExternalStore(subscribeModelId, getStoredModelId);
+  const setModelId = setStoredModelId;
   const [modelMenuOpen, setModelMenuOpen] = useState(false);
   const [modelMenuRendered, setModelMenuRendered] = useState(false);
   const [modelMenuClosing, setModelMenuClosing] = useState(false);
@@ -249,10 +262,6 @@ function AiChatPanel({
   const [loadingClosing, setLoadingClosing] = useState(false);
   const [queued, setQueued] = useState([]);
   const model = findModel(modelId);
-
-  useEffect(() => {
-    localStorage.setItem(MODEL_KEY, modelId);
-  }, [modelId]);
 
   // Keeps the picker mounted for one extra beat after modelMenuOpen goes
   // false, so its close animation actually plays instead of the menu just
@@ -1058,13 +1067,15 @@ function AiChatPanel({
                         ? "Unavailable in this browser"
                         : status === "streaming"
                           ? "Queue another message… (esc to stop)"
-                          : "Loading…"
+                          : "Model still loading…"
                   }
                   // placeholder:text-* — the browser's default placeholder
                   // colour is a fixed grey that ignores the theme entirely,
                   // so "Unavailable in this browser" (and the other states)
                   // sat off-palette, worst on the dark themes.
-                  className="w-full resize-none outline-none border-0 bg-transparent text-[var(--text)] placeholder:text-[var(--text-secondary)] text-[13px] leading-relaxed disabled:opacity-50"
+                  className={`w-full resize-none outline-none border-0 bg-transparent text-[var(--text)] placeholder:text-[var(--text-secondary)] text-[13px] leading-relaxed disabled:opacity-50 ${
+                    status === "loading" ? "placeholder-breathing" : ""
+                  }`}
                 />
               </div>
 
@@ -1072,8 +1083,11 @@ function AiChatPanel({
                 <button
                   ref={modelButtonRef}
                   onClick={() => setModelMenuOpen((open) => !open)}
-                  className="flex items-center gap-1 shrink-0 hover:text-[var(--text)] cursor-pointer"
-                  title="Change model"
+                  disabled={status === "loading"}
+                  className="flex items-center gap-1 shrink-0 hover:text-[var(--text)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-[var(--text-secondary)]"
+                  title={
+                    status === "loading" ? "Model is loading…" : "Change model"
+                  }
                 >
                   <Brain className="w-3 h-3" />
                   <span className="truncate">{model.label}</span>

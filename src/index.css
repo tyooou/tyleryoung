@@ -320,6 +320,48 @@ body {
   animation: thinking-ellipsis 1.2s steps(4, end) infinite;
 }
 
+/* The AI chat panel composer's "Model still loading…" placeholder — a slow
+   opacity pulse on the placeholder text itself so it reads as "still
+   working" rather than a static, possibly stalled line. Targets
+   ::placeholder directly (rather than wrapping the text in an element)
+   since a native <textarea> placeholder can't be split out into markup. */
+@keyframes breathing {
+  50% {
+    opacity: 0.5;
+  }
+}
+.placeholder-breathing::placeholder {
+  animation: breathing 2s ease-in-out infinite;
+}
+
+/* The terminal's in-chat "Thinking for Ns…" status line — a sheen sweeping
+   across the text via a moving background-position, clipped to the glyphs
+   themselves. Colors are theme tokens so it reads correctly everywhere. */
+@keyframes shimmer-text {
+  to {
+    background-position: -200% 0;
+  }
+}
+.animate-shimmer-text {
+  /* Mixed toward the page background rather than `transparent` — with
+     `color: transparent` + background-clip:text, a literally-transparent
+     stop makes the glyphs vanish instead of just dimming. Mixing toward
+     --bg keeps every stop opaque, so what moves is a lighter patch of
+     accent sweeping across otherwise-legible (dimmer) accent-colored text. */
+  background-image: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent) 40%, var(--bg) 60%) 40%,
+    var(--accent) 50%,
+    color-mix(in srgb, var(--accent) 40%, var(--bg) 60%) 60%
+  );
+  background-size: 250% 100%;
+  background-position: 200% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer-text 1.8s linear infinite;
+}
+
 /* Real scrollbars can't be styled reliably across browsers (Safari's
    scrollbar-color support is buggy, and WebKit has never supported
    ::-webkit-scrollbar-thumb colors at all), so every scrollable area on
