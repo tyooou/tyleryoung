@@ -596,14 +596,22 @@ function Portfolio() {
   // Opening an experience/extracurricular entry for the first time (neither
   // it nor its photos are already open anywhere) also opens its photos tab
   // in a split pane and focuses it, so photos are one click away instead of
-  // requiring a second click on the nested "Photos" sidebar row.
+  // requiring a second click on the nested "Photos" sidebar row. Skipped on
+  // mobile, where there's no split-pane UI: openInSplitPane would fall back
+  // to opening the photos tab in the single pane, stealing focus from the
+  // entry the user just tapped.
   const updatePage = (newPage) => {
     const alreadyOpen = panes.some((p) => p.openTabs.includes(newPage));
     const photosTab = findPhotosTabFor(newPage);
     const photosAlreadyOpen =
       photosTab != null && panes.some((p) => p.openTabs.includes(photosTab));
     openInPane(activePaneId, newPage);
-    if (photosTab && !alreadyOpen && !photosAlreadyOpen) {
+    if (
+      photosTab &&
+      !alreadyOpen &&
+      !photosAlreadyOpen &&
+      window.innerWidth >= 768
+    ) {
       openInSplitPane(activePaneId, photosTab);
     }
   };

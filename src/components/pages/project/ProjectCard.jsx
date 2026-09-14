@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import ProjectCarousel from "./ProjectCarousel";
 import ExternalLink from "../../ExternalLink";
+import useExternalLinkConfirm from "../../../lib/useExternalLinkConfirm";
 
 // tech-stack-icons bundles 690+ SVGs as one ~8MB module with no
 // per-icon entry points — split into its own chunk instead of the main
@@ -8,6 +9,8 @@ import ExternalLink from "../../ExternalLink";
 const TechStack = lazy(() => import("./TechStack"));
 
 function ProjectCard({ project }) {
+  const { handleClick, modal } = useExternalLinkConfirm();
+
   const getTitleSizeClass = (title) => {
     if (title.length > 20) {
       return "text-5xl sm:text-6xl";
@@ -20,6 +23,7 @@ function ProjectCard({ project }) {
 
   return (
     <>
+      {modal}
       <div className="flex flex-col sm:flex-row w-full sm:h-full select-none cursor-default">
         <div className="flex-2 flex-col p-3 sm:p-6">
           <h1
@@ -41,10 +45,18 @@ function ProjectCard({ project }) {
             </Suspense>
             <div className="flex flex-col space-y-2 font-mono mt-6 text-lg sm:text-sm">
               {project?.meta?.code != null && (
-                <ExternalLink text="→ Code" link={project.meta.code} />
+                <ExternalLink
+                  text="→ Code"
+                  link={project.meta.code}
+                  onClick={handleClick(project.meta.code)}
+                />
               )}
               {project?.meta?.preview != null && (
-                <ExternalLink text="→ Preview" link={project.meta.preview} />
+                <ExternalLink
+                  text="→ Preview"
+                  link={project.meta.preview}
+                  onClick={handleClick(project.meta.preview)}
+                />
               )}
             </div>
           </div>
