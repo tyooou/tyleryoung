@@ -1,7 +1,7 @@
 import { lazy, Suspense } from "react";
 import ProjectCarousel from "./ProjectCarousel";
 import ExternalLink from "../../ExternalLink";
-import useExternalLinkConfirm from "../../../lib/useExternalLinkConfirm";
+import { useExternalLinkConfirm } from "../../../lib/useExternalLinkConfirm";
 
 // tech-stack-icons bundles 690+ SVGs as one ~8MB module with no
 // per-icon entry points — split into its own chunk instead of the main
@@ -28,7 +28,7 @@ function ProjectCard({ project }) {
         <div className="flex-2 flex-col p-3 sm:p-6">
           <h1
             className={`font-mono font-bold ${getTitleSizeClass(
-              project.meta.title
+              project.meta.title,
             )}`}
           >
             {project.meta.title}
