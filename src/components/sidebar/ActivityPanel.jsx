@@ -10,6 +10,8 @@ import {
   Library,
   Images,
   FileText,
+  Map as MapIcon,
+  UtensilsCrossed,
 } from "lucide-react";
 import { getIcon } from "../iconMap";
 import SidebarLink from "./SidebarLink";
@@ -41,6 +43,10 @@ function ActivityPanel({
   leetcodeProblems,
   books,
   blogPosts,
+  foodSpots,
+  visitedCities,
+  mapFocus,
+  onMapFocus,
   updatePage,
   updateSidebar,
   width,
@@ -184,6 +190,32 @@ function ActivityPanel({
         <LibraryTree
           books={books}
           blogPosts={blogPosts}
+          updatePage={updatePage}
+          updateSidebar={updateSidebar}
+          activePage={activePage}
+        />
+      </Panel>
+    );
+  }
+
+  if (displayActivity === "map") {
+    return (
+      <Panel title="Map" width={width} animateWidth={animateWidth}>
+        <SidebarLink
+          text="Overview"
+          updatePage={updatePage}
+          updateSidebar={updateSidebar}
+          projectName="map"
+          icon={<MapIcon size={15} />}
+          isActive={activePage === "map" && !mapFocus}
+          onClick={() => onMapFocus?.(null)}
+        />
+        <MapTree
+          experiences={experiences}
+          foodSpots={foodSpots}
+          visitedCities={visitedCities}
+          mapFocus={mapFocus}
+          onMapFocus={onMapFocus}
           updatePage={updatePage}
           updateSidebar={updateSidebar}
           activePage={activePage}
@@ -341,7 +373,9 @@ function ExperienceTree({
   // became active, it stays open (per design) even if the visitor switches
   // to some other tab afterward; closing it again is a deliberate action.
   useEffect(() => {
-    const active = experiences.find((exp) => `${exp.slug}-photos` === activePage);
+    const active = experiences.find(
+      (exp) => `${exp.slug}-photos` === activePage,
+    );
     if (!active) return;
     setPhotosExpanded((prev) =>
       prev.has(active.slug) ? prev : new Set(prev).add(active.slug),
@@ -598,9 +632,168 @@ function ExtracurricularsTree({
   );
 }
 
+function ratingStars(rating) {
+  return "★".repeat(rating) + "☆".repeat(Math.max(0, 5 - rating));
+}
+
+// Two independently-collapsible folders — Worked Here and NZ Eats. Rows
+// here never open their own tab (there's no per-place detail page) — every
+// click stays on the "map" tab and instead tells the map to fly to that
+// pin, via onMapFocus. Rendered lists are filtered to entries that actually
+// have coordinates, since an experience without lat/lng has nowhere to fly.
+function MapTree({
+  experiences = [],
+  foodSpots = [],
+  visitedCities = [],
+  mapFocus,
+  onMapFocus,
+  updatePage,
+  updateSidebar,
+  activePage,
+}) {
+  const [expanded, setExpanded] = useState(() => new Set(["worked", "eats", "countries"]));
+  const toggle = (key) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  const worked = experiences.filter(
+    (exp) => typeof exp.lat === "number" && typeof exp.lng === "number",
+  );
+
+  // Auckland isn't a visitedCity doc (it's MapCard's hardcoded airport
+  // origin, not something fetched from Sanity) but still belongs in the
+  // "New Zealand" grouping here.
+  const airports = [{ slug: "auckland", city: "Auckland", country: "New Zealand" }, ...visitedCities];
+  const countries = new Map();
+  airports.forEach((a) => {
+    const key = a.country || "Other";
+    if (!countries.has(key)) countries.set(key, []);
+    countries.get(key).push(a);
+  });
+  const sortedCountries = [...countries.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+
+  return (
+    <div>
+      <FolderRow
+        label="Places I've Worked"
+        open={expanded.has("worked")}
+        onClick={() => toggle("worked")}
+      />
+      <Collapsible open={expanded.has("worked")}>
+        {worked.length === 0 ? (
+          <p className="px-5 py-2 text-sm sm:text-xs text-[var(--text-secondary)]">
+            No mapped roles yet.
+          </p>
+        ) : (
+          worked.map((exp) => (
+            <SidebarLink
+              key={exp.slug}
+              text={exp.company}
+              subtitle={`@ ${exp.location}`}
+              updatePage={updatePage}
+              updateSidebar={updateSidebar}
+              projectName="map"
+              indent={1}
+              isActive={
+                activePage === "map" &&
+                mapFocus?.type === "experience" &&
+                mapFocus.slug === exp.slug
+              }
+              onClick={() =>
+                onMapFocus?.({ type: "experience", slug: exp.slug })
+              }
+            />
+          ))
+        )}
+      </Collapsible>
+
+      <FolderRow
+        label="Food"
+        open={expanded.has("eats")}
+        onClick={() => toggle("eats")}
+      />
+      <Collapsible open={expanded.has("eats")}>
+        {foodSpots.length === 0 ? (
+          <p className="px-5 py-2 text-sm sm:text-xs text-[var(--text-secondary)]">
+            No food spots yet.
+          </p>
+        ) : (
+          foodSpots.map((spot) => (
+            <SidebarLink
+              key={spot.slug}
+              text={spot.title}
+              subtitle={`@ ${spot.city ? `${spot.city} — ` : ""}${ratingStars(spot.rating)}`}
+              updatePage={updatePage}
+              updateSidebar={updateSidebar}
+              projectName="map"
+              indent={1}
+              isActive={
+                activePage === "map" &&
+                mapFocus?.type === "food" &&
+                mapFocus.slug === spot.slug
+              }
+              onClick={() => onMapFocus?.({ type: "food", slug: spot.slug })}
+            />
+          ))
+        )}
+      </Collapsible>
+
+      <FolderRow
+        label="Countries"
+        open={expanded.has("countries")}
+        onClick={() => toggle("countries")}
+      />
+      <Collapsible open={expanded.has("countries")}>
+        {sortedCountries.map(([country, cities]) => {
+          const key = `country-${country}`;
+          return (
+            <div key={country}>
+              <FolderRow
+                label={country}
+                indent={1}
+                open={expanded.has(key)}
+                onClick={() => toggle(key)}
+              />
+              <Collapsible open={expanded.has(key)}>
+                {cities.map((c) => (
+                  <SidebarLink
+                    key={c.slug}
+                    text={c.city}
+                    updatePage={updatePage}
+                    updateSidebar={updateSidebar}
+                    projectName="map"
+                    indent={2}
+                    isActive={
+                      activePage === "map" &&
+                      mapFocus?.type === "airport" &&
+                      mapFocus.slug === c.slug
+                    }
+                    onClick={() => onMapFocus?.({ type: "airport", slug: c.slug })}
+                  />
+                ))}
+              </Collapsible>
+            </div>
+          );
+        })}
+      </Collapsible>
+    </div>
+  );
+}
+
 // Two independently-collapsible folders — Books and Blogs — same shape as
 // ExperienceTree's Work/Projects split.
-function LibraryTree({ books = [], blogPosts = [], updatePage, updateSidebar, activePage }) {
+function LibraryTree({
+  books = [],
+  blogPosts = [],
+  updatePage,
+  updateSidebar,
+  activePage,
+}) {
   const [expanded, setExpanded] = useState(() => new Set(["books", "blogs"]));
   // Which individual book rows have their "View book" sub-item revealed —
   // mirrors ExperienceTree/ExtracurricularsTree's photosExpanded/togglePhotos.
@@ -634,7 +827,11 @@ function LibraryTree({ books = [], blogPosts = [], updatePage, updateSidebar, ac
 
   return (
     <div>
-      <FolderRow label="Books" open={expanded.has("books")} onClick={() => toggle("books")} />
+      <FolderRow
+        label="Books"
+        open={expanded.has("books")}
+        onClick={() => toggle("books")}
+      />
       <Collapsible open={expanded.has("books")}>
         {books.length === 0 ? (
           <p className="px-5 py-2 text-sm sm:text-xs text-[var(--text-secondary)]">
@@ -699,7 +896,11 @@ function LibraryTree({ books = [], blogPosts = [], updatePage, updateSidebar, ac
         )}
       </Collapsible>
 
-      <FolderRow label="Blogs" open={expanded.has("blogs")} onClick={() => toggle("blogs")} />
+      <FolderRow
+        label="Blogs"
+        open={expanded.has("blogs")}
+        onClick={() => toggle("blogs")}
+      />
       <Collapsible open={expanded.has("blogs")}>
         {blogPosts.length === 0 ? (
           <p className="px-5 py-2 text-sm sm:text-xs text-[var(--text-secondary)]">

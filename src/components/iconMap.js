@@ -9,6 +9,7 @@ import {
   Folder,
   ListTodo,
   Library,
+  Map,
 } from "lucide-react";
 
 export const ICON_MAP = {
@@ -22,6 +23,7 @@ export const ICON_MAP = {
   folder: Folder,
   "list-todo": ListTodo,
   library: Library,
+  map: Map,
 };
 
 export function getIcon(key) {

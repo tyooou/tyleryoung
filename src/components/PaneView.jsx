@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import Navigation from "./Navigation";
 import VerticalNumbering from "./pages/VerticalNumbering";
 import ProjectCard from "./pages/project/ProjectCard";
@@ -27,6 +27,7 @@ function PaneView({
   onDropIntoPane,
   onDropCreateSplit,
   onOpenInSplitPane,
+  updatePageWithPhotos,
   updateSidebar,
   friends,
   quickLinks,
@@ -37,6 +38,10 @@ function PaneView({
   extracurriculars,
   books,
   blogPosts,
+  foodSpots,
+  visitedCities,
+  flightLegs,
+  mapFocus,
   sidebarPanelOpen,
   pageComponents,
   startTour,
@@ -174,19 +179,26 @@ function PaneView({
           }`}
         >
           {ActivePageComponent && (
-            <ActivePageComponent
-              toggleSidebar={updateSidebar}
-              updatePage={(tab) => onSwitchTab(pane.id, tab)}
-              quickLinks={quickLinks}
-              projects={projects}
-              experiences={experiences}
-              releases={releases}
-              leetcodeProblems={leetcodeProblems}
-              books={books}
-              blogPosts={blogPosts}
-              sidebarPanelOpen={sidebarPanelOpen}
-              startTour={startTour}
-            />
+            <Suspense fallback={null}>
+              <ActivePageComponent
+                toggleSidebar={updateSidebar}
+                updatePage={(tab) => onSwitchTab(pane.id, tab)}
+                openWithPhotos={updatePageWithPhotos}
+                quickLinks={quickLinks}
+                projects={projects}
+                experiences={experiences}
+                releases={releases}
+                leetcodeProblems={leetcodeProblems}
+                books={books}
+                blogPosts={blogPosts}
+                foodSpots={foodSpots}
+                visitedCities={visitedCities}
+                flightLegs={flightLegs}
+                mapFocus={mapFocus}
+                sidebarPanelOpen={sidebarPanelOpen}
+                startTour={startTour}
+              />
+            </Suspense>
           )}
           {activeProject && <ProjectCard project={activeProject} />}
           {activeRelease && <ChangelogEntryCard release={activeRelease} />}

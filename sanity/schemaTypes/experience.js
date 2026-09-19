@@ -8,6 +8,20 @@ export default defineType({
     defineField({ name: "role", type: "string", validation: (Rule) => Rule.required() }),
     defineField({ name: "company", type: "string", validation: (Rule) => Rule.required() }),
     defineField({ name: "location", type: "string" }),
+    defineField({
+      name: "lat",
+      title: "Latitude",
+      type: "number",
+      description: "Map pin coordinate for the Map tab. Leave blank to omit this role from the map.",
+      validation: (Rule) => Rule.min(-90).max(90),
+    }),
+    defineField({
+      name: "lng",
+      title: "Longitude",
+      type: "number",
+      description: "Map pin coordinate for the Map tab. Leave blank to omit this role from the map.",
+      validation: (Rule) => Rule.min(-180).max(180),
+    }),
     defineField({ name: "description", type: "text", rows: 4 }),
     defineField({ name: "start", type: "date", validation: (Rule) => Rule.required() }),
     defineField({

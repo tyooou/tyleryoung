@@ -31,6 +31,10 @@ const Sidebar = forwardRef(function Sidebar(
     extracurriculars,
     books,
     blogPosts,
+    foodSpots,
+    visitedCities,
+    mapFocus,
+    onMapFocus,
     quickLinks,
     activePage,
     onPanelWidthChange,
@@ -210,6 +214,10 @@ const Sidebar = forwardRef(function Sidebar(
         extracurriculars={extracurriculars}
         books={books}
         blogPosts={blogPosts}
+        foodSpots={foodSpots}
+        visitedCities={visitedCities}
+        mapFocus={mapFocus}
+        onMapFocus={onMapFocus}
         updatePage={updatePage}
         updateSidebar={updateSidebar}
         width={effectiveWidth}

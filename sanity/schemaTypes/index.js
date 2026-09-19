@@ -3,6 +3,9 @@ import blogPost from "./blogPost";
 import friend from "./friend";
 import experience from "./experience";
 import extracurricular from "./extracurricular";
+import foodSpot from "./foodSpot";
+import visitedCity from "./visitedCity";
+import flightLeg from "./flightLeg";
 import project from "./project";
 import release from "./release";
 import page from "./page";
@@ -16,6 +19,9 @@ export const schemaTypes = [
   friend,
   experience,
   extracurricular,
+  foodSpot,
+  visitedCity,
+  flightLeg,
   project,
   release,
   page,

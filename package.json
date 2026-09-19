@@ -11,6 +11,7 @@
     "preview": "vite preview",
     "deploy": "gh-pages -d dist",
     "seed:sanity": "node scripts/seed-sanity.mjs",
+    "seed:map": "node scripts/seed-map.mjs",
     "sync:leetcode": "node scripts/sync-leetcode.mjs",
     "sync:leetcode-stats": "node scripts/sync-leetcode-stats.mjs"
   },
@@ -25,6 +26,7 @@
     "front-matter": "^4.0.2",
     "lucide": "^0.525.0",
     "lucide-react": "^0.525.0",
+    "maplibre-gl": "^6.10.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-markdown": "^10.1.0",

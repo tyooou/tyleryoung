@@ -31,6 +31,9 @@ import {
 // mobile visitors never fetch them and the initial bundle stays smaller.
 const AiChatPanel = lazy(() => import("./components/AiChatPanel"));
 const TerminalPanel = lazy(() => import("./components/TerminalPanel"));
+// maplibre-gl is a sizeable dependency most visitors will never touch —
+// split into its own chunk so it only loads once the Map tab is opened.
+const MapCard = lazy(() => import("./components/pages/MapCard"));
 
 const PAGE_COMPONENTS = {
   bibliography: BibliographyCard,
@@ -40,6 +43,7 @@ const PAGE_COMPONENTS = {
   typing: TypingCard,
   leetcode: LeetcodeCard,
   changelog: ChangelogOverviewCard,
+  map: MapCard,
 };
 
 const MIN_SPLIT_RATIO = 0.2;
@@ -147,6 +151,13 @@ function Portfolio() {
   const [blogPosts, setBlogPosts] = useState([]);
   const [friends, setFriends] = useState([]);
   const [leetcodeProblems, setLeetcodeProblems] = useState([]);
+  const [foodSpots, setFoodSpots] = useState([]);
+  const [visitedCities, setVisitedCities] = useState([]);
+  const [flightLegs, setFlightLegs] = useState([]);
+  // { type: "experience" | "food", slug } | null — null means "overview"
+  // (fit every mapped pin). Set from the sidebar's Map tree, read by
+  // MapCard to fly the camera to that pin.
+  const [mapFocus, setMapFocus] = useState(null);
   const [cvUrl, setCvUrl] = useState(null);
   const [sidebarPanelWidth, setSidebarPanelWidth] = useState(() => {
     const saved = Number(localStorage.getItem("sidebarPanelWidth"));
@@ -330,7 +341,7 @@ function Portfolio() {
       try {
         const data = await sanityClient.fetch(`
           *[_type == "experience"] | order(start desc){
-            role, company, location, description, start, end, link, techStack, tags,
+            role, company, location, lat, lng, description, start, end, link, techStack, tags,
             "photos": coalesce(photos[]{ "url": asset->url + "?w=1200&auto=format", alt }, [])
           }
         `);
@@ -350,6 +361,52 @@ function Portfolio() {
       }
     }
     loadExperiences();
+  }, []);
+
+  useEffect(() => {
+    async function loadFoodSpots() {
+      try {
+        const data = await sanityClient.fetch(`
+          *[_type == "foodSpot"] | order(order asc, rating desc){
+            "slug": name.current, title, city, lat, lng, rating, review
+          }
+        `);
+        setFoodSpots(data);
+      } catch {
+        setFoodSpots([]);
+      }
+    }
+    loadFoodSpots();
+  }, []);
+
+  useEffect(() => {
+    async function loadVisitedCities() {
+      try {
+        const data = await sanityClient.fetch(`
+          *[_type == "visitedCity"] | order(order asc, city asc){
+            "slug": name.current, city, country, lat, lng
+          }
+        `);
+        setVisitedCities(data);
+      } catch {
+        setVisitedCities([]);
+      }
+    }
+    loadVisitedCities();
+  }, []);
+
+  useEffect(() => {
+    async function loadFlightLegs() {
+      try {
+        const data = await sanityClient.fetch(`
+          *[_type == "flightLeg"] | order(order asc){ from, to }
+        `);
+        setFlightLegs(data);
+      } catch {
+        setFlightLegs([]);
+      }
+    }
+    loadFlightLegs();
   }, []);
 
   useEffect(() => {
@@ -841,6 +898,12 @@ function Portfolio() {
     onDropIntoPane: handleDropIntoPane,
     onDropCreateSplit: handleDropCreateSplit,
     onOpenInSplitPane: openInSplitPane,
+    // Distinct from the plain per-tab `updatePage` PaneView builds itself
+    // (onSwitchTab) — this is the smart version that also auto-opens an
+    // entry's photos tab in a split pane, for in-page links (e.g. the map's
+    // popups) that want the same "open page + photos" behavior sidebar nav
+    // already gets.
+    updatePageWithPhotos: updatePage,
     updateSidebar,
     friends,
     quickLinks,
@@ -851,6 +914,10 @@ function Portfolio() {
     extracurriculars,
     books,
     blogPosts,
+    foodSpots,
+    visitedCities,
+    flightLegs,
+    mapFocus,
     sidebarPanelOpen: sidebarPanelWidth > 0,
     pageComponents: PAGE_COMPONENTS,
     startTour,
@@ -971,6 +1038,10 @@ function Portfolio() {
             extracurriculars={extracurriculars}
             books={books}
             blogPosts={blogPosts}
+            foodSpots={foodSpots}
+            visitedCities={visitedCities}
+            mapFocus={mapFocus}
+            onMapFocus={setMapFocus}
             quickLinks={quickLinks}
             activePage={activePane?.page}
             onPanelWidthChange={setSidebarPanelWidth}

@@ -7,8 +7,10 @@ function SidebarLink({
   icon,
   indent = 0,
   isActive = false,
+  onClick,
 }) {
   const handleClick = () => {
+    onClick?.();
     updatePage(projectName || text);
     if (window.innerWidth < 768) {
       updateSidebar(false);
