@@ -680,9 +680,9 @@ function MapCard({
         closeButton: false,
       }).setHTML(
         popupHtml(
-          spot.title,
+          `${spot.title}<span class="map-popup-stars">${ratingStars(spot.rating)}</span>`,
           `${spot.city ? `${spot.city}, NZ` : ""}`,
-          `<div class="map-popup-stars">${ratingStars(spot.rating)}</div>${
+          `${
             spot.review
               ? `<div class="map-popup-review">${spot.review}</div>`
               : ""
@@ -888,17 +888,18 @@ function MapCard({
           Map.
         </h2>
         <p className="text-base md:text-xl mt-3 ml-2">
-          Everywhere I've worked, and where I actually eat when I'm back in NZ.
+          Everywhere I've worked, favourite places, and countries I've
+          travelled!
         </p>
 
         <div className="ml-2 mt-6">
           <ul className="flex flex-wrap gap-8 mb-10">
             <StatTile label="Places Worked" value={experiences.length} />
             <StatTile label="Countries" value={countries} />
-            <StatTile label="NZ Spots Reviewed" value={foodSpots.length} />
+            <StatTile label="Spot Reviewed" value={foodSpots.length} />
             <StatTile
               label="Avg Rating"
-              value={avgRating === "—" ? "—" : `${avgRating}★`}
+              value={avgRating === "—" ? "—" : `${avgRating}`}
             />
           </ul>
 
@@ -1172,7 +1173,7 @@ function MapCard({
         .map-popup-link { cursor: pointer; text-decoration: underline; text-decoration-color: transparent; transition: color 120ms ease, text-decoration-color 120ms ease; }
         .map-popup-link:hover { color: var(--accent); text-decoration-color: var(--accent); }
         .map-popup-sub { font-size: 10px; color: var(--text-secondary); margin-top: 1px; }
-        .map-popup-stars { font-size: 11px; color: var(--difficulty-medium); margin-top: 5px; }
+        .map-popup-stars { font-size: 15px; color: var(--difficulty-medium); margin-left: 10px;}
         .map-popup-review { font-size: 10.5px; margin-top: 5px; line-height: 1.4; max-width: 180px; }
       `}</style>
     </CustomScrollbar>

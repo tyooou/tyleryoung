@@ -925,31 +925,39 @@ function LibraryTree({
 }
 
 // Groups the flat, already-sorted (newest first) release list into a
-// minor-version -> releases[] tree, e.g. v1.3.0 and v1.3.1 both under "1.3".
+// major -> minor -> releases[] tree, e.g. v1.6.0..v1.6.5 live under "v1" -> "1.6".
 function buildChangelogTree(releases) {
-  const minors = [];
+  const majors = [];
   for (const release of releases) {
     const [major, minor] = release.version.replace(/^v/i, "").split(".");
-    const key = `${major}.${minor}`;
-    let minorNode = minors[minors.length - 1];
-    if (!minorNode || minorNode.key !== key) {
-      minorNode = { key, releases: [] };
-      minors.push(minorNode);
+    const majorKey = `v${major}`;
+    let majorNode = majors[majors.length - 1];
+    if (!majorNode || majorNode.key !== majorKey) {
+      majorNode = { key: majorKey, releases: [], minors: [] };
+      majors.push(majorNode);
+    }
+    majorNode.releases.push(release);
+
+    const minorKey = `${major}.${minor}`;
+    let minorNode = majorNode.minors[majorNode.minors.length - 1];
+    if (!minorNode || minorNode.key !== minorKey) {
+      minorNode = { key: minorKey, releases: [] };
+      majorNode.minors.push(minorNode);
     }
     minorNode.releases.push(release);
   }
-  return minors;
+  return majors;
 }
 
 function ChangelogTree({ releases, updatePage, updateSidebar, activePage }) {
   const tree = buildChangelogTree(releases);
 
-  const [expandedMinors, setExpandedMinors] = useState(
+  const [expanded, setExpanded] = useState(
     () => new Set(tree[0] ? [tree[0].key] : []),
   );
 
-  const toggleMinor = (key) => {
-    setExpandedMinors((prev) => {
+  const toggle = (key) => {
+    setExpanded((prev) => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
       else next.add(key);
@@ -967,28 +975,74 @@ function ChangelogTree({ releases, updatePage, updateSidebar, activePage }) {
 
   return (
     <div>
-      {tree.map((minorNode) => {
-        const open = expandedMinors.has(minorNode.key);
+      {tree.map((majorNode) => {
+        if (majorNode.releases.length === 1) {
+          const release = majorNode.releases[0];
+          return (
+            <SidebarLink
+              key={release.version}
+              text={release.version}
+              subtitle={release.date}
+              updatePage={updatePage}
+              updateSidebar={updateSidebar}
+              projectName={release.version}
+              isActive={activePage === release.version}
+            />
+          );
+        }
+
+        const open = expanded.has(majorNode.key);
         return (
-          <div key={minorNode.key}>
+          <div key={majorNode.key}>
             <FolderRow
-              label={minorNode.key}
+              label={majorNode.key}
               open={open}
-              onClick={() => toggleMinor(minorNode.key)}
+              onClick={() => toggle(majorNode.key)}
             />
             <Collapsible open={open}>
-              {minorNode.releases.map((release) => (
-                <SidebarLink
-                  key={release.version}
-                  text={release.version}
-                  subtitle={release.date}
-                  updatePage={updatePage}
-                  updateSidebar={updateSidebar}
-                  projectName={release.version}
-                  indent={1}
-                  isActive={activePage === release.version}
-                />
-              ))}
+              {majorNode.minors.map((minorNode) => {
+                if (minorNode.releases.length === 1) {
+                  const release = minorNode.releases[0];
+                  return (
+                    <SidebarLink
+                      key={release.version}
+                      text={release.version}
+                      subtitle={release.date}
+                      updatePage={updatePage}
+                      updateSidebar={updateSidebar}
+                      projectName={release.version}
+                      indent={1}
+                      isActive={activePage === release.version}
+                    />
+                  );
+                }
+
+                const minorOpen = expanded.has(minorNode.key);
+                return (
+                  <div key={minorNode.key}>
+                    <FolderRow
+                      label={minorNode.key}
+                      open={minorOpen}
+                      onClick={() => toggle(minorNode.key)}
+                      indent={1}
+                    />
+                    <Collapsible open={minorOpen}>
+                      {minorNode.releases.map((release) => (
+                        <SidebarLink
+                          key={release.version}
+                          text={release.version}
+                          subtitle={release.date}
+                          updatePage={updatePage}
+                          updateSidebar={updateSidebar}
+                          projectName={release.version}
+                          indent={2}
+                          isActive={activePage === release.version}
+                        />
+                      ))}
+                    </Collapsible>
+                  </div>
+                );
+              })}
             </Collapsible>
           </div>
         );
