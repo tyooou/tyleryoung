@@ -15,6 +15,23 @@ export default defineType({
     defineField({ name: "city", title: "City", type: "string", validation: (Rule) => Rule.required() }),
     defineField({ name: "country", title: "Country", type: "string" }),
     defineField({
+      name: "continent",
+      title: "Continent",
+      type: "string",
+      options: {
+        list: [
+          "Africa",
+          "Antarctica",
+          "Asia",
+          "Europe",
+          "North America",
+          "Oceania",
+          "South America",
+        ],
+      },
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
       name: "lat",
       title: "Latitude",
       type: "number",

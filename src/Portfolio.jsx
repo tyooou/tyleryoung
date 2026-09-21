@@ -384,7 +384,7 @@ function Portfolio() {
       try {
         const data = await sanityClient.fetch(`
           *[_type == "visitedCity"] | order(order asc, city asc){
-            "slug": name.current, city, country, lat, lng
+            "slug": name.current, city, country, continent, lat, lng
           }
         `);
         setVisitedCities(data);

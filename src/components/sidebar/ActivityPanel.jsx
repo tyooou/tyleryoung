@@ -636,6 +636,15 @@ function ratingStars(rating) {
   return "★".repeat(rating) + "☆".repeat(Math.max(0, 5 - rating));
 }
 
+// City-state sovereigns (Singapore, and Hong Kong as a country value here)
+// have city === country, so "City, Country" would read as "Singapore,
+// Singapore" — just the name on its own reads better.
+function cityLabel(c) {
+  if (!c.country || c.country.trim().toLowerCase() === c.city.trim().toLowerCase())
+    return c.city;
+  return `${c.city}, ${c.country}`;
+}
+
 // Two independently-collapsible folders — Worked Here and NZ Eats. Rows
 // here never open their own tab (there's no per-place detail page) — every
 // click stays on the "map" tab and instead tells the map to fly to that
@@ -665,17 +674,35 @@ function MapTree({
     (exp) => typeof exp.lat === "number" && typeof exp.lng === "number",
   );
 
-  // Auckland isn't a visitedCity doc (it's MapCard's hardcoded airport
-  // origin, not something fetched from Sanity) but still belongs in the
-  // "New Zealand" grouping here.
-  const airports = [{ slug: "auckland", city: "Auckland", country: "New Zealand" }, ...visitedCities];
-  const countries = new Map();
-  airports.forEach((a) => {
-    const key = a.country || "Other";
-    if (!countries.has(key)) countries.set(key, []);
-    countries.get(key).push(a);
+  const byContinent = new Map();
+  visitedCities.forEach((a) => {
+    const key = a.continent || "Other";
+    if (!byContinent.has(key)) byContinent.set(key, []);
+    byContinent.get(key).push(a);
   });
-  const sortedCountries = [...countries.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  // Fixed display order rather than alphabetical — matches the dropdown
+  // order authored in Sanity Studio (sanity/schemaTypes/visitedCity.js).
+  // "Other" (anything missing/not yet tagged with a continent) sorts last
+  // rather than being one of the seven, and is hidden the same as any
+  // other empty continent once every doc has been tagged.
+  const CONTINENT_ORDER = [
+    "Africa",
+    "Antarctica",
+    "Asia",
+    "Europe",
+    "North America",
+    "Oceania",
+    "South America",
+    "Other",
+  ];
+  const sortedContinents = CONTINENT_ORDER.filter((c) => byContinent.has(c)).map(
+    (continent) => [
+      continent,
+      [...byContinent.get(continent)].sort((a, b) =>
+        a.city.localeCompare(b.city),
+      ),
+    ],
+  );
 
   return (
     <div>
@@ -749,12 +776,12 @@ function MapTree({
         onClick={() => toggle("countries")}
       />
       <Collapsible open={expanded.has("countries")}>
-        {sortedCountries.map(([country, cities]) => {
-          const key = `country-${country}`;
+        {sortedContinents.map(([continent, cities]) => {
+          const key = `continent-${continent}`;
           return (
-            <div key={country}>
+            <div key={continent}>
               <FolderRow
-                label={country}
+                label={continent}
                 indent={1}
                 open={expanded.has(key)}
                 onClick={() => toggle(key)}
@@ -763,7 +790,7 @@ function MapTree({
                 {cities.map((c) => (
                   <SidebarLink
                     key={c.slug}
-                    text={c.city}
+                    text={cityLabel(c)}
                     updatePage={updatePage}
                     updateSidebar={updateSidebar}
                     projectName="map"

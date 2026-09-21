@@ -12,10 +12,6 @@ const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_KEY;
 // average of food-spot coordinates, which would drift toward whichever
 // other NZ cities happen to be reviewed instead of staying on Auckland.
 const AUCKLAND_CENTER = [174.7633, -36.8485];
-// Distinct from AUCKLAND_CENTER above (which is roughly the CBD, used for
-// the map's default overview) — flight legs "from Auckland" should stem
-// from the actual airport, not the city center.
-const AUCKLAND_AIRPORT = [174.785, -37.0082];
 
 // maplibre-gl works out its own worker script's URL at runtime from
 // import.meta.url rather than a static `new URL(...)` Vite can see, so the
@@ -572,7 +568,6 @@ function MapCard({
     const map = mapRef.current;
 
     const resolveCity = (name) => {
-      if (name === "Auckland") return AUCKLAND_AIRPORT;
       const match = visitedCities.find((c) => c.city === name);
       return match &&
         typeof match.lat === "number" &&
@@ -696,19 +691,7 @@ function MapCard({
       markersRef.current.push({ marker, kind: "food", popup });
     });
 
-    // Auckland isn't a visitedCity doc (it's the hardcoded airport origin
-    // below), but still gets its own pin alongside every other airport.
-    const airports = [
-      {
-        slug: "auckland",
-        city: "Auckland",
-        country: "New Zealand",
-        lat: AUCKLAND_AIRPORT[1],
-        lng: AUCKLAND_AIRPORT[0],
-      },
-      ...visitedCities,
-    ];
-    airports.forEach((airport) => {
+    visitedCities.forEach((airport) => {
       if (typeof airport.lat !== "number" || typeof airport.lng !== "number")
         return;
       const el = makePinElement("airport");
@@ -797,12 +780,13 @@ function MapCard({
   const flyToGlobalView = useCallback(() => {
     const map = mapRef.current;
     if (!map) return;
-    const points = [
-      AUCKLAND_AIRPORT,
-      ...visitedCities
-        .filter((c) => typeof c.lat === "number" && typeof c.lng === "number")
-        .map((c) => [c.lng, c.lat]),
-    ];
+    const points = visitedCities
+      .filter((c) => typeof c.lat === "number" && typeof c.lng === "number")
+      .map((c) => [c.lng, c.lat]);
+    // Unlike before, Auckland is no longer a guaranteed hardcoded first
+    // entry — points can be genuinely empty if visitedCities hasn't loaded
+    // (or failed to fetch) yet, which would otherwise crash LngLatBounds.
+    if (points.length === 0) return;
     const bounds = points.reduce(
       (b, p) => b.extend(p),
       new maplibregl.LngLatBounds(points[0], points[0]),
@@ -826,9 +810,7 @@ function MapCard({
         : mapFocus.type === "food"
           ? foodSpots.find((f) => f.slug === mapFocus.slug)
           : mapFocus.type === "airport"
-            ? mapFocus.slug === "auckland"
-              ? { lng: AUCKLAND_AIRPORT[0], lat: AUCKLAND_AIRPORT[1] }
-              : visitedCities.find((c) => c.slug === mapFocus.slug)
+            ? visitedCities.find((c) => c.slug === mapFocus.slug)
             : null;
     if (!target) return;
     map.flyTo({
@@ -871,9 +853,12 @@ function MapCard({
   }, [settingsOpen]);
 
   const countries = new Set(
-    experiences
-      .map((e) => e.location?.split(",").pop()?.trim())
-      .filter(Boolean),
+    [
+      ...experiences.map((e) => e.location?.split(",").pop()?.trim()),
+      ...visitedCities.map((c) => c.country?.trim()),
+    ]
+      .filter(Boolean)
+      .map((c) => c.toLowerCase()),
   ).size;
   const avgRating = foodSpots.length
     ? (

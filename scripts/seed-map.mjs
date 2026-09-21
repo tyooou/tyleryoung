@@ -171,22 +171,25 @@ async function seedFoodSpots() {
   console.log(`Seeded ${created} new placeholder food spots (${PLACEHOLDER_EATS.length - created} already existed).`);
 }
 
-// Airport coordinates (not city centers) for the flight-line overlay —
-// Auckland is the implicit origin (MapCard's own AUCKLAND_AIRPORT), so it's
-// not seeded here as a destination. Shanghai uses Hongqiao (SHA), not
-// Pudong (PVG) — that's the airport the Guangzhou leg actually used.
+// Airport coordinates (not city centers) for the flight-line overlay.
+// Shanghai uses Hongqiao (SHA), not Pudong (PVG) — that's the airport the
+// Guangzhou leg actually used. Auckland is seeded here too (coordinates
+// matching MapCard's former hardcoded AUCKLAND_AIRPORT constant) so it's a
+// normal visitedCity doc like every other pin, rather than a one-off object
+// hardcoded separately in MapCard.jsx and the sidebar.
 const VISITED_CITIES = [
-  { city: "Hong Kong", country: "Hong Kong", lat: 22.308, lng: 113.9185 },
-  { city: "Hanoi", country: "Vietnam", lat: 21.2212, lng: 105.8072 },
-  { city: "Shanghai", country: "China", lat: 31.1979, lng: 121.3363 },
-  { city: "Guangzhou", country: "China", lat: 23.3924, lng: 113.2988 },
-  { city: "Singapore", country: "Singapore", lat: 1.3644, lng: 103.9915 },
-  { city: "Gold Coast", country: "Australia", lat: -28.1644, lng: 153.505 },
-  { city: "Melbourne", country: "Australia", lat: -37.669, lng: 144.841 },
-  { city: "Sydney", country: "Australia", lat: -33.9399, lng: 151.1753 },
-  { city: "Queenstown", country: "New Zealand", lat: -45.0211, lng: 168.7392 },
-  { city: "Dunedin", country: "New Zealand", lat: -45.9281, lng: 170.198 },
-  { city: "Wellington", country: "New Zealand", lat: -41.3272, lng: 174.8053 },
+  { city: "Auckland", country: "New Zealand", continent: "Oceania", lat: -37.0082, lng: 174.785 },
+  { city: "Hong Kong", country: "Hong Kong", continent: "Asia", lat: 22.308, lng: 113.9185 },
+  { city: "Hanoi", country: "Vietnam", continent: "Asia", lat: 21.2212, lng: 105.8072 },
+  { city: "Shanghai", country: "China", continent: "Asia", lat: 31.1979, lng: 121.3363 },
+  { city: "Guangzhou", country: "China", continent: "Asia", lat: 23.3924, lng: 113.2988 },
+  { city: "Singapore", country: "Singapore", continent: "Asia", lat: 1.3644, lng: 103.9915 },
+  { city: "Gold Coast", country: "Australia", continent: "Oceania", lat: -28.1644, lng: 153.505 },
+  { city: "Melbourne", country: "Australia", continent: "Oceania", lat: -37.669, lng: 144.841 },
+  { city: "Sydney", country: "Australia", continent: "Oceania", lat: -33.9399, lng: 151.1753 },
+  { city: "Queenstown", country: "New Zealand", continent: "Oceania", lat: -45.0211, lng: 168.7392 },
+  { city: "Dunedin", country: "New Zealand", continent: "Oceania", lat: -45.9281, lng: 170.198 },
+  { city: "Wellington", country: "New Zealand", continent: "Oceania", lat: -41.3272, lng: 174.8053 },
 ];
 
 async function seedVisitedCities() {
@@ -208,9 +211,8 @@ async function seedVisitedCities() {
 
 // Explicit point-to-point legs, not a star out of Auckland — the actual
 // trips weren't all direct from home (the Hanoi/Hong Kong/Singapore loop
-// was its own thing, separate from the Guangzhou-Shanghai leg). "Auckland"
-// is a special-cased string MapCard.jsx resolves to AUCKLAND_AIRPORT;
-// every other name must match a VISITED_CITIES `city` exactly.
+// was its own thing, separate from the Guangzhou-Shanghai leg). Every name
+// here must match a VISITED_CITIES `city` exactly, "Auckland" included.
 const FLIGHT_LEGS = [
   { from: "Auckland", to: "Hong Kong" },
   { from: "Auckland", to: "Guangzhou" },
