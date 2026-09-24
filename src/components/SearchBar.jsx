@@ -4,6 +4,7 @@ import { useTheme, THEMES } from "../lib/theme";
 import VisitorCounter from "./VisitorCounter";
 import PanelIcon from "./PanelIcon";
 import HeaderTooltip from "./HeaderTooltip";
+import CustomScrollbar from "./CustomScrollbar";
 
 // Matches the CSS animation-out duration in index.css — the panel has to
 // stay mounted this long after `expanded` goes false so the exit animation
@@ -601,7 +602,7 @@ function SearchBar({
       >
         {panelRendered && (
           <div
-            className={`absolute z-100 border border-[var(--border-secondary)] bg-[var(--bg-tertiary)] flex flex-col items-center max-w-lg w-full p-1 top-1 rounded gap-2 ${panelClosing ? "animate-modal-out" : "animate-modal-in"}`}
+            className={`absolute z-100 overflow-hidden border border-[var(--border-secondary)] bg-[var(--bg-tertiary)] flex flex-col items-center max-w-lg w-full max-h-[70vh] p-1 top-1 rounded gap-2 ${panelClosing ? "animate-modal-out" : "animate-modal-in"}`}
             ref={panelRef}
           >
             <input
@@ -615,18 +616,22 @@ function SearchBar({
               placeholder="Search pages by name (append '>' for commands)..."
               autoFocus
             />
-            <div className="flex flex-col text-left w-full">
+            <CustomScrollbar
+              wrapperClassName="w-full flex-1 min-h-0 flex flex-col"
+              overflowClassName="overflow-y-auto overflow-x-hidden"
+              className="flex-1 min-h-0 flex flex-col text-left w-full"
+            >
               {filteredOptions.map((opt, idx) => (
                 <button
                   key={opt.label}
-                  className={`mb-1 text-left w-full px-2 py-1 rounded ${selectedOption === idx ? "bg-[var(--bg)]" : "hover:bg-[var(--bg)]"} text-[var(--text-secondary)]`}
+                  className={`mb-1 shrink-0 text-left w-full px-2 py-1 rounded truncate ${selectedOption === idx ? "bg-[var(--bg)]" : "hover:bg-[var(--bg)]"} text-[var(--text-secondary)]`}
                   onClick={opt.action}
                   tabIndex={0}
                 >
                   {opt.label}
                 </button>
               ))}
-            </div>
+            </CustomScrollbar>
           </div>
         )}
         <div className="flex items-center w-full transition-all duration-300 gap-2">
